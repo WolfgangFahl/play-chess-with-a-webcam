@@ -1,0 +1,4 @@
+# 2019-10-14 WF
+opencv-python
+# python tests
+pytest

@@ -1,0 +1,6 @@
+#!/bin/bash
+# WF 2019-07-27
+# install pre requisites
+
+# install required modules
+sudo -H pip2 install -r requirements.txt
