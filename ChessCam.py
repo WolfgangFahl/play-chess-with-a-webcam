@@ -6,6 +6,7 @@ from math import sin, cos, sqrt, pi, atan2
 import urllib2
 import sys
 import cv2
+import cv2 as cv
 import numpy as np
 import math
 from collections import defaultdict, deque
@@ -27,8 +28,8 @@ class ChessCam(object):
         self.captureHdl = inputManager()
 
         # Create window(s)
-        cv.NamedWindow("chessCam", 1)
-        cv.ResizeWindow("chessCam", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
+        cv2.namedWindow("chessCam", 1)
+        cv2.resizeWindow("chessCam", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
 
         #cv.NamedWindow("chessCamDebug", 1)
         #cv.ResizeWindow("chessCamDebug", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
@@ -52,7 +53,7 @@ class ChessCam(object):
         while len(move) == 0 :
             self.frame = self.captureHdl.getFrame()
 
-            if self.frame:
+            if self.frame is not None:
                 self.finder.updateImage(self.frame)
                 try:
                     processedImages = self.finder.GetFullImageBoard()

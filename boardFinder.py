@@ -4,6 +4,7 @@
 # Global imports
 from math import sin, cos, sqrt, pi, atan2
 import cv2
+import cv2 as cv
 import numpy as np
 from collections import deque
 import bisect
@@ -63,7 +64,7 @@ class boardFinder(object):
         This performs an Hough Transform and HSV conversion to the image and
         computes the orientation and coordinates from these."""
         self.frame = inFrame
-        if self.frame:
+        if self.frame is not None:
             self.HoughTransform()
             self.BoardOrientation = self.DetectBoardOrientation()
             if all(self.BoardOrientation):
@@ -75,7 +76,7 @@ class boardFinder(object):
 
         Returns: Nothing"""
         # Convert self.frame to numpy array for Hough thing
-        tmp = cv.CreateImage(cv.GetSize(self.frame),8,1)
+        tmp = cv2.createImage(cv2.getSize(self.frame),8,1)
         cv.CvtColor( self.frame, tmp, cv.CV_BGR2GRAY );
         im = np.asarray(cv.GetMat(tmp))
         (_, otsu) = cv2.threshold(im,

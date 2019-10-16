@@ -38,9 +38,10 @@ class inputManager(object):
         args = parser.parse_args()
 
         self.cam = cv2.VideoCapture(args.input)
-        self.cam.set(cv2.CV_CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)
-        self.cam.set(cv2.CV_CAP_PROP_FRAME_HEIGHT, CHESSCAM_HEIGHT)
-        self.cam.set(cv2.CV_CAP_PROP_FORMAT, cv.IPL_DEPTH_16S)
+        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)
+        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CHESSCAM_HEIGHT)
+        # https://stackoverflow.com/a/11332129/1497139
+        self.cam.set(cv2.CAP_PROP_FORMAT, cv2.CV_16S)
 
         if not self.cam:
             raise Exception("Could not initialize capturing...")
@@ -65,7 +66,7 @@ class inputManager(object):
             capture3 = capture2.copy()
             diff = sum(cv2.integral(cv2.absdiff(capture1, capture2))[-1][-1])
             time.sleep(0.5)
-        return cv.fromarray(capture3)
+        return capture3
 
 if __name__ == "__main__":
     print("init")
