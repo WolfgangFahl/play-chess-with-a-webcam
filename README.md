@@ -1,19 +1,15 @@
-# PI-Q-Robot
-Raspberry PI controlled Quadruped Robot with 3D Simulator
-
-[![GitHub issues](https://img.shields.io/github/issues/BITPlan/PI-Q-Robot.svg)](https://github.com/BITPlan/PI-Q-Robot/issues)
-[![GitHub issues](https://img.shields.io/github/issues-closed/BITPlan/PI-Q-Robot.svg)](https://github.com/BITPlan/PI-Q-Robot/issues/?q=is%3Aissue+is%3Aclosed)
-[![GitHub](https://img.shields.io/github/license/BITPlan/PI-Q-Robot.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![BITPlan](http://wiki.bitplan.com/images/wiki/thumb/3/38/BITPlanLogoFontLessTransparent.png/198px-BITPlanLogoFontLessTransparent.png)](http://www.bitplan.com)
+# Play Chess With a Webcam by Olivier Dugas 
+[![GitHub issues](https://img.shields.io/github/issues/WolfgangFahl/play-chess-with-a-webcam.svg)](https://github.com/WolfgangFahl/play-chess-with-a-webcam/issues)
+[![GitHub issues](https://img.shields.io/github/issues-closed/WolfgangFahl/play-chess-with-a-webcam.svg)](https://github.com/WolfgangFahl/play-chess-with-a-webcam/issues/?q=is%3Aissue+is%3Aclosed)
+[![GitHub](https://img.shields.io/github/license/WolfgangFahl/play-chess-with-a-webcam.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ### Documentation
-* [Wiki](http://wiki.bitplan.com/index.php/Raspberry_PI_Spiderbot)
-* [Demo](http://pi-q-robot.bitplan.com/)
-* [Example Robot definition](https://raw.githubusercontent.com/BITPlan/PI-Q-Robot/master/web/models/spiderq.json)
-* [Discussion](https://discourse.threejs.org/t/robot-simulation-rotation-issues/9065)
+* [blogdugas.net] (http://blogdugas.net/blog/2015/05/18/play-chess-with-a-webcam/)
+* [Raspberry PI Chessboard Camera](http://wiki.bitplan.com/index.php/Raspberry_PI_Chessboard_Camera)
+
 
 ### Installation
-Prerequisites: python3
+Prerequisites: python2
 
 ```
 ./install
