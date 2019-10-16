@@ -4,7 +4,6 @@
 # Global imports
 from math import sin, cos, sqrt, pi, atan2
 import sys
-import cv2.cv as cv
 import cv2
 import numpy as np
 from collections import defaultdict, deque
@@ -37,27 +36,27 @@ class inputManager(object):
                             default=0,
                             help="Manually set the input device.")
         args = parser.parse_args()
-        
+
         self.cam = cv2.VideoCapture(args.input)
-        self.cam.set(cv.CV_CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)
-        self.cam.set(cv.CV_CAP_PROP_FRAME_HEIGHT, CHESSCAM_HEIGHT)
-        self.cam.set(cv.CV_CAP_PROP_FORMAT, cv.IPL_DEPTH_16S)
+        self.cam.set(cv2.CV_CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)
+        self.cam.set(cv2.CV_CAP_PROP_FRAME_HEIGHT, CHESSCAM_HEIGHT)
+        self.cam.set(cv2.CV_CAP_PROP_FORMAT, cv.IPL_DEPTH_16S)
 
         if not self.cam:
             raise Exception("Could not initialize capturing...")
-        
+
         diffs = []
-        
+
         # Initialize capture threshold
         for i in range(30):
             ret, capture1 = self.cam.read()
             ret, capture2 = self.cam.read()
             diff = sum(cv2.integral(cv2.absdiff(capture1, capture2))[-1][-1])
             diffs.append(diff)
-        
+
         self.threshold = sum(diffs)/len(diffs)
         self.threshold *= 1.05
-            
+
     def getFrame(self):
         diff = float("inf")
         while(diff > self.threshold):

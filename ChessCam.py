@@ -5,7 +5,6 @@
 from math import sin, cos, sqrt, pi, atan2
 import urllib2
 import sys
-import cv2.cv as cv
 import cv2
 import numpy as np
 import math
@@ -72,12 +71,12 @@ class ChessCam(object):
                 except cv2.error as e:
                     print str(e)
                     pass
-            
+
             if cv.WaitKey(10) != -1:
                 raise UserExit
 
         return move
-        
+
     def getDominatorOffset(self):
         return self.finder.getDominatorOffset()
 

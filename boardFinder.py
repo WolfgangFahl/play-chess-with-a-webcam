@@ -3,7 +3,6 @@
 
 # Global imports
 from math import sin, cos, sqrt, pi, atan2
-import cv2.cv as cv
 import cv2
 import numpy as np
 from collections import deque
@@ -42,7 +41,7 @@ class boardFinder(object):
         # Find the rotation of the board
         side = self._getBlackMaxSide(cv.fromarray(self.GetFullImageBoard()[0]))
 
-        # 0:top,1:left,2:bottom,3:right. 
+        # 0:top,1:left,2:bottom,3:right.
         optionsRotation = {0: 0,
                            1: -90,
                            2: 180,
@@ -83,7 +82,7 @@ class boardFinder(object):
                                   128.0,
                                   255.0,
                                   cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-    
+
         planes = [cv.CreateImage((self.frame.width, self.frame.height),
                                  8,
                                  1) for i in range(3)]
@@ -94,7 +93,7 @@ class boardFinder(object):
                                             self.frame.height),
                                            8,
                                            3)
-        
+
         cv.Split(self.frame, planes[0], planes[1], planes[2], None)
         for plane in planes:
             cv.Laplace(plane, laplace, 3)
@@ -102,7 +101,7 @@ class boardFinder(object):
 
         cv.Merge(planes[0], planes[1], planes[2], None, self.colorlaplace)
         self.laplacianImage = self.colorlaplace
-        
+
         src = cv.fromarray(otsu)
         dst = cv.CreateImage(cv.GetSize(src), 8, 1)
         color_dst = cv.CreateImage(cv.GetSize(src), 8, 3)
@@ -117,7 +116,7 @@ class boardFinder(object):
                                     50,
                                     40,
                                     110)
-       
+
     def DetectBoardOrientation(self):
         """Finds the two dominants angles of the Hough Transform.
 
@@ -137,7 +136,7 @@ class boardFinder(object):
         for slope in set(slopes):
             beginElement = bisect.bisect_left(slopes, slope - KernelSize)
             endElement = bisect.bisect_right(slopes, slope + KernelSize)
-            # Threshold 
+            # Threshold
             if endElement - beginElement > CHESSCAM_PARZEN_THRESHOLD:
                 KDE[slope] = endElement - beginElement
         bins = sorted(KDE.items())
@@ -182,7 +181,7 @@ class boardFinder(object):
                                    rotationMatrix,
                                    (CHESSCAM_WIDTH, CHESSCAM_HEIGHT))
         self.hsv = cv2.cvtColor(hsv2, cv.CV_BGR2HSV)
-        
+
         # Threshold the HSV value
         # Green is between ~70 and ~120, and our tape is between saturation 85 and 255.
         self.debugimg = cv2.inRange(self.hsv,
@@ -282,11 +281,11 @@ class boardFinder(object):
         defined by rectCoordinates and rotation become the full size of the
         image.
 
-        rectCoordinates: Position of the minimum and maximum point of the 
+        rectCoordinates: Position of the minimum and maximum point of the
             bounding rectangle. Must be of form: ((x1, y1), (x2, y2))
         rotation: Rotation angle in radians.
 
-        Returns: A list of two images containing only the chessboard. 
+        Returns: A list of two images containing only the chessboard.
             The first one is a colored image and the second one is a laplacian
             transform of the first image"""
 
@@ -327,11 +326,11 @@ class boardFinder(object):
                                             H,
                                             (CHESSCAM_WIDTH, CHESSCAM_HEIGHT))
         self.debugimg = cv.fromarray(self.debugimg)
-        
+
         self.laplacianImage = cv2.warpPerspective(np.asarray(self.laplacianImage[:,:]),
                                             H,
                                             (CHESSCAM_WIDTH, CHESSCAM_HEIGHT))
-        self.laplacianImage = cv.fromarray(self.laplacianImage)   
+        self.laplacianImage = cv.fromarray(self.laplacianImage)
 
         cv.Circle(self.frame, (int(points[0][0]), int(points[0][1])), 1, cv.CV_RGB(0, 255, 255), 5)
         cv.Circle(self.frame, (int(points[1][0]), int(points[1][1])), 1, cv.CV_RGB(0, 255, 0), 5)
@@ -339,36 +338,36 @@ class boardFinder(object):
         cv.Circle(self.frame, (int(points[3][0]), int(points[3][1])), 1, cv.CV_RGB(255, 255, 255), 5)
 
         self.debugimg = self.rotateImage(self.debugimg)
-        
+
         return [self.debugimg, self.laplacianImage, self.frame]
 
-        
+
     def _getBlackMaxSide(self, colorImage):
         """This function returns the side of black's team, if game is at
         starting position. 0:top, 1:left, 2:bottom, 3:right"""
-    
+
         tmp = cv.CreateImage(cv.GetSize(colorImage), 8, 3)
         cv.CvtColor( colorImage, tmp, cv.CV_BGR2HSV );
-        
+
         W, H = cv.GetSize(tmp)
-        
+
         top = cv.GetSubRect(tmp, (0, 0, W, H/4))
         left = cv.GetSubRect(tmp, (0, 0, W/4, H))
         bottom = cv.GetSubRect(tmp, (0, H*3/4, W, H/4))
         right = cv.GetSubRect(tmp, (W*3/4, 0, W/4, H))
-        
+
         whitenesses = []
         whitenesses.append(cv.Sum(top)[2])
         whitenesses.append(cv.Sum(left)[2])
         whitenesses.append(cv.Sum(bottom)[2])
         whitenesses.append(cv.Sum(right)[2])
-    
+
         return whitenesses.index(min(whitenesses))
-        
+
     def rotateImage(self, image):
         """Flips the board in order to always have a1 on the top-left corner"""
         src = np.asarray(cv.GetMat(image)[:,:])
-        
+
         if self.initialRotation == -90:
             #rotate left
             src = cv2.transpose(src);
@@ -380,5 +379,5 @@ class boardFinder(object):
         elif self.initialRotation == 180:
             #turn around
             src = cv2.flip(src, -1);
-            
+
         return src
