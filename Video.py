@@ -27,7 +27,7 @@ class Video:
         self.cap = cv2.VideoCapture(filePath)
 
     # play the given capture
-    def play():
+    def play(self):
         while(self.cap.isOpened()):
             ret, frame = self.cap.read()
             if ret == True:
