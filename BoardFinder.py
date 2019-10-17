@@ -3,6 +3,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
 # Global imports
+from Video import Video
 from math import sin, cos, sqrt, pi, atan2
 import cv2
 import cv2 as cv
@@ -27,10 +28,13 @@ smoothFunc = lambda x: sum(x) / float(len(x))
 class BadSegmentation(Exception):
     pass
 
-
+# Board Finder
 class BoardFinder(object):
+    debug=True
+
     # construct me from the given input Image
     def __init__(self, inImage):
+        self.video=Video()
         # Init smoothing angle
         self.smoothOrientation = deque([], CHESSCAM_ORIENTATION_SMOOTHING)
         self.smoothCoordinates = deque([], CHESSCAM_COORDINATES_SMOOTHING)
@@ -67,21 +71,15 @@ class BoardFinder(object):
         computes the orientation and coordinates from these."""
         self.frame = inFrame
         if self.frame is not None:
-            self.HoughTransform()
+            self.lines=self.video.houghTransform(self.frame)
+            if BoardFinder.debug:
+                print ("found %d lines" % (self.lines.size))
             self.BoardOrientation = self.DetectBoardOrientation()
             if all(self.BoardOrientation):
                 self.boardCoordinates = self.GetChessBoardCoordinates(
                     smoothFunc(list(zip(*self.smoothOrientation))[0]))
 
-    # was: http://www.robindavid.fr/opencv-tutorial/chapter5-line-edge-and-contours-detection.html
-    # is: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghlines/py_houghlines.html
-    def HoughTransform(self):
-        """Performs an Hough Transform to the frame passed to updateImage().
 
-        Returns: Nothing"""
-        gray=cv2.cvtColor( self.frame,  cv2.COLOR_BGR2GRAY )
-        edges = cv2.Canny(gray,50,150,apertureSize = 3)
-        self.lines=cv2.HoughLines(edges,1,np.pi/180,200)
 
     def DetectBoardOrientation(self):
         """Finds the two dominants angles of the Hough Transform.
