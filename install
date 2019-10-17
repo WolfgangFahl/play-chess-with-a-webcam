@@ -3,4 +3,4 @@
 # install pre requisites
 
 # install required modules
-sudo -H pip2 install -r requirements.txt
+sudo -H pip3 install -r requirements.txt

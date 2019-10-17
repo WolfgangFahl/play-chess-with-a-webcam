@@ -63,7 +63,7 @@ class MovementDetector(object):
         diff = cv2.absdiff(pastImage, currentImage)
         cv.ShowImage("chessCamDebug", cv.fromarray(diff))
 
-        for key in currentBoard.keys():
+        for key in list(currentBoard.keys()):
             coords = currentBoard[key].GetCoords()
             region = cv.GetSubRect(cv.fromarray(diff), coords)
 

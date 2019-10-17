@@ -415,24 +415,24 @@ if __name__ == "__main__":
     #    print state.moveCam(['H8','E8','G8','F8'])    #0-0
     #    print state.moveCam(['B6','C7'])              #bxc7, Hidden eat
     try: #Hard mode
-        print state.moveCam(['D2','D3','D4','D5'])        #d4
-        print state.moveCam(['G8','F7','F6'])              #Nf6
-        print state.moveCam(['C2','C3','C4'])              #c4
-        print state.moveCam(['E8','E7','E6'])              #e6
-        print state.moveCam(['C4','C5'])              #c5 (putting C6 is an ambiguous move)
-        print state.moveCam(['F8','D6', 'D7'])              #Bd6
-        print state.moveCam(['D1', 'D2','A4','A5'])              #Qa4
-        print state.moveCam(['B7','B5', 'B8','B6'])              #b5
-        print state.moveCam(['B5','C5','B6', 'B7', 'C6'])   #cxb6, En Passant
-        print state.moveCam(['H8','E8','G8','F8','H7','E7','G7','F7'])    #0-0
-        print state.moveCam(['B6','C7','B7','C8'])              #bxc7, Hidden eat
+        print(state.moveCam(['D2','D3','D4','D5']))        #d4
+        print(state.moveCam(['G8','F7','F6']))              #Nf6
+        print(state.moveCam(['C2','C3','C4']))              #c4
+        print(state.moveCam(['E8','E7','E6']))              #e6
+        print(state.moveCam(['C4','C5']))              #c5 (putting C6 is an ambiguous move)
+        print(state.moveCam(['F8','D6', 'D7']))              #Bd6
+        print(state.moveCam(['D1', 'D2','A4','A5']))              #Qa4
+        print(state.moveCam(['B7','B5', 'B8','B6']))              #b5
+        print(state.moveCam(['B5','C5','B6', 'B7', 'C6']))   #cxb6, En Passant
+        print(state.moveCam(['H8','E8','G8','F8','H7','E7','G7','F7']))    #0-0
+        print(state.moveCam(['B6','C7','B7','C8']))              #bxc7, Hidden eat
     except RejectedMove as e:
-        print e
+        print(e)
         pass
-    print "---Final positions---"
+    print("---Final positions---")
     it = iter(sorted(state.board.items()))
     for i in range(0,64):
-        data = it.next() 
+        data = next(it) 
         str = data[0]
         
         if data[1] == None:
@@ -456,4 +456,4 @@ if __name__ == "__main__":
             else:
                 str += "pawn"
         
-        print str
+        print(str)

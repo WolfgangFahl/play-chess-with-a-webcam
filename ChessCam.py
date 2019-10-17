@@ -3,7 +3,7 @@
 
 # Global imports
 from math import sin, cos, sqrt, pi, atan2
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import sys
 import cv2
 import cv2 as cv
@@ -70,7 +70,7 @@ class ChessCam(object):
                     #print str(e)
                     pass
                 except cv2.error as e:
-                    print str(e)
+                    print(str(e))
                     pass
 
             if cv.WaitKey(10) != -1:
@@ -88,8 +88,8 @@ if __name__ == "__main__":
         while True:
             move = thisInstance.getNextMove()
             if len(move) != 0:
-                print "Move"
-                print move
+                print("Move")
+                print(move)
 
     except UserExit:
         pass

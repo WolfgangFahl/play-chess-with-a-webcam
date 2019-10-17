@@ -69,7 +69,7 @@ class boardFinder(object):
             self.BoardOrientation = self.DetectBoardOrientation()
             if all(self.BoardOrientation):
                 self.boardCoordinates = self.GetChessBoardCoordinates(
-                    smoothFunc(zip(*self.smoothOrientation)[0]))
+                    smoothFunc(list(zip(*self.smoothOrientation))[0]))
 
     def HoughTransform(self):
         """Performs an Hough Transform to the frame passed to updateImage().

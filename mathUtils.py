@@ -83,7 +83,7 @@ def findBoundingSkewedSquare(pt1, pt2, rotations):
     # (Poor-man inverse projective transform)
     shearFactor = -(rotations[0] - (rotations[0] - pi/2 - rotations[1])/2.)
     shearYFactor = -(rotations[0] - (rotations[0] - pi/2 - rotations[1])/2.)
-    print(shearFactor, shearYFactor)
+    print((shearFactor, shearYFactor))
     shearM = np.array(
         [1,            shearFactor, 0,
          shearYFactor, 1,           0,
