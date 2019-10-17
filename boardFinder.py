@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
+# part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
 # Global imports
 from math import sin, cos, sqrt, pi, atan2
@@ -27,7 +28,8 @@ class BadSegmentation(Exception):
     pass
 
 
-class boardFinder(object):
+class BoardFinder(object):
+    # construct me from the given input Image
     def __init__(self, inImage):
         # Init smoothing angle
         self.smoothOrientation = deque([], CHESSCAM_ORIENTATION_SMOOTHING)
@@ -365,6 +367,7 @@ class boardFinder(object):
 
         return whitenesses.index(min(whitenesses))
 
+    # rotate the Image
     def rotateImage(self, image):
         """Flips the board in order to always have a1 on the top-left corner"""
         src = np.asarray(cv.GetMat(image)[:,:])

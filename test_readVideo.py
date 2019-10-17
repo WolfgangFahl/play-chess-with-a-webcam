@@ -1,3 +1,4 @@
+# part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Video import Video
 
 def test_ReadVideo():

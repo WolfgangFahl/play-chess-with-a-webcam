@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
+# part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
 # Global imports
+from Args import Args
 from math import sin, cos, sqrt, pi, atan2
 import sys
 import cv2
@@ -9,7 +11,7 @@ import numpy as np
 from collections import defaultdict, deque
 import time
 import bisect
-import argparse
+
 
 # Local imports
 from mathUtils import (intersect, distance, median, findBoundingSkewedSquare,
@@ -25,19 +27,11 @@ CHESSCAM_COORDINATES_SMOOTHING = 8
 smoothFunc = lambda x: sum(x) / float(len(x))
 
 
-class inputManager(object):
+class InputManager(object):
     def __init__(self):
-        parser = argparse.ArgumentParser(description='ChessCam Argument Parser')
-        parser.add_argument('--nouci',
-                            action='store_true',
-                            help="Don't use the UCI interface.")
-        parser.add_argument('--input',
-                            type=int,
-                            default=0,
-                            help="Manually set the input device.")
-        args = parser.parse_args()
+        args=Args()
 
-        self.cam = cv2.VideoCapture(args.input)
+        self.cam = cv2.VideoCapture(args.args.input)
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CHESSCAM_HEIGHT)
         # https://stackoverflow.com/a/11332129/1497139
@@ -72,5 +66,5 @@ if __name__ == "__main__":
     print("init")
     imngr = inputManager()
     while True:
-        imngr.getFrame()
+        frame=imngr.getFrame()
         print("got a frame!")

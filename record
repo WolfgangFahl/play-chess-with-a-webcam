@@ -4,4 +4,4 @@ if [ $? -eq 0 ]
 then
   export PYTHONPATH=""
 fi
-python3 VideoMaker.py
+python3 video.py --record $@
