@@ -22,3 +22,8 @@ Prerequisites: python2
 ```
 ./run
 ```
+
+### Recording Chess Games via webcam
+```
+./record
+```
