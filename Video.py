@@ -12,6 +12,7 @@ class Video:
     # construct me with no parameters
     def __init__(self):
         self.cap = None
+        self.frames=0
         pass
 
     # capture from the given device
@@ -33,6 +34,7 @@ class Video:
             ret, frame = self.cap.read()
             if ret == True:
                 cv2.imshow('frame', frame)
+                self.frames=self.frames+1
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
             else:
@@ -104,6 +106,30 @@ class Video:
         if printHints:
             print("finished")
 
+    #https://stackoverflow.com/a/22921648/1497139
+    def createBlank(self,width, height, rgb_color=(0, 0, 0)):
+        """Create new image(numpy array) filled with certain color in RGB"""
+        # Create black blank image
+        image = np.zeros((height, width, 3), np.uint8)
+
+        # Since OpenCV uses BGR, convert the color first
+        color = tuple(reversed(rgb_color))
+        # Fill image with color
+        image[:] = color
+
+        return image
+
+    # was: http://www.robindavid.fr/opencv-tutorial/chapter5-line-edge-and-contours-detection.html
+    # is: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghlines/py_houghlines.html
+    # https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html
+    def houghTransform(self,image):
+        """Performs an Hough Transform to the frame passed to updateImage().
+
+        Returns: lines"""
+        gray=cv2.cvtColor( image,  cv2.COLOR_BGR2GRAY )
+        edges = cv2.Canny(gray,50,150,apertureSize = 3)
+        lines=cv2.HoughLines(edges,1,np.pi/180,200)
+        return lines
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Video')

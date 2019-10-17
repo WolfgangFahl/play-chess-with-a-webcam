@@ -73,52 +73,15 @@ class BoardFinder(object):
                 self.boardCoordinates = self.GetChessBoardCoordinates(
                     smoothFunc(list(zip(*self.smoothOrientation))[0]))
 
+    # was: http://www.robindavid.fr/opencv-tutorial/chapter5-line-edge-and-contours-detection.html
+    # is: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghlines/py_houghlines.html
     def HoughTransform(self):
         """Performs an Hough Transform to the frame passed to updateImage().
 
         Returns: Nothing"""
-        # Convert self.frame to numpy array for Hough thing
-        tmp = cv2.createImage(cv2.getSize(self.frame),8,1)
-        cv.CvtColor( self.frame, tmp, cv.CV_BGR2GRAY );
-        im = np.asarray(cv.GetMat(tmp))
-        (_, otsu) = cv2.threshold(im,
-                                  128.0,
-                                  255.0,
-                                  cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-
-        planes = [cv.CreateImage((self.frame.width, self.frame.height),
-                                 8,
-                                 1) for i in range(3)]
-        laplace = cv.CreateImage((self.frame.width, self.frame.height),
-                                 cv.IPL_DEPTH_16S,
-                                 1)
-        self.colorlaplace = cv.CreateImage((self.frame.width,
-                                            self.frame.height),
-                                           8,
-                                           3)
-
-        cv.Split(self.frame, planes[0], planes[1], planes[2], None)
-        for plane in planes:
-            cv.Laplace(plane, laplace, 3)
-            cv.ConvertScaleAbs(laplace, plane, 1, 0)
-
-        cv.Merge(planes[0], planes[1], planes[2], None, self.colorlaplace)
-        self.laplacianImage = self.colorlaplace
-
-        src = cv.fromarray(otsu)
-        dst = cv.CreateImage(cv.GetSize(src), 8, 1)
-        color_dst = cv.CreateImage(cv.GetSize(src), 8, 3)
-        storage = cv.CreateMemStorage(0)
-        cv.Canny(src, dst, 50, 200, 3)
-        cv.CvtColor(dst, color_dst, cv.CV_GRAY2BGR)
-        self.lines = cv.HoughLines2(dst,
-                                    storage,
-                                    cv.CV_HOUGH_PROBABILISTIC,
-                                    1,
-                                    pi / 180,
-                                    50,
-                                    40,
-                                    110)
+        gray=cv2.cvtColor( self.frame,  cv2.COLOR_BGR2GRAY )
+        edges = cv2.Canny(gray,50,150,apertureSize = 3)
+        self.lines=cv2.HoughLines(edges,1,np.pi/180,200)
 
     def DetectBoardOrientation(self):
         """Finds the two dominants angles of the Hough Transform.
