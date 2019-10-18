@@ -127,6 +127,8 @@ class BoardFinder(object):
         retValue = sorted([MaximumChanceAngle, -abs(MaximumChanceAngle2)],
                           key=lambda x: abs(x))
 
+        if BoardFinder.debug:
+            print ("Boardorientation %f.2° - %f.2°" % (degrees(retValue[0]),degrees(retValue[1])))
         # Record return value for smoothing purposes
         self.smoothOrientation.appendleft(retValue)
         return retValue

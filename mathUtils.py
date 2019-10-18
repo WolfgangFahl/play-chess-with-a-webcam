@@ -3,7 +3,7 @@ from math import sin, cos, pi
 import numpy as np
 
 def intersect(A, B, C, D):
-    """ Finds the intersection of two lines represented by four points. 
+    """ Finds the intersection of two lines represented by four points.
 
     @parameter A: point #1, belongs to line #1
     @parameter B: point #2, belongs to line #1
@@ -21,22 +21,22 @@ def intersect(A, B, C, D):
         return None
 
     return (int(Px), int(Py))
-    
+
 def distance(A, B):
     """ Finds the distance between two points
-    
+
     @parameter A: point #1
     @parameter B: point #2
-    
+
     @returns: distance between the points A and B"""
     return math.sqrt((A[0]-B[0])**2 + (A[1]-B[1])**2)
-    
+
 def middlePoint(A, B):
     """ Finds the point between two points
-    
+
     @parameter A: point #1
     @parameter B: point #2
-    
+
     @returns: typle(x,y) halfway from A toward B"""
     return (int((B[0]+A[0])/2), int((B[1]+A[1])/2))
 
@@ -48,8 +48,8 @@ def median(inList):
     if len(inList) == 0:
         return 0.
     if not len(inList) % 2:
-        return (inList[len(inList) / 2] + inList[len(inList) / 2 - 1]) / 2.0
-    return inList[len(inList) / 2]
+        return (inList[len(inList) // 2] + inList[len(inList) // 2 - 1]) / 2.0
+    return inList[len(inList) // 2]
 
 def getRotationAndTranslationMatrix(rotation, translation):
     """Get a numpy transform matrix representing a rotation followed by a
@@ -68,7 +68,7 @@ def findBoundingSkewedSquare(pt1, pt2, rotations):
 
     pt1 & pt2: (x, y)
     rotation: radian angle between -pi/2 and pi/2"""
-    
+
     # Define the reference and transform matrixes
     points = np.transpose(np.array(
         [pt1[0], pt1[1], 1,
