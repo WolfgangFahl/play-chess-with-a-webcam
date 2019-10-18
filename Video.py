@@ -160,9 +160,11 @@ class Video:
         h=rect[3]
         return image[y:y+h,x:x+h]
 
-    def sum(self,image,channel):
+    # get the intensity sum of a hsv image
+    def sumIntensity(self,image):
+        h,s,v=cv2.split(image)
         height, width = image.shape[:2]
-        sumResult=np.sum(image[0:height, 0:width, channel:channel])    
+        sumResult=np.sum(v)
         return sumResult
 
 if __name__ == "__main__":
