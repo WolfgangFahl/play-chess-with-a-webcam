@@ -13,7 +13,7 @@ def getImage(num):
 # test finding a chess board
 def test_findBoard():
     image=getImage(1)
-    #finder=BoardFinder(image)
+    finder=BoardFinder(image)
 
 # test hough transformation
 def test_houghTransform():

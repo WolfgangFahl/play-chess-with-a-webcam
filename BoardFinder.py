@@ -4,7 +4,7 @@
 
 # Global imports
 from Video import Video
-from math import sin, cos, sqrt, pi, atan2
+from math import sin, cos, sqrt, pi, atan2, degrees
 import cv2
 import cv2 as cv
 import numpy as np
@@ -108,15 +108,18 @@ class BoardFinder(object):
             return (None, None)
 
         # Let's find the maximum number of lines in this range
-        AngleLePlusSur = max(bins, key=lambda x: x[1])
+        angleMostOftenDetected = max(bins, key=lambda x: x[1])
+        if BoardFinder.debug:
+            print ("the most often detected line angle is %d°" % degrees(angleMostOftenDetected[0]))
 
-        # Thiel-Sen estimator for noise robustness
-        MaximumChanceAngle = median([a[0] for a in bins if a[1] == AngleLePlusSur[1] and abs(a[0] - AngleLePlusSur[0]) < KernelSize])
+        # Theil-Sen estimator for noise robustness
+        # why not use https://docs.scipy.org/doc/scipy-0.15.1/reference/generated/scipy.stats.mstats.theilslopes.html ?
+        MaximumChanceAngle = median([a[0] for a in bins if a[1] == angleMostOftenDetected[1] and abs(a[0] - angleMostOftenDetected[0]) < KernelSize])
 
         # Get second angle
         try:
-            autreAngle = max((a for a in bins if a[0] > AngleLePlusSur[0] + 0.2 or a[0] < AngleLePlusSur[0] - 0.2), key=lambda x: x[1])
-            MaximumChanceAngle2 = median([a[0] for a in bins if a[1] == autreAngle[1] and abs(a[0] - autreAngle[0]) < KernelSize])
+            otherAngle = max((a for a in bins if a[0] > angleMostOftenDetected[0] + 0.2 or a[0] < angleMostOftenDetected[0] - 0.2), key=lambda x: x[1])
+            MaximumChanceAngle2 = median([a[0] for a in bins if a[1] == otherAngle[1] and abs(a[0] - otherAngle[0]) < KernelSize])
         except:
             # TODO: Don't write generic excepts!!!
             return (None, None)
