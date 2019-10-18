@@ -35,6 +35,9 @@ class BoardFinder(object):
     # construct me from the given input Image
     def __init__(self, inImage):
         self.video=Video()
+        self.frame = inImage
+
+    def prepare(self):
         # Init smoothing angle
         self.smoothOrientation = deque([], CHESSCAM_ORIENTATION_SMOOTHING)
         self.smoothCoordinates = deque([], CHESSCAM_COORDINATES_SMOOTHING)
@@ -46,7 +49,7 @@ class BoardFinder(object):
         self.initialRotation = 0
 
         # Find the rotation of the board
-        side = self._getBlackMaxSide(cv.fromarray(self.GetFullImageBoard()[0]))
+        side = self.getBlackMaxSide(cv.fromarray(self.GetFullImageBoard()[0]))
 
         # 0:top,1:left,2:bottom,3:right.
         optionsRotation = {0: 0,
@@ -69,7 +72,7 @@ class BoardFinder(object):
         """Adds a new image to the boardFinder algorithms.
         This performs an Hough Transform and HSV conversion to the image and
         computes the orientation and coordinates from these."""
-        self.frame = inFrame
+
         if self.frame is not None:
             self.lines=self.video.houghTransform(self.frame)
             if BoardFinder.debug:
@@ -140,8 +143,8 @@ class BoardFinder(object):
         Returns: 4-tuple of 2-tuples containing (x, y) values of the 4 corners
                  of the chessboard."""
         # Blur image and convert it to HSV
-        self.hsv = cv.CreateImage(cv.GetSize(self.frame), 8, 3)
-        cv.Smooth(self.frame, self.hsv, cv.CV_BLUR, 8)
+        # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_filtering/py_filtering.html
+        self.hsv =cv2.blur(self.frame,(8,8))
 
         # De-Rotate the hsv version of the image to support rotated chessboards
         # Because marker detection is really cheaply done
@@ -311,25 +314,27 @@ class BoardFinder(object):
         return [self.debugimg, self.laplacianImage, self.frame]
 
 
-    def _getBlackMaxSide(self, colorImage):
+    def getBlackMaxSide(self, colorImage):
         """This function returns the side of black's team, if game is at
         starting position. 0:top, 1:left, 2:bottom, 3:right"""
 
-        tmp = cv.CreateImage(cv.GetSize(colorImage), 8, 3)
-        cv.CvtColor( colorImage, tmp, cv.CV_BGR2HSV );
+        # convert to HSV for simpler handling
+        # see e.g. https://stackoverflow.com/questions/17063042/why-do-we-convert-from-rgb-to-hsv
+        # Convert BGR to HSV
+        tmp = cv2.cvtColor(colorImage, cv2.COLOR_BGR2HSV)
 
-        W, H = cv.GetSize(tmp)
+        H,W = tmp.shape[:2]
 
-        top = cv.GetSubRect(tmp, (0, 0, W, H/4))
-        left = cv.GetSubRect(tmp, (0, 0, W/4, H))
-        bottom = cv.GetSubRect(tmp, (0, H*3/4, W, H/4))
-        right = cv.GetSubRect(tmp, (W*3/4, 0, W/4, H))
+        top = self.video.getSubRect(tmp, (0, 0, W, H//4))
+        left = self.video.getSubRect(tmp, (0, 0, W//4, H))
+        bottom = self.video.getSubRect(tmp, (0, H*3//4, W, H//4))
+        right = self.video.getSubRect(tmp, (W*3//4, 0, W//4, H))
 
         whitenesses = []
-        whitenesses.append(cv.Sum(top)[2])
-        whitenesses.append(cv.Sum(left)[2])
-        whitenesses.append(cv.Sum(bottom)[2])
-        whitenesses.append(cv.Sum(right)[2])
+        whitenesses.append(self.video.sum(top,2))
+        whitenesses.append(self.video.sum(left,2))
+        whitenesses.append(self.video.sum(bottom,2))
+        whitenesses.append(self.video.sum(right,2))
 
         return whitenesses.index(min(whitenesses))
 

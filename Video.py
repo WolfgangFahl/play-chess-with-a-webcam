@@ -153,6 +153,17 @@ class Video:
             pt2 = (int(x0 - width * (-b)), int(y0 - height * (a)))
             cv2.line(image, pt1, pt2, (0, 0, 255), 3, cv2.LINE_AA)
 
+    def getSubRect(self,image,rect):
+        x=rect[0]
+        y=rect[1]
+        w=rect[2]
+        h=rect[3]
+        return image[y:y+h,x:x+h]
+
+    def sum(self,image,channel):
+        height, width = image.shape[:2]
+        sumResult=np.sum(image[0:height, 0:width, channel:channel])    
+        return sumResult
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Video')

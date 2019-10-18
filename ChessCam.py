@@ -40,6 +40,7 @@ class ChessCam(object):
             success = True
             frame = self.captureHdl.getFrame()
             self.finder = BoardFinder(frame)
+            self.finder.setup()
             try:
                 processedImages = self.finder.GetFullImageBoard()
                 self.moveDetector = MovementDetector(processedImages[0])

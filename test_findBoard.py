@@ -14,6 +14,14 @@ def getImage(num):
 def test_findBoard():
     image=getImage(1)
     finder=BoardFinder(image)
+    #finder.setup()
+
+def test_getBlackMaxSide():
+    for index in range(0,4):
+        image=getImage(index+1)
+        finder=BoardFinder(image)
+        side=finder.getBlackMaxSide(image)
+        print ("black is at %d" % (side))
 
 # test hough transformation
 def test_houghTransform():
@@ -27,5 +35,6 @@ def test_houghTransform():
         video.drawLines(image,lines)
         video.showImage(image,"hough lines",True,1000)
 
-test_findBoard()
+test_getBlackMaxSide()
 test_houghTransform()
+test_findBoard()

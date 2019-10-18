@@ -21,5 +21,16 @@ def test_CreateBlank():
     assert width==iwidth
     assert channels==3
 
+def test_getSubRect():
+    video=Video()
+    image=video.readImage("testMedia/chessBoard001.jpg")
+    subImage=video.getSubRect(image,(0,0,200,200))
+    iheight, iwidth, channels = subImage.shape
+    assert iheight==200
+    assert iwidth==200
+    assert channels==3
+
+
 test_ReadVideo()
+test_getSubRect()
 test_CreateBlank()
