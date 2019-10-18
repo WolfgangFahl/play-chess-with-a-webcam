@@ -4,6 +4,9 @@ language: python
 python:
 #  - "2.7" # see https://github.com/WolfgangFahl/gremlin-python-tutorial/issues/7
   - "3.7"
+# allow gui output
+services:
+  - xvfb
 # command to install dependencies
 install:
   - pip install -r requirements.txt
