@@ -17,8 +17,8 @@ def test_findBoard():
 
 # test hough transformation
 def test_houghTransform():
-    expected=[98,46]
-    for index in range(0,2):
+    expected=[98,46,24,20]
+    for index in range(0,4):
         video=Video()
         image=getImage(index+1)
         lines=video.houghTransform(image)
