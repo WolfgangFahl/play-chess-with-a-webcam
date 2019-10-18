@@ -22,6 +22,8 @@ def test_houghTransform():
     lines=video.houghTransform(image)
     print ("found %d lines" % (lines.size))
     assert 98==lines.size
+    video.drawLines(image,lines)
+    video.showImage(image,"hough lines",True,1000)
 
 test_findBoard()
 test_houghTransform()

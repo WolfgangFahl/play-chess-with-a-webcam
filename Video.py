@@ -4,15 +4,18 @@
 import cv2
 import numpy as np
 import sys
+import math
 from time import strftime
 import argparse
 
 # Video handling e.g. recording/writing
+
+
 class Video:
     # construct me with no parameters
     def __init__(self):
         self.cap = None
-        self.frames=0
+        self.frames = 0
         pass
 
     # capture from the given device
@@ -28,14 +31,21 @@ class Video:
     def open(self, filePath):
         self.cap = cv2.VideoCapture(filePath)
 
+    # show the image with the given title
+    def showImage(self, image, title, keyCheck=True, keyWait=1):
+        cv2.imshow(title, image)
+        if keyCheck:
+            return not cv2.waitKey(keyWait) & 0xFF == ord('q')
+        else:
+            return True
+
     # play the given capture
     def play(self):
         while(self.cap.isOpened()):
             ret, frame = self.cap.read()
             if ret == True:
-                cv2.imshow('frame', frame)
-                self.frames=self.frames+1
-                if cv2.waitKey(1) & 0xFF == ord('q'):
+                self.frames = self.frames + 1
+                if not self.showImage(frame, "frame"):
                     break
             else:
                 break
@@ -54,12 +64,12 @@ class Video:
             raise "Capture is not initialized"
 
     # get a still image
-    def still(self, prefix, format="jpg",printHints=True):
+    def still(self, prefix, format="jpg", printHints=True):
         self.checkCap()
         if (self.cap.isOpened()):
             ret, frame = self.cap.read()
             if ret == True:
-                filename = "%s%s.%s" % (prefix, self.timeStamp(),format)
+                filename = "%s%s.%s" % (prefix, self.timeStamp(), format)
                 if printHints:
                     print("capture %s with %dx%d" % (
                         filename, self.width, self.height))
@@ -67,8 +77,8 @@ class Video:
             self.close()
 
     # read an image
-    def readImage(self,filePath):
-        image=cv2.imread(filePath,1)
+    def readImage(self, filePath):
+        image = cv2.imread(filePath, 1)
         return image
 
     # record the capture to a file with the given prefix using a timestamp
@@ -92,9 +102,7 @@ class Video:
 
                 # write the  frame
                 out.write(frame)
-
-                cv2.imshow('frame', frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
+                if not self.showImage(frame,'frame'):
                     break
             else:
                 break
@@ -106,8 +114,8 @@ class Video:
         if printHints:
             print("finished")
 
-    #https://stackoverflow.com/a/22921648/1497139
-    def createBlank(self,width, height, rgb_color=(0, 0, 0)):
+    # https://stackoverflow.com/a/22921648/1497139
+    def createBlank(self, width, height, rgb_color=(0, 0, 0)):
         """Create new image(numpy array) filled with certain color in RGB"""
         # Create black blank image
         image = np.zeros((height, width, 3), np.uint8)
@@ -122,14 +130,29 @@ class Video:
     # was: http://www.robindavid.fr/opencv-tutorial/chapter5-line-edge-and-contours-detection.html
     # is: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghlines/py_houghlines.html
     # https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html
-    def houghTransform(self,image):
+    def houghTransform(self, image):
         """Performs an Hough Transform to the frame passed to updateImage().
 
         Returns: lines"""
-        gray=cv2.cvtColor( image,  cv2.COLOR_BGR2GRAY )
-        edges = cv2.Canny(gray,50,150,apertureSize = 3)
-        lines=cv2.HoughLines(edges,1,np.pi/180,200)
+        gray = cv2.cvtColor(image,  cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+        lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
         return lines
+
+    #  https://docs.opencv.org/4.1.2/d9/db0/tutorial_hough_lines.html
+    def drawLines(self, image, lines):
+        height, width = image.shape[:2]
+        for i in range(0, len(lines)):
+            rho = lines[i][0][0]
+            theta = lines[i][0][1]
+            a = math.cos(theta)
+            b = math.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            pt1 = (int(x0 + width * (-b)), int(y0 + height * (a)))
+            pt2 = (int(x0 - width * (-b)), int(y0 - height * (a)))
+            cv2.line(image, pt1, pt2, (0, 0, 255), 3, cv2.LINE_AA)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Video')

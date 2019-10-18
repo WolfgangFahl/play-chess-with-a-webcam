@@ -80,7 +80,6 @@ class BoardFinder(object):
                     smoothFunc(list(zip(*self.smoothOrientation))[0]))
 
 
-
     def DetectBoardOrientation(self):
         """Finds the two dominants angles of the Hough Transform.
 
@@ -89,9 +88,10 @@ class BoardFinder(object):
         # Ensure Hough lines were already found
         if len(self.lines) <= 0:
             return (None, None)
-        slopes = sorted([atan2(np.float64(line[1][1] - line[0][1]),
-                               np.float64(line[1][0] - line[0][0])
-                              ) for line in self.lines])
+
+        # https://answers.opencv.org/question/2966/how-do-the-rho-and-theta-values-work-in-houghlines/
+        # get the theta values
+        slopes = sorted([line[0][1] for line in self.lines])
         # Parzen window (KernelDensityEstimator) using a Rect function, comonly named a moving average
         # Perform frequence to time conversion, signal analysis FTW
         # KernelSize is the dynamic range kernel size (bin length)
