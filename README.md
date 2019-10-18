@@ -18,6 +18,12 @@ Prerequisites: python2
 ./install
 ```
 
+### Testing
+```
+./test
+```
+
+
 ### Starting
 ```
 ./run
@@ -26,4 +32,9 @@ Prerequisites: python2
 ### Recording Chess Games via webcam
 ```
 ./record
+```
+
+### Getting a still image of a Chess Games via webcam
+```
+./still
 ```
