@@ -335,6 +335,8 @@ class BoardFinder(object):
         whitenesses.append(self.video.sum(left,2))
         whitenesses.append(self.video.sum(bottom,2))
         whitenesses.append(self.video.sum(right,2))
+        if BoardFinder.debug:
+           print (whitenesses)
 
         return whitenesses.index(min(whitenesses))
 
