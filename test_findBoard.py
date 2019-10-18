@@ -15,6 +15,7 @@ def test_findBoard():
     image=getImage()
     #finder=BoardFinder(image)
 
+# test hough transformation
 def test_houghTransform():
     video=Video()
     image=getImage()
