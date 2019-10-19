@@ -12,7 +12,7 @@ def getImage(num):
 
 # test finding a chess board
 def test_findBoard():
-    image=getImage(6)
+    image=getImage(7)
     finder=BoardFinder(image)
     finder.prepare()
 
