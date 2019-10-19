@@ -51,8 +51,8 @@ def main(argv):
     cv.imshow("Source", src)
     cv.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
     cv.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
-
-    cv.waitKey()
+    while not cv.waitKey(10) & 0xFF == ord('q'):
+       pass
     return 0
 
 if __name__ == "__main__":
