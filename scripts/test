@@ -6,7 +6,6 @@ then
   export PYTHONPATH=""
 fi
 scriptdir=$(dirname $0)
-cd $scriptdir/../src
 python=python3
 if [ "$USER" = "travis" ]
 then

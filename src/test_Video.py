@@ -4,7 +4,7 @@ from Video import Video
 # test reading an example video
 def test_ReadVideo():
     video=Video()
-    video.open('../testMedia/emptyBoard001.avi')
+    video.open('testMedia/emptyBoard001.avi')
     video.play()
     print ("played %d frames" % (video.frames))
     assert video.frames == 52
@@ -23,7 +23,7 @@ def test_CreateBlank():
 
 def test_getSubRect():
     video=Video()
-    image=video.readImage("../testMedia/chessBoard001.jpg")
+    image=video.readImage("testMedia/chessBoard001.jpg")
     subImage=video.getSubRect(image,(0,0,200,200))
     iheight, iwidth, channels = subImage.shape
     assert iheight==200

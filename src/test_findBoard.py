@@ -5,7 +5,7 @@ from mathUtils import getIndexRange
 
 def getImage(num):
     video=Video()
-    filename="../testMedia/chessBoard%03d.jpg" % (num)
+    filename="testMedia/chessBoard%03d.jpg" % (num)
     image=video.readImage(filename)
     height, width = image.shape[:2]
     print ("read image %s: %dx%d" % (filename,width,height))
@@ -42,7 +42,7 @@ def test_houghTransform():
 
 def test_Dot():
     video=Video()
-    dotImage=video.readImage("../testMedia/greendot.jpg")
+    dotImage=video.readImage("testMedia/greendot.jpg")
     image=getImage(7)
     finder=BoardFinder(image)
     dotHSVRanges=finder.calibrateCornerMarker(dotImage)
