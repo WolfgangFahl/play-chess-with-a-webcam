@@ -22,40 +22,39 @@ scripts/install
 ```
 scripts/test
 
-============================== test session starts ==============================
+============================= test session starts =============================
 platform darwin -- Python 3.7.4, pytest-5.2.1, py-1.8.0, pluggy-0.12.0
 rootdir: /Users/wf/source/python/play-chess-with-a-webcam
 plugins: cov-2.8.1
-collected 9 items                                                               
+collected 10 items                                                            
 
-test_OpenCV_version.py .                                                  [ 11%]
-test_Video.py ...                                                         [ 44%]
-test_findBoard.py .....                                                   [100%]
+src/test_ChessCam.py .                                                  [ 10%]
+src/test_OpenCV_version.py .                                            [ 20%]
+src/test_Video.py ...                                                   [ 50%]
+src/test_findBoard.py .....                                             [100%]
 
 ---------- coverage: platform darwin, python 3.7.4-final-0 -----------
-Name                     Stmts   Miss  Cover
---------------------------------------------
-Args.py                     10     10     0%
-BoardFinder.py             206     32    84%
-Cell.py                     10      4    60%
-ChessCam.py                 72     72     0%
-GameEngine.py               66     66     0%
-InputManager.py             43     43     0%
-MovementDetector.py         53     38    28%
-StateDetector.py            93     75    19%
-Video.py                   123     52    58%
-chessUtils.py               78     55    29%
-mathUtils.py                49     25    49%
-state.py                   283    283     0%
-test_OpenCV_version.py       6      0   100%
-test_Video.py               28      0   100%
-test_findBoard.py           49      0   100%
-uci.py                      45     45     0%
---------------------------------------------
-TOTAL                     1214    800    34%
+Name                         Stmts   Miss  Cover
+------------------------------------------------
+src/Args.py                     10      7    30%
+src/BoardFinder.py             184     12    93%
+src/Cell.py                     10      4    60%
+src/ChessCam.py                 83     57    31%
+src/InputManager.py             57     37    35%
+src/MovementDetector.py         55     40    27%
+src/StateDetector.py            93     75    19%
+src/Video.py                   133     48    64%
+src/chessUtils.py               78     55    29%
+src/mathUtils.py                49     25    49%
+src/test_ChessCam.py             4      0   100%
+src/test_OpenCV_version.py       6      0   100%
+src/test_Video.py               28      0   100%
+src/test_findBoard.py           49      0   100%
+------------------------------------------------
+TOTAL                          839    360    57%
 
 
-============================== 9 passed in 24.07s ===============================
+============================= 10 passed in 24.76s =============================
 ```
 
 ### Starting
