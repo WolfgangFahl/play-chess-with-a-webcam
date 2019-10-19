@@ -7,4 +7,10 @@ then
 fi
 scriptdir=$(dirname $0)
 cd $scriptdir/../src
-python3 -m pytest --cov=./ .
+python=python3
+if [ "$USER" = "travis" ]
+then
+  pytest --cov=./ .
+else
+  $python -m pytest --cov=./ .
+fi
