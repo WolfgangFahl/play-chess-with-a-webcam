@@ -15,12 +15,12 @@
 Prerequisites: python2
 
 ```
-./install
+scripts/install
 ```
 
 ### Testing
 ```
-./test
+scripts/test
 
 ============================== test session starts ==============================
 platform darwin -- Python 3.7.4, pytest-5.2.1, py-1.8.0, pluggy-0.12.0
@@ -60,11 +60,11 @@ TOTAL                     1214    800    34%
 
 ### Starting
 ```
-./run
+scripts/run
 ```
 ### Usage
 ```
-/run -h
+scripts/run -h
 usage:  ChessCam.py [-h] [--nouci] [--input INPUT] [--debug]
                    [--cornermarker CORNERMARKER] [--fullScreen]
 
@@ -82,10 +82,10 @@ optional arguments:
 
 ### Recording Chess Games via webcam
 ```
-./record
+scripts/record
 ```
 
 ### Getting a still image of a Chess Games via webcam
 ```
-./still
+scripts/still
 ```

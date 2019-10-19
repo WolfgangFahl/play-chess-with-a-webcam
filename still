@@ -1,7 +1,0 @@
-#!/bin/bash
-echo $PYTHONPATH | grep 2.7 > /dev/null
-if [ $? -eq 0 ]
-then
-  export PYTHONPATH=""
-fi
-python3 Video.py --still $@
