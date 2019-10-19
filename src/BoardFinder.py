@@ -6,7 +6,6 @@
 from Video import Video
 from math import sin, cos, sqrt, pi, atan2, degrees
 import cv2
-import cv2 as cv
 import numpy as np
 from collections import deque
 import bisect
