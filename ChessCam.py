@@ -6,7 +6,6 @@ from math import sin, cos, sqrt, pi, atan2
 import urllib.request, urllib.error, urllib.parse
 import sys
 import cv2
-import cv2 as cv
 import numpy as np
 import math
 from collections import defaultdict, deque

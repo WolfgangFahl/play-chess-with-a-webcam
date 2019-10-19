@@ -5,4 +5,4 @@ if [ $? -eq 0 ]
 then
   export PYTHONPATH=""
 fi
-python3 -m pytest
+python3 -m pytest --cov=./ .

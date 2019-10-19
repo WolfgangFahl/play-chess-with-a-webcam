@@ -6,3 +6,5 @@ pytest
 matplotlib
 # scipy
 scipy
+# pytest-cov
+pytest-cov

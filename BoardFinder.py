@@ -223,7 +223,7 @@ class BoardFinder(object):
     def calibrateCornerMarker(self,dotImage):
         histSize = 256
         histRange = (0, 256) # the upper boundary is exclusive
-        planes=cv.split(dotImage)
+        planes=cv2.split(dotImage)
         indexRanges=[]
         for channel in range(0,3):
             hist=cv2.calcHist(planes,[channel],None,[histSize], histRange, accumulate=False)
