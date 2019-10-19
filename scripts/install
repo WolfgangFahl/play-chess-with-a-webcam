@@ -4,4 +4,9 @@
 
 # install required modules
 cd src
-sudo -H pip3 install -r requirements.txt
+pip=pip3
+if [ "$USER" = "travis" ]
+then
+  pip=pip
+fi
+sudo -H $pip install -r requirements.txt
