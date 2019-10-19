@@ -1,0 +1,10 @@
+# 2019-10-14 WF
+opencv-python
+# python tests
+pytest
+# matplotlib
+matplotlib
+# scipy
+scipy
+# pytest-cov
+pytest-cov
