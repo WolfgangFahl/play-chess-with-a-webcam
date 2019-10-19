@@ -14,7 +14,7 @@ import bisect
 
 # Local imports
 from mathUtils import intersect, distance, median, findBoundingSkewedSquare, getRotationAndTranslationMatrix
-from InputManager import InputManager, CHESSCAM_WIDTH, CHESSCAM_HEIGHT
+from InputManager import InputManager
 from BoardFinder import BoardFinder, BadSegmentation
 from MovementDetector import MovementDetector, BadImage
 
@@ -29,7 +29,7 @@ class ChessCam(object):
 
         # Create window(s)
         cv2.namedWindow("chessCam", 1)
-        cv2.resizeWindow("chessCam", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
+        #cv2.resizeWindow("chessCam", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
 
         #cv.NamedWindow("chessCamDebug", 1)
         #cv.ResizeWindow("chessCamDebug", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
@@ -40,7 +40,7 @@ class ChessCam(object):
             success = True
             frame = self.captureHdl.getFrame()
             self.finder = BoardFinder(frame)
-            self.finder.setup()
+            self.finder.prepare()
             try:
                 processedImages = self.finder.GetFullImageBoard()
                 self.moveDetector = MovementDetector(processedImages[0])

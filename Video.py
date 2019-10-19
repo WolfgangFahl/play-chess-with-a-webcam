@@ -154,10 +154,7 @@ class Video:
             cv2.line(image, pt1, pt2, (0, 0, 255), 3, cv2.LINE_AA)
 
     def getSubRect(self,image,rect):
-        x=rect[0]
-        y=rect[1]
-        w=rect[2]
-        h=rect[3]
+        x,y,w,h = rect
         return image[y:y+h,x:x+h]
 
     # get the intensity sum of a hsv image

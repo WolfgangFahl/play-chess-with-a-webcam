@@ -16,8 +16,6 @@ from MovementDetector import MovementDetector
 from mathUtils import (intersect, distance, median, findBoundingSkewedSquare,
                        getRotationAndTranslationMatrix)
 
-CHESSCAM_WIDTH = 640
-CHESSCAM_HEIGHT = 480
 CHESSCAM_PARZEN_THRESHOLD = 5
 CHESSCAM_ORIENTATION_SMOOTHING = 5
 CHESSCAM_COORDINATES_SMOOTHING = 8
@@ -31,11 +29,16 @@ class BadSegmentation(Exception):
 # Board Finder
 class BoardFinder(object):
     debug=True
+    greenTape=False
+    debugShowTime=1000
 
     # construct me from the given input Image
     def __init__(self, inImage):
         self.video=Video()
         self.frame = inImage
+        self.height,self.width = self.frame.shape[:2]
+        if BoardFinder.debug:
+            print("BoardFinder for %dx%d image" % (self.width,self.height))
 
     def prepare(self):
         # Init smoothing angle
@@ -43,13 +46,13 @@ class BoardFinder(object):
         self.smoothCoordinates = deque([], CHESSCAM_COORDINATES_SMOOTHING)
 
         # Find the board the first time
-        self.updateImage(inImage)
+        self.updateImage(self.frame)
 
         # Temporary rotation
         self.initialRotation = 0
 
         # Find the rotation of the board
-        side = self.getBlackMaxSide(cv.fromarray(self.GetFullImageBoard()[0]))
+        side = self.getBlackMaxSide(self.GetFullImageBoard()[0])
 
         # 0:top,1:left,2:bottom,3:right.
         optionsRotation = {0: 0,
@@ -144,43 +147,50 @@ class BoardFinder(object):
                  of the chessboard."""
         # Blur image and convert it to HSV
         # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_filtering/py_filtering.html
-        self.hsv =cv2.blur(self.frame,(8,8))
+        self.hsv =cv2.blur(self.frame,(4,4))
+        if BoardFinder.debug:
+            self.video.showImage(self.hsv,"blur",True,BoardFinder.debugShowTime)
 
         # De-Rotate the hsv version of the image to support rotated chessboards
         # Because marker detection is really cheaply done
         rotationMatrix = getRotationAndTranslationMatrix(-rotation, (0, 0))
         hsv2 = cv2.warpPerspective(np.asarray(self.hsv[:,:]),
                                    rotationMatrix,
-                                   (CHESSCAM_WIDTH, CHESSCAM_HEIGHT))
-        self.hsv = cv2.cvtColor(hsv2, cv.CV_BGR2HSV)
-
+                                   (self.width, self.height))
+        if BoardFinder.debug:
+            self.video.showImage(hsv2,"warp",True,BoardFinder.debugShowTime)
+        self.hsv = cv2.cvtColor(hsv2, cv2.COLOR_BGR2HSV)
         # Threshold the HSV value
         # Green is between ~70 and ~120, and our tape is between saturation 85 and 255.
         self.debugimg = cv2.inRange(self.hsv,
-                                    np.array([70, 85, 0], np.uint8),
+                                    np.array([ 70,  68,   0], np.uint8),
                                     np.array([120, 255, 255], np.uint8))
         contours, hierarchy = cv2.findContours(self.debugimg,
                                                cv2.RETR_TREE,
                                                cv2.CHAIN_APPROX_SIMPLE)
-        mini, maxi = (CHESSCAM_WIDTH, CHESSCAM_HEIGHT), (0, 0)
+        mini, maxi = (self.width, self.height), (0, 0)
         ur, ll = (0, 0), (0, 0)
         for cnt in contours:
             cnt_len = cv2.arcLength(cnt, True)
             cnt = cv2.approxPolyDP(cnt, 0.01*cnt_len, True)
             for a in cnt:
-                #cv2.circle(np.asarray(self.colorlaplace[:,:]), tuple(a[0]), 10, cv.CV_RGB(255, 0, 255), 6)
                 if sqrt(a[0][0]**2 + a[0][1]**2) < sqrt(mini[0]**2 + mini[1]**2):
                     mini = (a[0][0], a[0][1])
-                if sqrt((a[0][0] - CHESSCAM_WIDTH)**2 + (a[0][1] - CHESSCAM_HEIGHT)**2) < sqrt((maxi[0] - CHESSCAM_WIDTH)**2 + (maxi[1] - CHESSCAM_HEIGHT)**2):
+                if sqrt((a[0][0] - self.width)**2 + (a[0][1] - self.height)**2) < sqrt((maxi[0] - self.width)**2 + (maxi[1] - self.height)**2):
                     maxi = (a[0][0], a[0][1])
-                if sqrt((a[0][0] - CHESSCAM_WIDTH)**2 + a[0][1]**2) < sqrt((ur[0] - CHESSCAM_WIDTH)**2 + ur[1]**2):
+                if sqrt((a[0][0] - self.width)**2 + a[0][1]**2) < sqrt((ur[0] - self.width)**2 + ur[1]**2):
                     ur = (a[0][0], a[0][1])
-                if sqrt(a[0][0]**2 + (a[0][1] - CHESSCAM_HEIGHT)**2) < sqrt(ll[0]**2 + (ll[1] - CHESSCAM_HEIGHT)**2):
+                if sqrt(a[0][0]**2 + (a[0][1] - self.height)**2) < sqrt(ll[0]**2 + (ll[1] - self.height)**2):
                     ll = (a[0][0], a[0][1])
 
+        if BoardFinder.debug:
+            self.video.showImage(self.debugimg,"debug image",True,BoardFinder.debugShowTime)
         # Debug
-        #cv2.circle(np.asarray(self.frame[:,:]), mini, 10, cv.CV_RGB(255, 255, 0), 6)
-        #cv2.circle(np.asarray(self.frame[:,:]), maxi, 10, cv.CV_RGB(255, 255, 0), 3)
+        if BoardFinder.debug:
+            rectImage=self.frame.copy()
+            cv2.circle(rectImage, mini, 10, color=(255, 255, 0), thickness=6)
+            cv2.circle(rectImage, maxi, 10, color=(255, 255, 0), thickness=3)
+            self.video.showImage(rectImage,"board corners",True,BoardFinder.debugShowTime)
 
         # De-rotate the points computed
         points = np.array(
@@ -191,17 +201,22 @@ class BoardFinder(object):
         deRotationMatrix = getRotationAndTranslationMatrix(rotation, (0, 0))
         mini, ur, ll, maxi = np.transpose(np.dot(deRotationMatrix, points))
 
-        # Convert back to OpenCV1 (TODO: Keep in CV2)
-        self.debugimg = cv.fromarray(self.debugimg)
-
         # Set return value and keep it for smoothing purposes
         retValue = (mini[0], mini[1]), \
                    (ur[0], ur[1]), \
                    (ll[0], ll[1]), \
                    (maxi[0], maxi[1])
+        if BoardFinder.debug:
+            rectImage=self.frame.copy()
+            minx,miny=mini[:2]
+            maxx,maxy=maxi[:2]
+            print (retValue)
+            cv2.rectangle(rectImage,(int(minx),int(miny)),(int(maxx),int(maxy)),color=(0, 255, 0), thickness=3)
+            self.video.showImage(rectImage,"board coordinates",True,BoardFinder.debugShowTime)
         self.smoothCoordinates.appendleft(retValue)
         return retValue
 
+    # deprecated
     def LineCrossingDetection(self):
         """Gets the Hough line intersections."""
         # TODO: Speed this up
@@ -209,12 +224,12 @@ class BoardFinder(object):
 
         # Print Orientation
         cv.Line(self.colorlaplace,
-            (int(CHESSCAM_WIDTH / 2 - 50 * cos(self.BoardOrientation[0])), int(CHESSCAM_HEIGHT / 2 - 50 * sin(self.BoardOrientation[0]))),
-            (int(CHESSCAM_WIDTH / 2 + 50 * cos(self.BoardOrientation[0])), int(CHESSCAM_HEIGHT / 2 + 50 * sin(self.BoardOrientation[0]))),
+            (int(self.width / 2 - 50 * cos(self.BoardOrientation[0])), int(self.height / 2 - 50 * sin(self.BoardOrientation[0]))),
+            (int(self.width / 2 + 50 * cos(self.BoardOrientation[0])), int(self.height / 2 + 50 * sin(self.BoardOrientation[0]))),
             cv.CV_RGB(0, 255, 0), 1, 8)
         cv.Line(self.colorlaplace,
-            (int(CHESSCAM_WIDTH / 2 - 50 * cos(self.BoardOrientation[1])), int(CHESSCAM_HEIGHT / 2 - 50 * sin(self.BoardOrientation[1]))),
-            (int(CHESSCAM_WIDTH / 2 + 50 * cos(self.BoardOrientation[1])), int(CHESSCAM_HEIGHT / 2 + 50 * sin(self.BoardOrientation[1]))),
+            (int(self.width / 2 - 50 * cos(self.BoardOrientation[1])), int(self.height / 2 - 50 * sin(self.BoardOrientation[1]))),
+            (int(self.width / 2 + 50 * cos(self.BoardOrientation[1])), int(self.height / 2 + 50 * sin(self.BoardOrientation[1]))),
             cv.CV_RGB(0, 255, 0), 1, 8)
 
         # Find crossing points
@@ -234,7 +249,7 @@ class BoardFinder(object):
 
                     if thisIntersect and \
                     all([a > 0 for a in thisIntersect]) and \
-                    all([thisIntersect[0] < CHESSCAM_WIDTH, thisIntersect[1] < CHESSCAM_HEIGHT]):
+                    all([thisIntersect[0] < self.width, thisIntersect[1] < self.height]):
                         intersectSecondary = intersect(line[0],line[1],crossline[0],crossline[1])
                         found=False
                         for intersectPrimary in self.intersects:
@@ -246,7 +261,7 @@ class BoardFinder(object):
                             self.intersects.append(intersectSecondary)
 
         for intersection in self.intersects:
-            cv.Circle(self.colorlaplace, intersection, 1, cv.CV_RGB(255, 0, 0), 2)
+            cv.Circle(self.colorlaplace, intersection, 1, color=(255, 0, 0), thickness=2)
 
     def GetFullImageBoard(self, rectCoordinates=None, rotations=None):
         """Applies the homography needed to make the bounding rectangle
@@ -258,8 +273,7 @@ class BoardFinder(object):
         rotation: Rotation angle in radians.
 
         Returns: A list of two images containing only the chessboard.
-            The first one is a colored image and the second one is a laplacian
-            transform of the first image"""
+            The first one is a debug image and the second one is the original"""
 
         if rotations == None:
             rotations = [sum(y) / float(len(y)) for y in zip(*self.smoothOrientation)]
@@ -274,44 +288,33 @@ class BoardFinder(object):
 
         points = tuple(rectCoordinates)
 
-        # Debug
-        #cv.Circle(self.colorlaplace, (int(points[0][0]), int(points[0][1])), 1, cv.CV_RGB(0, 255, 255), 5)
-        #cv.Circle(self.colorlaplace, (int(points[1][0]), int(points[1][1])), 1, cv.CV_RGB(0, 255, 0), 5)
-        #cv.Circle(self.colorlaplace, (int(points[2][0]), int(points[2][1])), 1, cv.CV_RGB(0, 0, 255), 5)
-        #cv.Circle(self.colorlaplace, (int(points[3][0]), int(points[3][1])), 1, cv.CV_RGB(255, 255, 255), 5)
-        #for x in points:
-        #    cv.Circle(self.colorlaplace, (int(x[0]), int(x[1])), 1, cv.CV_RGB(0, 255, 255), 5)
-
         # Define homography references points sequences
         try:
             src = np.array(points, np.float32).reshape((4, 2))
         except ValueError:
             raise BadSegmentation
         dst = np.array([0, 0,
-                        CHESSCAM_WIDTH, 0,
-                        0, CHESSCAM_HEIGHT,
-                        CHESSCAM_WIDTH, CHESSCAM_HEIGHT], np.float32).reshape((4, 2))
+                        self.width, 0,
+                        0, self.height,
+                        self.width, self.height], np.float32).reshape((4, 2))
 
         # Find the homography matrix and apply it
         H, status = cv2.findHomography(src, dst, 0)
-        self.debugimg = cv2.warpPerspective(np.asarray(self.frame[:,:]),
+        self.debugimg = cv2.warpPerspective(self.frame,
                                             H,
-                                            (CHESSCAM_WIDTH, CHESSCAM_HEIGHT))
-        self.debugimg = cv.fromarray(self.debugimg)
+                                            (self.width, self.height))
 
-        self.laplacianImage = cv2.warpPerspective(np.asarray(self.laplacianImage[:,:]),
-                                            H,
-                                            (CHESSCAM_WIDTH, CHESSCAM_HEIGHT))
-        self.laplacianImage = cv.fromarray(self.laplacianImage)
-
-        cv.Circle(self.frame, (int(points[0][0]), int(points[0][1])), 1, cv.CV_RGB(0, 255, 255), 5)
-        cv.Circle(self.frame, (int(points[1][0]), int(points[1][1])), 1, cv.CV_RGB(0, 255, 0), 5)
-        cv.Circle(self.frame, (int(points[2][0]), int(points[2][1])), 1, cv.CV_RGB(0, 0, 255), 5)
-        cv.Circle(self.frame, (int(points[3][0]), int(points[3][1])), 1, cv.CV_RGB(255, 255, 255), 5)
+        cv2.circle(self.frame, (int(points[0][0]), int(points[0][1])), 1, color=(0, 255, 255),thickness=5)
+        cv2.circle(self.frame, (int(points[1][0]), int(points[1][1])), 1, color=(0, 255, 0), thickness=5)
+        cv2.circle(self.frame, (int(points[2][0]), int(points[2][1])), 1, color=(0, 0, 255), thickness=5)
+        cv2.circle(self.frame, (int(points[3][0]), int(points[3][1])), 1, color=(255, 255, 255), thickness=5)
 
         self.debugimg = self.rotateImage(self.debugimg)
+        if BoardFinder.debug:
+            self.video.showImage(self.debugimg,"debug",True,BoardFinder.debugShowTime)
+            self.video.showImage(self.frame,"frame",True,BoardFinder.debugShowTime)
 
-        return [self.debugimg, self.laplacianImage, self.frame]
+        return [self.debugimg, self.frame]
 
 
     def getBlackMaxSide(self, colorImage):
@@ -343,7 +346,7 @@ class BoardFinder(object):
     # rotate the Image
     def rotateImage(self, image):
         """Flips the board in order to always have a1 on the top-left corner"""
-        src = np.asarray(cv.GetMat(image)[:,:])
+        src = image.copy()
 
         if self.initialRotation == -90:
             #rotate left

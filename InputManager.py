@@ -18,22 +18,21 @@ from mathUtils import (intersect, distance, median, findBoundingSkewedSquare,
                        getRotationAndTranslationMatrix)
 from MovementDetector import MovementDetector
 
-CHESSCAM_WIDTH = 640
-CHESSCAM_HEIGHT = 480
+#CHESSCAM_WIDTH = 640
+#CHESSCAM_HEIGHT = 480
 CHESSCAM_PARZEN_THRESHOLD = 5
 CHESSCAM_ORIENTATION_SMOOTHING = 5
 CHESSCAM_COORDINATES_SMOOTHING = 8
 
 smoothFunc = lambda x: sum(x) / float(len(x))
 
-
 class InputManager(object):
     def __init__(self):
         args=Args()
 
         self.cam = cv2.VideoCapture(args.args.input)
-        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)
-        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CHESSCAM_HEIGHT)
+        #self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)
+        #self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CHESSCAM_HEIGHT)
         # https://stackoverflow.com/a/11332129/1497139
         self.cam.set(cv2.CAP_PROP_FORMAT, cv2.CV_16S)
 

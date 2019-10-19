@@ -12,9 +12,9 @@ def getImage(num):
 
 # test finding a chess board
 def test_findBoard():
-    image=getImage(1)
+    image=getImage(6)
     finder=BoardFinder(image)
-    #finder.setup()
+    finder.prepare()
 
 def test_getBlackMaxSide():
     # fixme - this is not really the expected result
@@ -28,16 +28,16 @@ def test_getBlackMaxSide():
 
 # test hough transformation
 def test_houghTransform():
-    expected=[98,46,26,20,36]
-    for index in range(0,5):
+    expected=[98,46,26,20,36,38]
+    for index in range(0,6):
         video=Video()
         image=getImage(index+1)
         lines=video.houghTransform(image)
         print ("found %d lines in chessBoard%03d" % (lines.size,index+1))
         assert expected[index]==lines.size
         video.drawLines(image,lines)
-        video.showImage(image,"hough lines",True,1000)
+        video.showImage(image,"hough lines",True,500)
 
+test_findBoard()
 test_getBlackMaxSide()
 test_houghTransform()
-test_findBoard()
