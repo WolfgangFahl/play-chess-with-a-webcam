@@ -30,6 +30,7 @@ class BadSegmentation(Exception):
 class BoardFinder(object):
     debug=True
     debugShowTime=1000
+    dotHSVRanges=[(70, 120), (85, 255), (0, 255)]
 
     # construct me from the given input Image
     def __init__(self, inImage):
@@ -38,7 +39,6 @@ class BoardFinder(object):
         self.height,self.width = self.frame.shape[:2]
         # Green indicator dot has hue between ~70 and ~120, saturation  between 85 and 255 and Luminosity value between 0 and 255.
         # take a picture or your own dot and calibrate using the commandline option
-        self.dotHSVRanges=[(70, 120), (85, 255), (0, 255)]
         if BoardFinder.debug:
             print("BoardFinder for %dx%d image" % (self.width,self.height))
 
@@ -163,7 +163,7 @@ class BoardFinder(object):
             self.video.showImage(hsv2,"warp",True,BoardFinder.debugShowTime)
         self.hsv = cv2.cvtColor(hsv2, cv2.COLOR_BGR2HSV)
         # Threshold the HSV value according to the cornerMarker being used
-        ht,st,vt=self.dotHSVRanges
+        ht,st,vt=BoardFinder.dotHSVRanges
         # ignore the Luminosity range
         self.debugimg = cv2.inRange(self.hsv,
                                     np.array([ ht[0], st[0],   0], np.uint8),
@@ -228,7 +228,6 @@ class BoardFinder(object):
         for channel in range(0,3):
             hist=cv2.calcHist(planes,[channel],None,[histSize], histRange, accumulate=False)
             indexRanges.append(getIndexRange(hist,1,255))
-        self.dotHSVRanges=indexRanges
         if BoardFinder.debug:
             print(indexRanges)
         return indexRanges

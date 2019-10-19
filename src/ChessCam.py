@@ -18,10 +18,8 @@ from BoardFinder import BoardFinder, BadSegmentation
 from MovementDetector import MovementDetector, BadImage
 from Video import Video
 
-
 class UserExit(Exception):
     pass
-
 
 class ChessCam(object):
     def __init__(self):
@@ -40,16 +38,18 @@ class ChessCam(object):
 
         #Initialize the MovementDetector
         success = False
+        BoardFinder.debug=self.args.debug
+        if self.args.cornermarker is not None:
+            video=Video()
+            cornerMarkerImage=video.readImage(self.args.cornermarker)
+            indexRanges=self.finder.calibrateCornerMarker(cornerMarkerImage)
+            BoardFinder.dotHSVRanges=indexRanges
+
         while not success:
             success = True
             frame = self.captureHdl.getFrame()
 
-            BoardFinder.debug=self.args.debug
             self.finder = BoardFinder(frame)
-            if self.args.cornermarker is not None:
-                video=Video()
-                cornerMarkerImage=video.readImage(self.args.cornermarker)
-                self.finder.calibrateCornerMarker(cornerMarkerImage)
             self.finder.prepare()
             try:
                 processedImages = self.finder.GetFullImageBoard()
