@@ -10,7 +10,7 @@ cd $scriptdir/../src
 python=python3
 if [ "$USER" = "travis" ]
 then
-  pytest --cov=./ .
+  pytest
 else
   $python -m pytest --cov=./ .
 fi
