@@ -27,8 +27,8 @@ CHESSCAM_COORDINATES_SMOOTHING = 8
 smoothFunc = lambda x: sum(x) / float(len(x))
 
 class InputManager(object):
-    def __init__(self):
-        self.args=Args().args
+    def __init__(self,args):
+        self.args=Args(args).args
 
         self.cam = cv2.VideoCapture(self.args.input)
         #self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)

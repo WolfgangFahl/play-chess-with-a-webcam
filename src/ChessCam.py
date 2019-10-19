@@ -61,8 +61,8 @@ class ChessCam(object):
     def getDominatorOffset(self):
         return self.finder.getDominatorOffset()
 
-    def prepare(self):
-        self.captureHdl = InputManager()
+    def prepare(self,args):
+        self.captureHdl = InputManager(args)
         self.args=self.captureHdl.args
 
         # Create window(s)
@@ -98,8 +98,8 @@ class ChessCam(object):
             except (BadImage, BadSegmentation):
                 success = False
 
-    def playChessWithCam(self):
-        self.prepare()
+    def playChessWithCam(self,args):
+        self.prepare(args)
         self.detectMovement()
         self.playChessWithCamMoves()
 
@@ -116,4 +116,4 @@ class ChessCam(object):
 
 if __name__ == "__main__":
     chessCam = ChessCam()
-    chessCam.playChessWithCam()
+    chessCam.playChessWithCam(sys.argv[1:])
