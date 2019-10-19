@@ -31,7 +31,7 @@ class StateDetector(object):
         #find the intersections of the hough lines
         self.intersects = self._findIntersects()
 
-        #Use previoulsy acquired data to create a board, that is, a dictionnary of cells [Cell Class]
+        #Use previoulsy acquired data to create a board, that is, a dictionary of cells [Cell Class]
         self._divideInCells()
 
         return self.board, self.image
@@ -93,7 +93,7 @@ class StateDetector(object):
         cellWidth = np.int32((np.float64(cellWidth)/8*(np.float64(W-diagonal[0][0])/np.float64(cellWidth)))) - 1
         cellHeight = np.int32((np.float64(cellHeight)/8*(np.float64(H-diagonal[0][1])/np.float64(cellHeight)))) - 1
 
-        #A problem can be encountered while cv.GetSubRect if cellWidth or cellHeight are too low
+        #A problem can be encountered while cv2.GetSubRect if cellWidth or cellHeight are too low
         if cellWidth < 20 or cellHeight < 20:
             raise CannotBuildStateException("cellWidth or cellHeight too low: Image error")
 

@@ -4,7 +4,6 @@
 # Global imports
 import sys
 import cv2
-import cv2 as cv
 import numpy as np
 from StateDetector import StateDetector, CannotBuildStateException
 from collections import defaultdict
@@ -20,6 +19,7 @@ class BadImage(Exception):
 class MovementDetector(object):
     """This class used to detect if a move has occured in the board.
     It also needs to be tolerant to sudden lighting changes"""
+    debug=False
 
     def __init__(self, colorImage):
         """To be built correctly, this class need the image of the starting position"""
@@ -33,6 +33,7 @@ class MovementDetector(object):
 
         self.images = [initialImage, initialImage]
         self.board = initialBoard
+        self.video=Video()
 
     def detectMove(self, colorImage):
         """This public function receives a clean image.
@@ -61,11 +62,12 @@ class MovementDetector(object):
         currentImage = np.asarray(self.images[1][:,:])
 
         diff = cv2.absdiff(pastImage, currentImage)
-        cv.ShowImage("chessCamDebug", cv.fromarray(diff))
+        if MovementDetector.debug:
+            video.showImage(diff,"chessCamDebug")
 
         for key in list(currentBoard.keys()):
             coords = currentBoard[key].GetCoords()
-            region = cv.GetSubRect(cv.fromarray(diff), coords)
+            region = video.getSubRect(diff, coords)
 
             variance = sum(cv2.integral(np.asarray(region))[-1][-1])
             if variance > 35000:

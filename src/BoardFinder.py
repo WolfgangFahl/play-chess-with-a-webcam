@@ -232,53 +232,6 @@ class BoardFinder(object):
             print(indexRanges)
         return indexRanges
 
-    # deprecated
-    def LineCrossingDetection(self):
-        """Gets the Hough line intersections."""
-        # TODO: Speed this up
-        self.intersects = []
-
-        # Print Orientation
-        cv.Line(self.colorlaplace,
-            (int(self.width / 2 - 50 * cos(self.BoardOrientation[0])), int(self.height / 2 - 50 * sin(self.BoardOrientation[0]))),
-            (int(self.width / 2 + 50 * cos(self.BoardOrientation[0])), int(self.height / 2 + 50 * sin(self.BoardOrientation[0]))),
-            cv.CV_RGB(0, 255, 0), 1, 8)
-        cv.Line(self.colorlaplace,
-            (int(self.width / 2 - 50 * cos(self.BoardOrientation[1])), int(self.height / 2 - 50 * sin(self.BoardOrientation[1]))),
-            (int(self.width / 2 + 50 * cos(self.BoardOrientation[1])), int(self.height / 2 + 50 * sin(self.BoardOrientation[1]))),
-            cv.CV_RGB(0, 255, 0), 1, 8)
-
-        # Find crossing points
-        for line in self.lines:
-            cv.Line(self.colorlaplace,
-                    line[0],
-                    line[1],
-                    cv.CV_RGB(255, 0, 0),
-                    1,
-                    8)
-            for crossline in self.lines:
-                if line != crossline:
-                    thisIntersect = intersect(line[0],
-                                              line[1],
-                                              crossline[0],
-                                              crossline[1])
-
-                    if thisIntersect and \
-                    all([a > 0 for a in thisIntersect]) and \
-                    all([thisIntersect[0] < self.width, thisIntersect[1] < self.height]):
-                        intersectSecondary = intersect(line[0],line[1],crossline[0],crossline[1])
-                        found=False
-                        for intersectPrimary in self.intersects:
-                            if found:
-                                continue
-                            if distance(intersectPrimary, intersectSecondary) < 20:
-                                found=True
-                        if found == False:
-                            self.intersects.append(intersectSecondary)
-
-        for intersection in self.intersects:
-            cv.Circle(self.colorlaplace, intersection, 1, color=(255, 0, 0), thickness=2)
-
     def GetFullImageBoard(self, rectCoordinates=None, rotations=None):
         """Applies the homography needed to make the bounding rectangle
         defined by rectCoordinates and rotation become the full size of the

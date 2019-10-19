@@ -24,6 +24,7 @@ class UserExit(Exception):
 
 class ChessCam(object):
     def __init__(self):
+        self.video=Video()
         pass
 
     def getNextMove(self):
@@ -42,7 +43,9 @@ class ChessCam(object):
                                      " coordinates of the board)")
                     continue
 
-                cv.ShowImage("chessCam", processedImages[2])
+                quit=not video.showImage(processedImages[2],"chessCam")
+                if quit:
+                   raise UserExit
 
                 try:
                     move = self.moveDetector.detectMove(processedImages[0])
@@ -52,10 +55,6 @@ class ChessCam(object):
                 except cv2.error as e:
                     print(str(e))
                     pass
-
-            if cv.WaitKey(10) != -1:
-                raise UserExit
-
         return move
 
     def getDominatorOffset(self):
