@@ -26,10 +26,14 @@ class UserExit(Exception):
 class ChessCam(object):
     def __init__(self):
         self.captureHdl = InputManager()
+        self.args=self.captureHdl.args
 
         # Create window(s)
         cv2.namedWindow("chessCam", 1)
         #cv2.resizeWindow("chessCam", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
+        if self.args.fullScreen:
+            #https://stackoverflow.com/a/34337534/1497139
+            cv2.setWindowProperty("chessCam",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
 
         #cv.NamedWindow("chessCamDebug", 1)
         #cv.ResizeWindow("chessCamDebug", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
@@ -39,6 +43,8 @@ class ChessCam(object):
         while not success:
             success = True
             frame = self.captureHdl.getFrame()
+            
+            BoardFinder.debug=self.args.debug
             self.finder = BoardFinder(frame)
             self.finder.prepare()
             try:

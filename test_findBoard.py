@@ -12,9 +12,10 @@ def getImage(num):
 
 # test finding a chess board
 def test_findBoard():
-    image=getImage(7)
-    finder=BoardFinder(image)
-    finder.prepare()
+    #for index in range(5,8):
+      image=getImage(7)
+      finder=BoardFinder(image)
+      finder.prepare()
 
 def test_getBlackMaxSide():
     # fixme - this is not really the expected result

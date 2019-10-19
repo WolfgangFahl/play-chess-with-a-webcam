@@ -28,7 +28,21 @@ Prerequisites: python2
 ```
 ./run
 ```
+### Usage
+```
+/run -h
+usage: ChessCam.py [-h] [--nouci] [--input INPUT] [--debug] [--fullScreen]
 
+ChessCam Argument Parser
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --nouci        Don't use the UCI interface.
+  --input INPUT  Manually set the input device.
+  --debug        show debug output
+  --fullScreen   Display output in fullScreen mode
+```
+  
 ### Recording Chess Games via webcam
 ```
 ./record

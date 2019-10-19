@@ -28,13 +28,13 @@ smoothFunc = lambda x: sum(x) / float(len(x))
 
 class InputManager(object):
     def __init__(self):
-        args=Args()
+        self.args=Args().args
 
-        self.cam = cv2.VideoCapture(args.args.input)
+        self.cam = cv2.VideoCapture(self.args.input)
         #self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)
         #self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CHESSCAM_HEIGHT)
         # https://stackoverflow.com/a/11332129/1497139
-        self.cam.set(cv2.CAP_PROP_FORMAT, cv2.CV_16S)
+        #self.cam.set(cv2.CAP_PROP_FORMAT, cv2.CV_16S)
 
         if not self.cam:
             raise Exception("Could not initialize capturing...")

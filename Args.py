@@ -14,4 +14,10 @@ class Args:
                             type=int,
                             default=0,
                             help="Manually set the input device.")
+        self.parser.add_argument('--debug',
+                            action='store_true',
+                            help="show debug output")                    
+        self.parser.add_argument('--fullScreen',
+                            action='store_true',
+                            help="Display output in fullScreen mode")
         self.args = self.parser.parse_args()
