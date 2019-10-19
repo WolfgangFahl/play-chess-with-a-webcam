@@ -45,7 +45,7 @@ def test_Dot():
     dotImage=video.readImage("testMedia/greendot.jpg")
     image=getImage(7)
     finder=BoardFinder(image)
-    dotHSVRanges=finder.calibrateCornerMarker(dotImage)
+    dotHSVRanges=BoardFinder.calibrateCornerMarker(dotImage)
     assert dotHSVRanges==[(61, 91), (81, 108), (34, 60)]
 
 def test_histRange():

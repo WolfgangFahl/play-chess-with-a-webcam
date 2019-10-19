@@ -78,7 +78,7 @@ class ChessCam(object):
         if self.args.cornermarker is not None:
             video=Video()
             cornerMarkerImage=video.readImage(self.args.cornermarker)
-            indexRanges=self.finder.calibrateCornerMarker(cornerMarkerImage)
+            indexRanges=BoardFinder.calibrateCornerMarker(cornerMarkerImage)
             BoardFinder.dotHSVRanges=indexRanges
 
     def detectMovement(self):

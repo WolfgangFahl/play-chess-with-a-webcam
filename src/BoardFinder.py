@@ -220,7 +220,8 @@ class BoardFinder(object):
         return retValue
 
     # calibrate the corner dot indicator from the given image
-    def calibrateCornerMarker(self,dotImage):
+    @staticmethod
+    def calibrateCornerMarker(dotImage):
         histSize = 256
         histRange = (0, 256) # the upper boundary is exclusive
         planes=cv2.split(dotImage)
