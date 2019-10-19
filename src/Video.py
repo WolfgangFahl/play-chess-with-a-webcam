@@ -10,8 +10,6 @@ import argparse
 import os
 
 # Video handling e.g. recording/writing
-
-
 class Video:
     # construct me with no parameters
     def __init__(self):
@@ -42,26 +40,29 @@ class Video:
         self.setup(cv2.VideoCapture(filePath))
 
     # show the image with the given title
-    def showImage(self, image, title, keyCheck=True, keyWait=1):
+    def showImage(self, image, title, keyCheck=True, keyWait=5):
         cv2.imshow(title, image)
         if keyCheck:
             return not cv2.waitKey(keyWait) & 0xFF == ord('q')
         else:
             return True
 
-    def readFrame(self):
+    def readFrame(self,show=False):
         ret, frame=self.cap.read()
+        quit=False
         if ret == True:
             self.frames = self.frames + 1
-        return ret,frame
+            if show:
+                quit=not self.showImage(frame,"frame")
+        return ret,frame,quit
 
     # play the given capture
     def play(self):
         while(self.cap.isOpened()):
-            ret, frame=self.readFrame()
+            ret, frame, quit=self.readFrame(True)
             if ret == True:
-                if not self.showImage(frame, "frame"):
-                    break
+                if quit:
+                   break
             else:
                 break
         self.cap.release()
@@ -111,15 +112,14 @@ class Video:
                 filename, self.width, self.height, self.fps))
 
         while(self.cap.isOpened()):
-            ret, frame=self.cap.read()
+            ret, frame,quit=self.readFrame(True)
             if ret == True:
                 # flip the frame
                 # frame = cv2.flip(frame,0)
-
+                if quit:
+                    break;
                 # write the  frame
                 out.write(frame)
-                if not self.showImage(frame, 'frame'):
-                    break
             else:
                 break
 

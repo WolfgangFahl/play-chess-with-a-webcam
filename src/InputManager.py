@@ -47,8 +47,8 @@ class InputManager(object):
 
         # Initialize capture threshold
         for i in range(30):
-            ret, capture1 = self.video.readFrame()
-            ret, capture2 = self.video.readFrame()
+            ret, capture1,quit = self.video.readFrame()
+            ret, capture2,quit = self.video.readFrame()
             diff = sum(cv2.integral(cv2.absdiff(capture1, capture2))[-1][-1])
             diffs.append(diff)
 
@@ -65,10 +65,13 @@ class InputManager(object):
     def getFrame(self):
         diff = float("inf")
         while(diff > self.threshold):
-            ret, capture1 = self.video.readFrame()
-            ret, capture2 = self.video.readFrame()
-            capture3 = capture2.copy()
-            diff = sum(cv2.integral(cv2.absdiff(capture1, capture2))[-1][-1])
+            ret1, capture1, quit = self.video.readFrame(True)
+            if ret1:
+                ret2, capture2,quit = self.video.readFrame(True)
+            if ret2:
+                capture3 = capture2.copy()
+            if ret1 and ret2:
+                diff = sum(cv2.integral(cv2.absdiff(capture1, capture2))[-1][-1])
             time.sleep(0.5)
         return capture3
 

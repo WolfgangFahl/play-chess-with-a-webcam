@@ -5,5 +5,4 @@ then
   export PYTHONPATH=""
 fi
 scriptdir=$(dirname $0)
-cd $scriptdir/../src
-python3 Video.py --record $@
+python3 $scriptdir/../src/Video.py --record $@
