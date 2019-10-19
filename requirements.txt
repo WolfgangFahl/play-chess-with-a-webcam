@@ -2,3 +2,5 @@
 opencv-python
 # python tests
 pytest
+# matplotlib
+matplotlib
