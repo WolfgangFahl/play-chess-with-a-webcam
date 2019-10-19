@@ -4,6 +4,7 @@
 
 # Global imports
 from Args import Args
+from Video import Video
 from math import sin, cos, sqrt, pi, atan2
 import sys
 import cv2
@@ -11,7 +12,6 @@ import numpy as np
 from collections import defaultdict, deque
 import time
 import bisect
-
 
 # Local imports
 from mathUtils import (intersect, distance, median, findBoundingSkewedSquare,
@@ -29,33 +29,44 @@ smoothFunc = lambda x: sum(x) / float(len(x))
 class InputManager(object):
     def __init__(self,args):
         self.args=Args(args).args
-
-        self.cam = cv2.VideoCapture(self.args.input)
+        self.video=Video()
+        input=self.args.input
+        if self.is_int(input):
+           self.video.capture(int(input))
+        else:
+           self.video.open(input)
         #self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)
         #self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CHESSCAM_HEIGHT)
         # https://stackoverflow.com/a/11332129/1497139
         #self.cam.set(cv2.CAP_PROP_FORMAT, cv2.CV_16S)
 
-        if not self.cam:
+        if not self.video.cap:
             raise Exception("Could not initialize capturing...")
 
         diffs = []
 
         # Initialize capture threshold
         for i in range(30):
-            ret, capture1 = self.cam.read()
-            ret, capture2 = self.cam.read()
+            ret, capture1 = self.video.readFrame()
+            ret, capture2 = self.video.readFrame()
             diff = sum(cv2.integral(cv2.absdiff(capture1, capture2))[-1][-1])
             diffs.append(diff)
 
         self.threshold = sum(diffs)/len(diffs)
         self.threshold *= 1.05
 
+    def is_int(self,s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
+
     def getFrame(self):
         diff = float("inf")
         while(diff > self.threshold):
-            ret, capture1 = self.cam.read()
-            ret, capture2 = self.cam.read()
+            ret, capture1 = self.video.readFrame()
+            ret, capture2 = self.video.readFrame()
             capture3 = capture2.copy()
             diff = sum(cv2.integral(cv2.absdiff(capture1, capture2))[-1][-1])
             time.sleep(0.5)

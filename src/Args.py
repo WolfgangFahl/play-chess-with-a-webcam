@@ -11,8 +11,7 @@ class Args:
                             action='store_true',
                             help="Don't use the UCI interface.")
         self.parser.add_argument('--input',
-                            type=int,
-                            default=0,
+                            default="0",
                             help="Manually set the input device.")
         self.parser.add_argument('--debug',
                             action='store_true',

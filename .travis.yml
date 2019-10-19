@@ -9,7 +9,7 @@ services:
   - xvfb
 # command to install dependencies
 install:
-  - scripts/install
+  - pip install -r src/requirements.txt
 # command to run tests
 script:
-  - scripts/test
+  - pytest

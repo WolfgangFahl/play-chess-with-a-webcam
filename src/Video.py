@@ -22,20 +22,24 @@ class Video:
     # capture from the given device
     def capture(self, device):
         self.device = device
-        cap = cv2.VideoCapture(device)
+        self.setup(cv2.VideoCapture(device))
+
+    def setup(self,cap):
         self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv2.CAP_PROP_FPS))
         self.cap = cap
 
-    def checkFilePath(self, filePath):
-        if not (os.path.exists(filePath)):
-           raise ("file % filePath does not exist" % (filePath))
+    def checkFilePath(self, filePath, raiseException=True):
+        ok=os.path.exists(filePath)
+        if raiseException and not ok:
+           raise Exception("file %s does not exist" % (filePath))
+        return ok
 
-    # capture from the given vide filePath
+    # capture from the given video filePath
     def open(self, filePath):
         self.checkFilePath(filePath)
-        self.cap = cv2.VideoCapture(filePath)
+        self.setup(cv2.VideoCapture(filePath))
 
     # show the image with the given title
     def showImage(self, image, title, keyCheck=True, keyWait=1):
@@ -45,12 +49,17 @@ class Video:
         else:
             return True
 
+    def readFrame(self):
+        ret, frame=self.cap.read()
+        if ret == True:
+            self.frames = self.frames + 1
+        return ret,frame
+
     # play the given capture
     def play(self):
         while(self.cap.isOpened()):
-            ret, frame=self.cap.read()
+            ret, frame=self.readFrame()
             if ret == True:
-                self.frames = self.frames + 1
                 if not self.showImage(frame, "frame"):
                     break
             else:
