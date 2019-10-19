@@ -40,6 +40,17 @@ def middlePoint(A, B):
     @returns: typle(x,y) halfway from A toward B"""
     return (int((B[0]+A[0])/2), int((B[1]+A[1])/2))
 
+def getIndexRange(hist,minValue,maxValue):
+    """ # get the range of the histogramm where the value are between minValue and maxValue"""
+    fromIndex=-1
+    toIndex=len(hist)
+    for index,value in enumerate(hist):
+        if value>=minValue and fromIndex<0:
+            fromIndex=index
+        if value>=minValue and value <=maxValue and index<len(hist):
+            toIndex=index
+    return (fromIndex,toIndex)
+
 def median(inList):
     """ Computes the median of a list.
     NOTE: The list must be sorted!!! """

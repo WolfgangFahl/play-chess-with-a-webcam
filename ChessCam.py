@@ -17,6 +17,7 @@ from mathUtils import intersect, distance, median, findBoundingSkewedSquare, get
 from InputManager import InputManager
 from BoardFinder import BoardFinder, BadSegmentation
 from MovementDetector import MovementDetector, BadImage
+from Video import Video
 
 
 class UserExit(Exception):
@@ -43,9 +44,13 @@ class ChessCam(object):
         while not success:
             success = True
             frame = self.captureHdl.getFrame()
-            
+
             BoardFinder.debug=self.args.debug
             self.finder = BoardFinder(frame)
+            if self.args.cornermarker is not None:
+                video=Video()
+                cornerMarkerImage=video.readImage(self.args.cornermarker)
+                self.finder.calibrateCornerMarker(cornerMarkerImage)
             self.finder.prepare()
             try:
                 processedImages = self.finder.GetFullImageBoard()

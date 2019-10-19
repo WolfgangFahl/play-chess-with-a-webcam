@@ -16,7 +16,8 @@ class Args:
                             help="Manually set the input device.")
         self.parser.add_argument('--debug',
                             action='store_true',
-                            help="show debug output")                    
+                            help="show debug output")
+        self.parser.add_argument('--cornermarker',default=None,help="filepath for an image of the cornermarker being used")                             
         self.parser.add_argument('--fullScreen',
                             action='store_true',
                             help="Display output in fullScreen mode")

@@ -1,6 +1,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Video import Video
 from BoardFinder import BoardFinder
+from mathUtils import getIndexRange
 
 def getImage(num):
     video=Video()
@@ -39,6 +40,22 @@ def test_houghTransform():
         video.drawLines(image,lines)
         video.showImage(image,"hough lines",True,500)
 
+def test_Dot():
+    video=Video()
+    dotImage=video.readImage("testMedia/greendot.jpg")
+    image=getImage(7)
+    finder=BoardFinder(image)
+    dotHSVRanges=finder.calibrateCornerMarker(dotImage)
+    assert dotHSVRanges==[(61, 91), (81, 108), (34, 60)]
+
+def test_histRange():
+    hist=[0,0,0,1,2,4,2,1,0,0,0,0]
+    indexRange=getIndexRange(hist,1,10)
+    print (indexRange)
+    assert indexRange==(3, 7)
+
+test_histRange()
+test_Dot()
 test_findBoard()
 test_getBlackMaxSide()
 test_houghTransform()

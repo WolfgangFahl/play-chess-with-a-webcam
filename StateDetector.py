@@ -11,6 +11,7 @@ from chessUtils import GetCellName
 from collections import defaultdict
 from mathUtils import intersect, distance
 from math import pi
+from Video import Video
 
 class CannotBuildStateException(Exception):
     def __init__(self, value):
@@ -25,6 +26,7 @@ class StateDetector(object):
         then Exception will be raised (Unsufficient Data)."""
 
         self.image = colorImage;
+        self.video = Video()
 
         #find the intersections of the hough lines
         self.intersects = self._findIntersects()
@@ -36,48 +38,35 @@ class StateDetector(object):
 
     def _findIntersects(self):
         """ Performs an Hough Transform to the actual self.image. """
-        # Convert image to numpy array for Hough thing
-        W, H = cv.GetSize(cv.fromarray(self.image))
-        tmp = cv.CreateImage((W,H),8,1)
-        cv.CvtColor( cv.fromarray(self.image), tmp, cv.CV_BGR2GRAY );
-        im = np.asarray(cv.GetMat(tmp))
-        (_,otsu) = cv2.threshold(im, 128.0, 255.0, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-
-        # Find the Hough lines
-        src = cv.fromarray(otsu)
-        dst = cv.CreateImage((W,H), 8, 1)
-        color_dst = cv.CreateImage((W,H), 8, 3)
-        storage = cv.CreateMemStorage(0)
-        cv.Canny(src, dst, 50, 200, 3)
-        cv.CvtColor(dst, color_dst, cv.CV_GRAY2BGR)
-        self.lines = cv.HoughLines2(dst, storage, cv.CV_HOUGH_PROBABILISTIC, 1, pi / 180, 50, 40, 110)
+        self.lines=self.video.houghTransform(self.image)
 
         # Gets the Hough line intersections
         intersects = []
         distanceBetweenIntersectionsThreshold = 60
-        for line in self.lines:
-            for crossline in self.lines:
-                if line != crossline:
-                    thisIntersect = intersect(line[0],line[1],crossline[0],crossline[1])
+        if self.lines is not None:
+            for line in self.lines:
+                for crossline in self.lines:
+                    if line != crossline:
+                        thisIntersect = intersect(line[0],line[1],crossline[0],crossline[1])
 
-                    if thisIntersect and \
-                    all([a > 0 for a in thisIntersect]) and \
-                    all([thisIntersect[0] < W, thisIntersect[1] < H]):
-                        intersectSecondary = intersect(line[0],line[1],crossline[0],crossline[1])
-                        found=False
-                        for intersectPrimary in intersects:
-                            if found:
-                                continue
-                            if distance(intersectPrimary, intersectSecondary) < distanceBetweenIntersectionsThreshold:
-                                found=True
-                        if found == False:
-                            intersects.append(intersectSecondary)
+                        if thisIntersect and \
+                        all([a > 0 for a in thisIntersect]) and \
+                        all([thisIntersect[0] < W, thisIntersect[1] < H]):
+                            intersectSecondary = intersect(line[0],line[1],crossline[0],crossline[1])
+                            found=False
+                            for intersectPrimary in intersects:
+                                if found:
+                                    continue
+                                if distance(intersectPrimary, intersectSecondary) < distanceBetweenIntersectionsThreshold:
+                                    found=True
+                            if found == False:
+                                intersects.append(intersectSecondary)
         intersects.sort()
         return intersects
 
     def _divideInCells(self):
         self.board = {}
-        W,H = cv.GetSize(cv.fromarray(self.image))
+        H,W = self.image.shape[:2]
         #find the diagonal in the chess intersection
         cellWidth = W
         cellHeight = H
