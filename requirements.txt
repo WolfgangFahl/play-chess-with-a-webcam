@@ -4,3 +4,5 @@ opencv-python
 pytest
 # matplotlib
 matplotlib
+# scipy
+scipy

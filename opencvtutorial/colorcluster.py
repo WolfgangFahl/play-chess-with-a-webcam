@@ -3,8 +3,10 @@
 # https://giusedroid.blogspot.com/2015/04/using-python-and-k-means-in-hsv-color.html
 
 import cv2
-import numpy as np
+from scipy.cluster.vq import vq, kmeans
 from matplotlib import pyplot as plt
+import numpy as np
+import time as t
 import sys
 
 def do_cluster(hsv_image, K, channels):
@@ -18,8 +20,7 @@ def do_cluster(hsv_image, K, channels):
     codebook, distortion = kmeans(np.array(cluster_data[:,0:channels], dtype=np.float), K)
     # takes the final time
     t1 = t.time()
-    print ("Clusterization took %0.5f seconds" % (t1-t0))
-
+    print ("Clusterization took %0.1f s for %d channels" % (t1-t0,channels))
 
     # calculates the total amount of pixels
     tot_pixels = h*w
@@ -47,12 +48,10 @@ def do_cluster(hsv_image, K, channels):
 
         # calculates the height and width of the bins
         height = int(weight/float(tot_pixels) *img_height )
-        width = img_width/len(color_rank)
+        width = int(img_width/len(color_rank))
 
         # calculates the position of the bin
         x_pos = i*width
-
-
 
         # defines a color so that if less than three channels have been used
         # for clustering, the color has average saturation and luminosity value
@@ -68,31 +67,34 @@ def do_cluster(hsv_image, K, channels):
     # returns the cluster representation
     return new_image
 
-def plotChannel(hsv,channel,col,rows,plotNum,title):
-  cImg=hsv[:,:,channel]
-  plt.subplot(rows,col,plotNum)
-  plt.hist(np.ndarray.flatten(cImg),bins=256)
-  plt.title(title)
-
 def main(argv):
     default_file = '../testMedia/chessBoard001.jpg'
     filename = argv[0] if len(argv) > 0 else default_file
     image = cv2.imread(filename)
-    cv2.imshow('chessboard',image)
-    # refresh
-    cv2.waitKey(10)
+    thumbNail=cv2.resize(image,(200,200))
     hsv=cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    plt.figure(figsize=(10,8))
-    plt.suptitle('HSV Histogramm', fontsize=16)
-    plotChannel(hsv,0,1,4,2,'Hue')
-    plt.subplots_adjust(hspace=.5)
-    plotChannel(hsv,1,1,4,3,'Saturation')
-    plotChannel(hsv,2,1,4,4,'Luminosity Value')
+
+    # creates a new figure size 12x10 inches
+    plt.figure(figsize=(12,10))
+    # creates a 4-column subplot
+    plt.subplot(141)
+    # in the first cell draws the target image
+    plt.imshow(thumbNail)
+
+    # calculates clusters for
+    # * h
+    # * h and s
+    # * h, s and v
+
+    for i in range(1,4):
+        plt.subplot(141 + i)
+        plt.title("Channels: %i" % i)
+        new_image = do_cluster(hsv, 5, i)
+        new_image = cv2.cvtColor(new_image, cv2.COLOR_HSV2RGB)
+        plt.imshow(new_image)
     fig=plt.figure(1)
-    fig.canvas.set_window_title('Histogramm for %s' % (filename))
+    fig.canvas.set_window_title('Color clusters for %s' % (filename))
     plt.show()
-    cv2.destroyAllWindows()
-    return 0
 
 if __name__ == "__main__":
     main(sys.argv[1:])
