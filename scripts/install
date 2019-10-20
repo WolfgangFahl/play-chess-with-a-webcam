@@ -2,11 +2,97 @@
 # WF 2019-07-27
 # install pre requisites
 
+#ansi colors
+#http://www.csc.uvic.ca/~sae/seng265/fall04/tips/s265s047-tips/bash-using-colors.html
+blue='\033[0;34m'
+red='\033[0;31m'
+green='\033[0;32m' # '\e[1;32m' is too bright for white bg.
+endColor='\033[0m'
+
+#
+# a colored message
+#   params:
+#     1: l_color - the color of the message
+#     2: l_msg - the message to display
+#
+color_msg() {
+  local l_color="$1"
+  local l_msg="$2"
+  echo -e "${l_color}$l_msg${endColor}"
+}
+
+# error
+#
+#   show an error message and exit
+#
+#   params:
+#     1: l_msg - the message to display
+error() {
+  local l_msg="$1"
+  # use ansi red for error
+  color_msg $red "Error: $l_msg" 1>&2
+  exit 1
+}
+
+#
+# show the usage
+#
+usage() {
+  echo "usage: $0 [-h]"
+  echo "  -h: show this usage"
+  exit 1
+}
+
+#
+# autoinstall
+#
+#  check that l_prog is available by calling which
+#  if not available install from given package depending on Operating system
+#
+#  params:
+#    1: l_prog: The program that shall be checked
+#    2: l_linuxpackage: The apt-package to install from
+#    3: l_macospackage: The MacPorts package to install from
+#
+autoinstall() {
+  local l_prog=$1
+  local l_linuxpackage=$2
+  local l_macospackage=$3
+  os=`uname`
+  color_msg $green "checking that $l_prog  is installed on os $os ..."
+  which $l_prog
+  if [ $? -eq 1 ]
+  then
+    case $os in
+      # Mac OS
+      Darwin)
+        color_msg $blue "installing $l_prog from MacPorts package $l_macospackage"
+        sudo port install $l_macospackage
+      ;;
+      # e.g. Ubuntu/Fedora/Debian/Suse
+      Linux)
+        color_msg $blue "installing $l_prog from apt-package $l_linuxpackage"
+        sudo apt-get install $l_linuxpackage
+      ;;
+      # git bash (Windows)
+      MINGW32_NT-6.1)
+        error "$l_prog ist not installed"
+      ;;
+      *)
+        error "unknown operating system $os"
+    esac
+  fi
+}
+
+
 # install required modules
 cd src
 pip=pip3
 if [ "$USER" = "travis" ]
 then
   pip=pip
+else
+  autoinstall python3 python3.7 python37
+  autoinstall pip3 python3-pip python37-pip
 fi
 sudo -H $pip install -r requirements.txt
