@@ -27,6 +27,7 @@ CHESSCAM_COORDINATES_SMOOTHING = 8
 smoothFunc = lambda x: sum(x) / float(len(x))
 
 class InputManager(object):
+    """ manage the video input and supply frames """
     def __init__(self,args):
         self.args=Args(args).args
         self.video=Video()

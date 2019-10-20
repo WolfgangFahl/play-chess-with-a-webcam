@@ -23,6 +23,8 @@ class UserExit(Exception):
     pass
 
 class ChessCam(object):
+    """ Chess Camera get next move by analyzing movements."""
+
     def __init__(self):
         self.video=Video()
         pass

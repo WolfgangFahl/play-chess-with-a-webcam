@@ -46,7 +46,7 @@ def test_Dot():
     image=getImage(7)
     finder=BoardFinder(image)
     dotHSVRanges=BoardFinder.calibrateCornerMarker(dotImage)
-    assert dotHSVRanges==[(61, 91), (81, 108), (34, 60)]
+    assert dotHSVRanges==[(79, 108), (91, 122), (51, 86)]
 
 def test_histRange():
     hist=[0,0,0,1,2,4,2,1,0,0,0,0]

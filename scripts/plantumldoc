@@ -1,0 +1,62 @@
+scr#!/bin/bash
+# WF 2019-10-20
+# document the python software with plant uml
+scriptdir=$(dirname $0)
+echo "<uml>"
+echo "  hide circle"
+for src in $(find $scriptdir/../src -name "*.py")
+do
+  cat $src | gawk '
+/class .*:/ {
+  finishClass()
+  classLine=$0
+  gsub(/:/,"",$0)
+  gsub(/class /,"",$0)
+  gsub(/\(.*\)/,"",$0)
+  className=$0
+  inClass=1
+}
+/def / {
+  gsub(/def /,"",$0)
+  gsub(/:/,"",$0)
+  gsub(/self,/,"",$0)
+  gsub(/self/,"",$0)
+  gsub(/ /,"",$0)
+  methods[$0]=$0
+  inClass=0
+}
+/"""/ {
+  gsub(/"""/,"",$0)
+  if (inClass==1)
+    doc=$0
+  inClass=0
+}
+function ltrim(s) { sub(/^[ \t\r\n]+/, "", s); return s }
+function rtrim(s) { sub(/[ \t\r\n]+$/, "", s); return s }
+function trim(s) { return rtrim(ltrim(s)); }
+function finishClass() {
+   if (className=="")
+     return
+   if (trim(doc)!="") {
+      dot="."
+      if (match(doc,"\\."))
+         dot=""
+      printf("\n  note top of %s: %s%s\n",className,trim(doc),dot)
+  }
+   printf("  class %s {\n",className)
+   for (method in methods) {
+     printf("    %s\n",methods[method])
+   }
+   printf("  }\n\n")
+   if (match(classLine,"Exception"))
+     printf("  %s --|> Exception\n",className)
+  delete methods
+  className=""
+  doc=""
+}
+END {
+  finishClass()
+}
+'
+done
+echo "</uml>"
