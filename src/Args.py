@@ -5,6 +5,8 @@ import argparse
 
 # default arguments for Chess Cam
 class Args:
+    """This class parses command line arguments and generates a usage."""
+
     def __init__(self,args):
         self.parser = argparse.ArgumentParser(description='ChessCam Argument Parser')
         self.parser.add_argument('--nouci',

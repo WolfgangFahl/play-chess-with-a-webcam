@@ -4,7 +4,6 @@
 # Global imports
 import sys
 import cv2
-import cv2 as cv
 import numpy as np
 from Cell import Cell
 from chessUtils import GetCellName
@@ -44,9 +43,9 @@ class StateDetector(object):
         intersects = []
         distanceBetweenIntersectionsThreshold = 60
         if self.lines is not None:
-            for line in self.lines:
-                for crossline in self.lines:
-                    if line != crossline:
+            for lineIndex,line in enumerate(self.lines):
+                for crosslineIndex,crossline in enumerate(self.lines):
+                    if lineIndex != crosslineIndex:
                         thisIntersect = intersect(line[0],line[1],crossline[0],crossline[1])
 
                         if thisIntersect and \

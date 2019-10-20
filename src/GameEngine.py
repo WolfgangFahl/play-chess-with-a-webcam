@@ -93,5 +93,5 @@ class GameEngine(object):
 if __name__ == "__main__":
     args=Args()
 
-    thisInstance = GameEngine(uci=not args.args.nouci)
-    thisInstance.play()
+    gameEngine = GameEngine(uci=not args.args.nouci)
+    gameEngine.play()
