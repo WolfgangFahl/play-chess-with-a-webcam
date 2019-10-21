@@ -23,9 +23,12 @@ def intersect(A, B, C, D):
     Pxn = (A[0]*B[1] - A[1]*B[0])*(C[0] - D[0]) - (A[0] - B[0])*(C[0]*D[1] - C[1]*D[0])
     Pyn = (A[0]*B[1] - A[1]*B[0])*(C[1] - D[1]) - (A[1] - B[1])*(C[0]*D[1] - C[1]*D[0])
     Pdenom = float((A[0] - B[0]) * (C[1] - D[1]) - (A[1] - B[1]) * (C[0] - D[0]))
+    np.seterr(all='raise')
     try:
         Px = Pxn / Pdenom
         Py = Pyn / Pdenom
+    except FloatingPointError:
+        return None
     except ZeroDivisionError:
         return None
     if np.isnan(Px) or np.isnan(Py):

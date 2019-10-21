@@ -21,6 +21,7 @@ class CannotBuildStateException(Exception):
 class StateDetector(object):
     debug=True
     maxLines=1000
+    minCellSize=20
 
     def detectState(self, colorImage):
         """Returns a board (key = address, value = cell) according to the given colorImage.
@@ -48,8 +49,13 @@ class StateDetector(object):
         distanceBetweenIntersectionsThreshold = 60
         # this algorithm has quadratic effort
         lineCount=len(self.lines)
+        if StateDetector.debug:
+            print ("found %d lines to intersect" % (lineCount))
         if lineCount>StateDetector.maxLines:
-           raise CannotBuildStateException('Found %d lines which is more than StateDetector.maxLines=%d' % (lineCount,StateDetector.maxLines))
+           msg='Found %d lines which is more than StateDetector.maxLines=%d' % (lineCount,StateDetector.maxLines)
+           if StateDetector.debug:
+               print (msg)
+           raise CannotBuildStateException(msg)
         if self.lines is not None:
             for lineIndex,line in enumerate(self.lines):
                 for crosslineIndex,crossline in enumerate(self.lines):
@@ -101,8 +107,8 @@ class StateDetector(object):
         cellHeight = np.int32((np.float64(cellHeight)/8*(np.float64(H-diagonal[0][1])/np.float64(cellHeight)))) - 1
 
         #A problem can be encountered while cv2.GetSubRect if cellWidth or cellHeight are too low
-        if cellWidth < 20 or cellHeight < 20:
-            raise CannotBuildStateException("cellWidth or cellHeight too low: Image error")
+        if cellWidth < StateDetector.minCellSize or cellHeight < StateDetector.minCellSize:
+            raise CannotBuildStateException("cellWidth %d or cellHeight %d too low (<%d): Image error" % (cellWidth,cellHeight,StateDetector.minCellSize))
 
         #build an 8 points list to set the fulldiagonal.
         current = 0
@@ -137,7 +143,6 @@ class StateDetector(object):
                 coords = (diagonal[col][0] + 3*cellWidth/10, diagonal[row][1] + 3*cellHeight/10, cellWidth*2/5, cellHeight*2/5)
                 newCell = Cell(coords)
                 self.board[Board.GetCellName(col,7-row)] = newCell
-
 
 if __name__ == "__main__":
     sys.stderr.write("Not a stand alone")
