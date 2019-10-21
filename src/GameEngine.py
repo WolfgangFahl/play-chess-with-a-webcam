@@ -11,7 +11,7 @@ from collections import defaultdict
 
 
 # Local imports
-from state import State, RejectedMove
+from Board import Board, RejectedMove
 from uci import Uci, ArenaQuit
 from ChessCam import ChessCam, UserExit
 
@@ -24,7 +24,7 @@ class GameEngine(object):
         self.uci = Uci()
         self.cam = ChessCam()
         self.cam.prepare(argv)
-        self.state = State(self.cam.getDominatorOffset())
+        self.board = Board(self.cam.getDominatorOffset())
         self.useUCI = not self.cam.args.nouci
 
     def play(self):
@@ -53,7 +53,7 @@ class GameEngine(object):
                     f.write("camToPlay: Waiting for out move...\n")
                 moveFromCamera = self.cam.getNextMove()
                 try:
-                    move = self.state.moveCam(moveFromCamera)
+                    move = self.board.performMove(moveFromCamera)
                 except RejectedMove as e:
                     # Handle Undo
                     sys.stderr.write(str(e))
@@ -78,11 +78,11 @@ class GameEngine(object):
                     f.write("remotePlay: Do the showed move...\n")
                 moveFromCamera = self.cam.getNextMove()
                 try:
-                    self.state.moveCam(moveFromCamera) # We accept the move by default, the user is gentle with us!
+                    self.board.performMove(moveFromCamera) # We accept the move by default, the user is gentle with us!
                 except RejectedMove as e:
                     sys.stderr.write(str(e))
                     continue
-                # move = self.state.getLastMoveUCI() # ?
+                # move = self.board.getLastMoveUCI() # ?
                 move = ""
                 camToPlay = True
 

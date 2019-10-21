@@ -1,6 +1,7 @@
 scr#!/bin/bash
 # WF 2019-10-20
 # document the python software with plant uml
+# used e.g. for  https://github.com/WolfgangFahl/play-chess-with-a-webcam
 scriptdir=$(dirname $0)
 echo "<uml>"
 echo "  hide circle"
