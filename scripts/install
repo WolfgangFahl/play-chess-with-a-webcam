@@ -66,8 +66,21 @@ autoinstall() {
     case $os in
       # Mac OS
       Darwin)
-        color_msg $blue "installing $l_prog from MacPorts package $l_macospackage"
-        sudo port install $l_macospackage
+        which port >/dev/null
+        if [ $? -eq 0 ]
+        then
+          color_msg $blue "installing $l_prog from MacPorts package $l_macospackage"
+          sudo port install $l_macospackage
+        else
+          which brew >/dev/null
+          if [ $? -eq 0 ]
+          then
+            color_msg $blue "installing $l_prog from Homebrew package $l_macospackage"
+            sudo brew install $l_macospackage
+          else
+            error "python3 and pip3 are needed and neither Homebrew nor MacPorts are available for installation. \nYou might want to install the prerequisites yourself"
+          fi
+        fi
       ;;
       # e.g. Ubuntu/Fedora/Debian/Suse
       Linux)
