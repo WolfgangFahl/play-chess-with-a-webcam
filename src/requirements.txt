@@ -8,3 +8,5 @@ matplotlib
 scipy
 # pytest-cov
 pytest-cov
+# python-chess
+python-chess

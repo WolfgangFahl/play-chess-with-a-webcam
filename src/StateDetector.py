@@ -6,7 +6,7 @@ import sys
 import cv2
 import numpy as np
 from Cell import Cell
-from chessUtils import GetCellName
+from Board import Board
 from collections import defaultdict
 from mathUtils import intersect, distance
 from math import pi
@@ -128,7 +128,7 @@ class StateDetector(object):
                     raise CannotBuildStateException('Cell Overflow: a cell would be outside board')
                 coords = (diagonal[col][0] + 3*cellWidth/10, diagonal[row][1] + 3*cellHeight/10, cellWidth*2/5, cellHeight*2/5)
                 newCell = Cell(coords)
-                self.board[GetCellName(col,7-row)] = newCell
+                self.board[Board.GetCellName(col,7-row)] = newCell
 
 
 if __name__ == "__main__":
