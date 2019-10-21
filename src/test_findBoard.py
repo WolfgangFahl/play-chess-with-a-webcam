@@ -3,6 +3,7 @@ from Video import Video
 from BoardFinder import BoardFinder
 from mathUtils import getIndexRange
 
+# get image with the given number
 def getImage(num):
     video=Video()
     filename="testMedia/chessBoard%03d.jpg" % (num)
@@ -18,6 +19,7 @@ def test_findBoard():
       finder=BoardFinder(image)
       finder.prepare()
 
+# test which side is black
 def test_getBlackMaxSide():
     # fixme - this is not really the expected result
     expected=[0,0,2,2,0]
@@ -30,8 +32,8 @@ def test_getBlackMaxSide():
 
 # test hough transformation
 def test_houghTransform():
-    expected=[98,46,26,20,36,38]
-    for index in range(0,6):
+    expected=[98,46,26,20,36,38,36,120,23440]
+    for index in range(0,9):
         video=Video()
         image=getImage(index+1)
         lines=video.houghTransform(image)
@@ -45,8 +47,8 @@ def test_Dot():
     dotImage=video.readImage("testMedia/greendot.jpg")
     image=getImage(7)
     finder=BoardFinder(image)
-    dotHSVRanges=BoardFinder.calibrateCornerMarker(dotImage)
-    assert dotHSVRanges==[(79, 108), (91, 122), (51, 86)]
+    dotHSVRanges=finder.calibrateCornerMarker(dotImage)
+    assert dotHSVRanges==[(61, 91), (81, 108), (34, 60)]
 
 def test_histRange():
     hist=[0,0,0,1,2,4,2,1,0,0,0,0]
