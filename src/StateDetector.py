@@ -8,7 +8,7 @@ import numpy as np
 from Cell import Cell
 from Board import Board
 from collections import defaultdict
-from mathUtils import intersect, distance
+from mathUtils import intersectHoughLines, distance
 from math import pi
 from Video import Video
 
@@ -19,6 +19,9 @@ class CannotBuildStateException(Exception):
         return repr(self.value)
 
 class StateDetector(object):
+    debug=True
+    maxLines=1000
+
     def detectState(self, colorImage):
         """Returns a board (key = address, value = cell) according to the given colorImage.
         If the given image make it impossible to detect the hole board (if corners of the board are truncated)
@@ -37,21 +40,26 @@ class StateDetector(object):
 
     def _findIntersects(self):
         """ Performs an Hough Transform to the actual self.image. """
-        self.lines=self.video.houghTransform(self.image)
+        self.lines=self.video.houghTransformP(self.image)
+        H,W = self.image.shape[:2]
 
         # Gets the Hough line intersections
         intersects = []
         distanceBetweenIntersectionsThreshold = 60
+        # this algorithm has quadratic effort
+        lineCount=len(self.lines)
+        if lineCount>StateDetector.maxLines:
+           raise CannotBuildStateException('Found %d lines which is more than StateDetector.maxLines=%d' % (lineCount,StateDetector.maxLines))
         if self.lines is not None:
             for lineIndex,line in enumerate(self.lines):
                 for crosslineIndex,crossline in enumerate(self.lines):
                     if lineIndex != crosslineIndex:
-                        thisIntersect = intersect(line[0],line[1],crossline[0],crossline[1])
+                        thisIntersect = intersectHoughLines(line,crossline)
 
                         if thisIntersect and \
                         all([a > 0 for a in thisIntersect]) and \
                         all([thisIntersect[0] < W, thisIntersect[1] < H]):
-                            intersectSecondary = intersect(line[0],line[1],crossline[0],crossline[1])
+                            intersectSecondary = intersectHoughLines(line,crossline)
                             found=False
                             for intersectPrimary in intersects:
                                 if found:

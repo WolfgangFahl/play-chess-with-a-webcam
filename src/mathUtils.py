@@ -2,6 +2,13 @@ import math
 from math import sin, cos, pi
 import numpy as np
 
+def intersectHoughLines(line,crossline):
+    lx1,ly1,lx2,ly2=line[0]
+    cx1,cy1,cx2,cy2=crossline[0]
+    intersectLine=intersect((lx1,ly1),(lx2,ly2),(cx1,cy1),(cx2,cy2))
+    return intersectLine
+
+# see also https://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines
 def intersect(A, B, C, D):
     """ Finds the intersection of two lines represented by four points.
 
@@ -11,6 +18,8 @@ def intersect(A, B, C, D):
     @parameter D: point #4, belongs to line #2
 
     @returns: None if lines are parallel, tuple (x, y) with intersection point"""
+    if A is None or B is None or C is None or D is None:
+        return None
     Pxn = (A[0]*B[1] - A[1]*B[0])*(C[0] - D[0]) - (A[0] - B[0])*(C[0]*D[1] - C[1]*D[0])
     Pyn = (A[0]*B[1] - A[1]*B[0])*(C[1] - D[1]) - (A[1] - B[1])*(C[0]*D[1] - C[1]*D[0])
     Pdenom = float((A[0] - B[0]) * (C[1] - D[1]) - (A[1] - B[1]) * (C[0] - D[0]))
@@ -19,7 +28,8 @@ def intersect(A, B, C, D):
         Py = Pyn / Pdenom
     except ZeroDivisionError:
         return None
-
+    if np.isnan(Px) or np.isnan(Py):
+        return None
     return (int(Px), int(Py))
 
 def distance(A, B):
