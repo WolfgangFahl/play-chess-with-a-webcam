@@ -28,8 +28,8 @@ smoothFunc = lambda x: sum(x) / float(len(x))
 
 class InputManager(object):
     """ manage the video input and supply frames """
-    def __init__(self,args):
-        self.args=Args(args).args
+    def __init__(self,argv):
+        self.args=Args(argv).args
         self.video=Video()
         input=self.args.input
         if self.is_int(input):

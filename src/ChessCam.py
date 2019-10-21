@@ -62,8 +62,8 @@ class ChessCam(object):
     def getDominatorOffset(self):
         return self.finder.getDominatorOffset()
 
-    def prepare(self,args):
-        self.captureHdl = InputManager(args)
+    def prepare(self,argv):
+        self.captureHdl = InputManager(argv)
         self.args=self.captureHdl.args
 
         # Create window(s)
@@ -82,6 +82,13 @@ class ChessCam(object):
             cornerMarkerImage=video.readImage(self.args.cornermarker)
             indexRanges=BoardFinder.calibrateCornerMarker(cornerMarkerImage)
             BoardFinder.dotHSVRanges=indexRanges
+        # initialize my board finder
+        self.analyzeFrame()
+
+    def analyzeFrame(self):
+        frame = self.captureHdl.getFrame()
+        self.finder = BoardFinder(frame)
+        self.finder.prepare()
 
     def detectMovement(self):
         #Initialize the MovementDetector
@@ -89,10 +96,7 @@ class ChessCam(object):
 
         while not success:
             success = True
-            frame = self.captureHdl.getFrame()
-
-            self.finder = BoardFinder(frame)
-            self.finder.prepare()
+            self.analyzeFrame()
             try:
                 processedImages = self.finder.GetFullImageBoard()
                 self.moveDetector = MovementDetector(processedImages[0])

@@ -20,11 +20,12 @@ class GameEngine(object):
     It also communicates moves with the chess ai facade and an observer to detect
     if a move have been played by an ai."""
 
-    def __init__(self, uci=True):
+    def __init__(self, argv):
         self.uci = Uci()
         self.cam = ChessCam()
+        self.cam.prepare(argv)
         self.state = State(self.cam.getDominatorOffset())
-        self.useUCI = uci
+        self.useUCI = not self.cam.args.nouci
 
     def play(self):
         """This method plays the main loop of the ChessCam project until ArenaQuit or UserExit is received."""
@@ -91,7 +92,5 @@ class GameEngine(object):
 
 
 if __name__ == "__main__":
-    args=Args()
-
-    gameEngine = GameEngine(uci=not args.args.nouci)
+    gameEngine = GameEngine(sys.argv[1:])
     gameEngine.play()

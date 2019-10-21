@@ -36,6 +36,9 @@ class BoardFinder(object):
         self.video=Video()
         self.frame = inImage
         self.height,self.width = self.frame.shape[:2]
+        # set initial side
+        self.setSide(0)
+
         # Green indicator dot has hue between ~70 and ~120, saturation  between 85 and 255 and Luminosity value between 0 and 255.
         # take a picture or your own dot and calibrate using the commandline option
         if BoardFinder.debug:
@@ -49,12 +52,11 @@ class BoardFinder(object):
         # Find the board the first time
         self.updateImage(self.frame)
 
-        # Temporary rotation
-        self.initialRotation = 0
-
         # Find the rotation of the board
         side = self.getBlackMaxSide(self.GetFullImageBoard()[0])
+        self.setSide(side)
 
+    def setSide(self,side):
         # 0:top,1:left,2:bottom,3:right.
         optionsRotation = {0: 0,
                            1: -90,
@@ -65,9 +67,13 @@ class BoardFinder(object):
                             1: (-1, 0),
                             2: (0, 1),
                             3: (1, 0)}
+
         #Black's initial position sets the correction move to place black team at the top.
         self.initialRotation = optionsRotation[side]
         self.dominatorOffset = optionsDominator[side]
+
+        # Temporary rotation
+        self.side = side
 
     def getDominatorOffset(self):
         return self.dominatorOffset
