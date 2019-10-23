@@ -97,15 +97,33 @@ autoinstall() {
   fi
 }
 
+chessBoardJs() {
+  local l_url="https://chessboardjs.com/"
+  for part in js/jquery-3.4.1.min.js js/chessboard-1.0.0.min.js js/chessboard-1.0.0.jscss/chessboard-1.0.0.css css/chessboard-1.0.0.min.css
+  do
+    if [ ! -f "$scriptdir/../web/$part" ]
+    then
+      color_msg $blue "downloading $part from $l_url"
+    else
+      color_msg  $green "$part already downloaded from $l_url"
+    fi
+  done
+}
+
+pythonModules() {
+  cd $scriptdir/../src
+  pip=pip3
+  if [ "$USER" = "travis" ]
+  then
+    pip=pip
+  else
+    autoinstall python3 python3.7 python37
+    autoinstall pip3 python3-pip python37-pip
+  fi
+  sudo -H $pip install -r requirements.txt
+}
 
 # install required modules
-cd src
-pip=pip3
-if [ "$USER" = "travis" ]
-then
-  pip=pip
-else
-  autoinstall python3 python3.7 python37
-  autoinstall pip3 python3-pip python37-pip
-fi
-sudo -H $pip install -r requirements.txt
+scriptdir=$(dirname $0)
+chessBoardJs
+pythonModules

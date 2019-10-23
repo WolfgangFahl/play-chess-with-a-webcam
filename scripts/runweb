@@ -1,0 +1,136 @@
+#!/bin/bash
+# WF 2019-10-22
+
+#ansi colors
+#http://www.csc.uvic.ca/~sae/seng265/fall04/tips/s265s047-tips/bash-using-colors.html
+blue='\033[0;34m'
+red='\033[0;31m'
+green='\033[0;32m' # '\e[1;32m' is too bright for white bg.
+endColor='\033[0m'
+
+#
+# a colored message
+#   params:
+#     1: l_color - the color of the message
+#     2: l_msg - the message to display
+#
+color_msg() {
+  local l_color="$1"
+  local l_msg="$2"
+  echo -e "${l_color}$l_msg${endColor}"
+}
+
+# error
+#
+#   show an error message and exit
+#
+#   params:
+#     1: l_msg - the message to display
+error() {
+  local l_msg="$1"
+  # use ansi red for error
+  color_msg $red "Error: $l_msg" 1>&2
+  exit 1
+}
+
+#
+# show the usage
+#
+usage() {
+  echo "usage: $0 [-h]"
+  echo "  -h: show this usage"
+}
+
+#
+# open the given url waiting for the given number of seconds
+#
+# param #1: the url to open
+# param #2: the number of loops to wait
+# param #3: the sleep time per loop
+openUrl() {
+  local l_url="$1"
+  local l_loops="$2"
+  local l_sleep="$3"
+  local l_count=1
+  local l_done=0
+  until [ $l_done -eq 1 ]
+  do
+    l_count=$((l_count+1))
+    if [ "$l_count" -ge "$l_loops" ]
+    then
+      echo "giving up to wait for $l_url"
+      l_done=1
+    else
+      sleep $l_sleep
+    fi
+    status=$(curl -Is $l_url | head -1)
+    echo "waiting $l_count/$l_loops for $l_url: $status"
+    case $status in
+      *200*OK*) open $l_url
+        l_done="1" ;;
+    esac
+  done
+}
+
+#
+# kill the given process by name if it is running
+#
+# param #1: l_name: the name to search for
+killifrunning() {
+  local l_name="$1"
+  pgrep -fl "$l_name"
+  if [ $? -eq 0 ]
+  then
+    color_msg $blue "killing running $l_name server"
+    sudo pkill -f "$l_name"
+  fi
+}
+
+startServer() {
+
+  color_msg $blue "starting server only"
+  if [ ! -d $logdir ]
+  then
+    sudo mkdir -p $logdir
+    sudo chmod 770 $logdir
+  fi
+  sudo chown $USER $logdir
+  #sudo chgrp users $logdir
+  nohup python3 $srcdir/$pyapp $@ > $logdir/$logfile 2>&1 &
+  color_msg $green "log is at $logdir/$logfile"
+}
+
+# workaround issue with PYTHONPATH for 2.7 still being active
+echo $PYTHONPATH | grep 2.7 > /dev/null
+if [ $? -eq 0 ]
+then
+  export PYTHONPATH=""
+fi
+scriptdir=$(dirname $0)
+srcdir=$scriptdir/../src
+pyapp=webchesscam.py
+killifrunning $pyapp
+port=5003
+logdir=/var/log/webchesscam
+logfile=webchesscam.log
+
+# commandline option
+while [  "$1" != ""  ]
+do
+  option=$1
+  shift
+  case $option in
+    --port)
+      port=$option
+      ;;
+    -h|--help)
+      python3 $srcdir/$pyapp -h
+      exit 0;;
+    *)
+      ;;
+  esac
+done
+color_msg $blue "starting webchesscam"
+startServer "$@"
+openUrl "http://localhost:$port" 10 1.0&
+tail -f $logdir/$logfile

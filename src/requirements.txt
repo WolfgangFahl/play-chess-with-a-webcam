@@ -10,3 +10,8 @@ scipy
 pytest-cov
 # python-chess
 python-chess
+# web tools
+Flask
+Flask-RESTful
+# config and state saving
+PyYAML

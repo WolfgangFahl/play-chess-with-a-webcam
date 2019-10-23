@@ -47,6 +47,7 @@ class Video:
         else:
             return True
 
+    # return a video frame as a numpy array
     def readFrame(self,show=False):
         ret, frame=self.cap.read()
         quit=False
@@ -81,16 +82,23 @@ class Video:
 
     # get a still image
     def still(self, prefix, format="jpg", printHints=True):
+        filename = "%s%s.%s" % (prefix, self.timeStamp(), format)
+        return still2File(self,filename,format,printHints)
+
+    # get a still image
+    def still2File(self, filename, format="jpg", printHints=True):
         self.checkCap()
+        ret=False
+        frame=None
         if (self.cap.isOpened()):
             ret, frame=self.cap.read()
             if ret == True:
-                filename = "%s%s.%s" % (prefix, self.timeStamp(), format)
                 if printHints:
                     print("capture %s with %dx%d" % (
                         filename, self.width, self.height))
                 cv2.imwrite(filename, frame)
             self.close()
+        return ret,frame
 
     # read an image
     def readImage(self, filePath):
