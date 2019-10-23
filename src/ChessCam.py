@@ -13,7 +13,6 @@ from collections import defaultdict, deque
 import bisect
 
 # Local imports
-from mathUtils import intersect, distance, median, findBoundingSkewedSquare, getRotationAndTranslationMatrix
 from InputManager import InputManager
 from BoardFinder import BoardFinder, BadSegmentation
 from MovementDetector import MovementDetector, BadImage

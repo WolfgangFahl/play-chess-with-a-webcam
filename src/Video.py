@@ -155,12 +155,24 @@ class Video:
     # is: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghlines/py_houghlines.html
     # https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html
     def houghTransform(self, image):
-        """Performs an Hough Transform to the frame passed to updateImage().
+        """Performs an Hough Transform to given image.
 
         Returns: lines"""
         gray = cv2.cvtColor(image,  cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray, 50, 150, apertureSize=3)
         lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
+        return lines
+
+    def houghTransformP(self, image):
+        """Performs a probabilistic Hough Transform to given image.
+
+        Returns: lines"""
+        gray = cv2.cvtColor(image,  cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+        h,w = image.shape[:2]
+        minLineLength = h/16
+        maxLineGap = h/24
+        lines = cv2.HoughLinesP(edges,1,np.pi/180,100,minLineLength,maxLineGap)
         return lines
 
     #  https://docs.opencv.org/4.1.2/d9/db0/tutorial_hough_lines.html
