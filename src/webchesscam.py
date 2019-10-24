@@ -46,7 +46,7 @@ def gen(video):
         if not ret:
             continue
         if quit:
-            break    
+            break
         # yield the output frame in the byte format
         yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
 			bytearray(encodedImage) + b'\r\n')
@@ -59,6 +59,11 @@ def video_feed():
 	# type (mime type)
     return Response(gen(video),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route("/chess/move/<fromField>/<toField>", methods=['GET'])
+def chessMove(fromField,toField):
+    msg="move %s-%s" % (fromField,toField)
+    return index(msg)
 
 @app.route("/chess/photo", methods=['GET'])
 def photo():

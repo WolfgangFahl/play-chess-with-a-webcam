@@ -9,7 +9,6 @@ import sys
 import numpy as np
 from collections import defaultdict
 
-
 # Local imports
 from Board import Board, RejectedMove
 from uci import Uci, ArenaQuit

@@ -68,9 +68,9 @@ class Video:
         if ret:
             # encode the frame in JPEG format
             (flag, encodedImage) = cv2.imencode(".jpg", frame)
-		# ensure the frame was successfully encoded
-        if not flag:
-           ret=False
+    		# ensure the frame was successfully encoded
+            if not flag:
+               ret=False
         return ret,encodedImage,quit
 
     # return a video frame as a numpy array

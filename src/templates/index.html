@@ -8,7 +8,9 @@
       <script>
         var config = {
           position: 'start',
-          pieceTheme: '/img/chesspieces/wikipedia/{piece}.png'
+          pieceTheme: '/img/chesspieces/wikipedia/{piece}.png',
+          draggable: true,
+          dropOffBoard: 'trash'
         };
         var chessboard = Chessboard('chessboard', config);
       </script>
