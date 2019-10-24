@@ -31,11 +31,7 @@ class InputManager(object):
     def __init__(self,argv):
         self.args=Args(argv).args
         self.video=Video()
-        input=self.args.input
-        if self.is_int(input):
-           self.video.capture(int(input))
-        else:
-           self.video.open(input)
+        self.video.capture(self.args.input)
         #self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, CHESSCAM_WIDTH)
         #self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CHESSCAM_HEIGHT)
         # https://stackoverflow.com/a/11332129/1497139
@@ -55,13 +51,6 @@ class InputManager(object):
 
         self.threshold = sum(diffs)/len(diffs)
         self.threshold *= 1.05
-
-    def is_int(self,s):
-        try:
-            int(s)
-            return True
-        except ValueError:
-            return False
 
     def getFrame(self):
         diff = float("inf")

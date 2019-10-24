@@ -43,9 +43,9 @@ def root():
 def photo():
     video=Video()
     # todo select input device
-    video.capture(0)
-    video.still2File(thisscriptFolder+'/../web/chess/chessboard.jpg')
-    return index("still image taken")
+    video.capture(args.input)
+    video.still2File(thisscriptFolder+'/../web/webcamchess/chessboard.jpg')
+    return index("still image taken from input %s" % (args.input))
 
 @app.route("/chess/home", methods=['GET'])
 def home():
@@ -61,6 +61,11 @@ class WebChessCamArgs:
                                 type=int,
                                 default="5003",
                                 help="port to run server at")
+
+        self.parser.add_argument('--input',
+                            default="0",
+                            help="Manually set the input device.")
+
         self.parser.add_argument('--host',
                                 default="0.0.0.0",
                                 help="host to allow access for")

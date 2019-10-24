@@ -109,6 +109,17 @@ legend {
 	overflow: hidden;
 }
 
+#message {
+	background: #3F51B5; /* PRIMARY COLOR */
+	color: white;
+	position: absolute;
+	bottom: 24px;
+	height: 24px;
+	left: 0px;
+	right: 0px;
+	overflow: hidden;
+}
+
 #footerbox {
 	background: #303F9F; /* DARK PRIMARY COLOR */
 	position: absolute;
@@ -143,7 +154,6 @@ legend {
 	color: #0000FF;
 	font-size: 48px;
 }
-
 
 .bigicon {
 	color: #0000FF;

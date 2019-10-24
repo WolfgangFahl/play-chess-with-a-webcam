@@ -3,15 +3,19 @@
 <div id='navigationbox' title='Play Chess With a WebCam'>Play Chess With a WebCam</div>
 <div class='container-fluid' id='contentbox'>
   <div class='row'>
-    <div id='chesswebcam' class="col-md-3">
-      <img width='426' height='320' src='/chess/chessboard.jpg'/>
-    </div>
     <div id='chessboard' class="h-100 col-md-3">
       {% include 'js.html' %}
       <script>
-        var chessboard = Chessboard('chessboard', 'start')
+        var config = {
+          position: 'start',
+          pieceTheme: '/img/chesspieces/wikipedia/{piece}.png'
+        };
+        var chessboard = Chessboard('chessboard', config);
       </script>
       <script src='/js/webcamchess.js'></script>
+    </div>
+    <div id='chesswebcam' class="col-md-3">
+      <img width='426' height='320' src='/webcamchess/chessboard.jpg'/>
     </div>
   </div>
   {% include 'footer.html' %}

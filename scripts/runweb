@@ -86,9 +86,10 @@ killifrunning() {
   fi
 }
 
+# start the server
 startServer() {
-
-  color_msg $blue "starting server only"
+  local l_args="$1"
+  color_msg $blue "starting server only with args $l_args"
   if [ ! -d $logdir ]
   then
     sudo mkdir -p $logdir
@@ -96,7 +97,7 @@ startServer() {
   fi
   sudo chown $USER $logdir
   #sudo chgrp users $logdir
-  nohup python3 $srcdir/$pyapp $@ > $logdir/$logfile 2>&1 &
+  nohup python3 $srcdir/$pyapp $l_args > $logdir/$logfile 2>&1 &
   color_msg $green "log is at $logdir/$logfile"
 }
 
@@ -114,6 +115,7 @@ port=5003
 logdir=/var/log/webchesscam
 logfile=webchesscam.log
 
+args=$@
 # commandline option
 while [  "$1" != ""  ]
 do
@@ -131,6 +133,6 @@ do
   esac
 done
 color_msg $blue "starting webchesscam"
-startServer "$@"
+startServer "$args"
 openUrl "http://localhost:$port" 10 1.0&
 tail -f $logdir/$logfile

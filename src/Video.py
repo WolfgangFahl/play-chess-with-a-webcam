@@ -17,9 +17,21 @@ class Video:
         self.frames = 0
         pass
 
+    # check whether s is an int
+    def is_int(self,s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
+
+
     # capture from the given device
     def capture(self, device):
-        self.device = device
+        if self.is_int(device):
+            self.device = int(device)
+        else:
+            self.open(device)
         self.setup(cv2.VideoCapture(device))
 
     def setup(self,cap):
@@ -83,7 +95,7 @@ class Video:
     # get a still image
     def still(self, prefix, format="jpg", printHints=True):
         filename = "%s%s.%s" % (prefix, self.timeStamp(), format)
-        return still2File(self,filename,format,printHints)
+        return self.still2File(filename,format,printHints)
 
     # get a still image
     def still2File(self, filename, format="jpg", printHints=True):

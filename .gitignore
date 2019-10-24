@@ -4,6 +4,8 @@ web/bootstrap
 web/chessboard
 web/md
 web/mdi
+# interactive results
+web/webcamchess
 # Deprecated
 deprecated
 # Mac
