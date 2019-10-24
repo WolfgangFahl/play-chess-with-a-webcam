@@ -18,7 +18,7 @@ endColor='\033[0m'
 color_msg() {
   local l_color="$1"
   local l_msg="$2"
-  echo -e "${l_color}$l_msg${endColor}"
+  echo -e "${l_color}${l_msg}${endColor}"
 }
 
 # error
@@ -97,6 +97,22 @@ autoinstall() {
   fi
 }
 
+# download outputfile from the given url
+# param 1: url
+# param 2: outputfile
+download() {
+  local l_url="$1"
+  local l_output="$2"
+  local l_status=$(curl -Is "$l_url" | head -n 1 | tr -d '\r')
+  echo $l_status | grep "200 OK" > /dev/null
+  if [ $? -ne 0 ]
+  then
+    color_msg $red "$l_status: $l_url"
+  else
+    curl -L "$l_url" -s -o "$l_output"
+  fi
+}
+
 # check given part to have been downloaded
 # param 1: targetdir  (create if not existing)
 # param 2: url
@@ -113,46 +129,71 @@ checkPart() {
     then
       mkdir -p "$l_partdir"
     fi
-    color_msg $blue "downloading $l_part from $l_url"
-    curl $l_url -s -o "$l_target"
+    color_msg $blue "downloading $l_part from $l_url/$l_part"
+    # echo curl -L $l_url/$l_part -s -o "$l_target"
+    download "$l_url/$l_part"  "$l_target"
   else
     color_msg  $green "$l_part already downloaded"
   fi
 }
 
 # check parts specified in here document
+# param 1: check directory
 checkParts() {
+  local l_check="$1"
+  local l_done="false"
   read l_target
   read l_title
   read l_home
   read l_url
-  if [ ! -d "$l_target" ]
+  if [ "$l_check" = true ]
   then
-    mkdir -p $l_target
-    color_msg $blue "downloading $l_title (see $l_home) from $l_url"
+    if [ ! -d "$l_target" ]
+    then
+      mkdir -p $l_target
+      color_msg $blue "downloading $l_title (see $l_home) from $l_url"
+    else
+      l_done=true
+      color_msg $green "$l_title already downloaded"
+    fi
+  fi
+  if [ ! "$l_done" = true ]
+  then
+    #curl -I $l_url
+    #echo $?
     while read part
     do
       checkPart "$l_target" "$l_url" $part
     done
-  else
-    color_msg $green "$l_title already downloaded"
   fi
+}
+
+# get Material Design Lite
+materialDesign() {
+  local l_target="$1"
+  cat << EOF | checkParts true
+    $l_target
+    Material Design Lite
+    https://material.io
+    https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0
+    material.min.js
+    material.min.css
+EOF
 }
 
 # get Material Design Icons from github
 materialDesignIcons() {
   local l_target="$1"
-  cat << EOF | checkParts "$l_target"
+  cat << EOF | checkParts true
     $l_target
     Material Design Icons
     https://material.io/resources/icons
-    https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/
+    http://materialdesignicons.com/cdn/4.5.95
     css/materialdesignicons.css
     css/materialdesignicons.min.css
     css/materialdesignicons.css.map
     css/materialdesignicons.min.css.map
     fonts/materialdesignicons-webfont.woff2
-    fonts/materialdesignicons-webfont.svg
     fonts/materialdesignicons-webfont.eot
     fonts/materialdesignicons-webfont.woff
     fonts/materialdesignicons-webfont.ttf
@@ -162,27 +203,39 @@ EOF
 # get CheckBoard.js
 chessBoardJs() {
   local l_target="$1"
-  cat << EOF | checkParts "$l_target"
-    $l_target
+  cat << EOF | checkParts true
+    $l_target/js
     chessboard.js
     https://chessboardjs.com
+    https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/
+    chessboard-1.0.0.min.js
+    chessboard-1.0.0.js
+EOF
+cat << EOF | checkParts false
+    $l_target/css
+    chessboard.js
     https://chessboardjs.com
-    js/jquery-3.4.1.min.js
-    js/chessboard-1.0.0.min.js
-    js/chessboard-1.0.0.js
-    css/chessboard-1.0.0.css
-    css/chessboard-1.0.0.min.css
+    https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/
+    chessboard-1.0.0.css
+    chessboard-1.0.0.min.css
+EOF
+cat << EOF | checkParts false
+  $l_target
+  chessboard.js
+  https://chessboardjs.com
+  https://chessboardjs.com
+js/jquery-3.4.1.min.js
 EOF
 }
 
 # get Bootstrap
 bootstrap() {
   local l_target="$1"
-  cat << EOF | checkParts "$l_target"
+  cat << EOF | checkParts true
   $l_target
   Bootstrap
   https://getbootstrap.com
-  https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css
+  https://stackpath.bootstrapcdn.com/bootstrap/4.3.1
 css/bootstrap.min.css
 css/bootstrap-reboot.min.css.map
 css/bootstrap.css
@@ -220,14 +273,15 @@ pythonModules() {
   sudo -H $pip install -r requirements.txt
 }
 
-
 scriptdir=$(dirname $0)
 
 # get bootstrap
 bootstrap "$scriptdir/../web/bootstrap"
+# get Material materialDesign
+materialDesign "$scriptdir/../web/md"
 # get Material Design Icons from github
-#materialDesignIcons "$scriptdir/../web/mdi"
+materialDesignIcons "$scriptdir/../web/mdi"
 # get CheckBoard.js
-#chessBoardJs "$scriptdir/../web/chessboard"
+chessBoardJs "$scriptdir/../web/chessboard"
 # install required python modules
-#pythonModules
+pythonModules
