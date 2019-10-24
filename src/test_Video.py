@@ -9,6 +9,14 @@ def test_ReadVideo():
     print ("played %d frames" % (video.frames))
     assert video.frames == 52
 
+# test reading video as jpg frames
+def test_ReadJpg():
+    video=Video()
+    video.open('testMedia/emptyBoard001.avi')
+    for frame in range(0,52):
+        jpgImage=video.readJpgImage(show=True)
+        assert jpgImage is not None
+
 # create a blank image
 def test_CreateBlank():
     video=Video()
@@ -30,7 +38,14 @@ def test_getSubRect():
     assert iwidth==200
     assert channels==3
 
+def test_device():
+    video=Video()
+    assert video.is_int("0")
+    v0=int("0")
+    assert v0==0
 
+test_device()
+test_ReadJpg()
 test_ReadVideo()
 test_getSubRect()
 test_CreateBlank()

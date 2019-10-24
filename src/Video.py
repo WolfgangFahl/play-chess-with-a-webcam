@@ -31,8 +31,9 @@ class Video:
         if self.is_int(device):
             self.device = int(device)
         else:
+            self.device=device
             self.open(device)
-        self.setup(cv2.VideoCapture(device))
+        self.setup(cv2.VideoCapture(self.device))
 
     def setup(self,cap):
         self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -58,6 +59,19 @@ class Video:
             return not cv2.waitKey(keyWait) & 0xFF == ord('q')
         else:
             return True
+
+    # return a video frame as a jpg image
+    def readJpgImage(self,show=False):
+        ret,frame,quit = self.readFrame()
+        encodedImage=None
+        # ensure the frame was read
+        if ret:
+            # encode the frame in JPEG format
+            (flag, encodedImage) = cv2.imencode(".jpg", frame)
+		# ensure the frame was successfully encoded
+        if flag:
+           ret=False
+        return ret,encodedImage,quit
 
     # return a video frame as a numpy array
     def readFrame(self,show=False):

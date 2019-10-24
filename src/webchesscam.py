@@ -3,7 +3,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
 # Global imports
-from flask import Flask, request, render_template, send_from_directory, abort
+from flask import Flask, request, render_template, send_from_directory, abort, Response
 from flask_restful import Resource, Api
 import json
 import logging
@@ -33,15 +33,37 @@ if platform.system() == 'Linux' and os.path.exists('/sys/firmware/devicetree/bas
 
 # return the index.html template content with the given message
 def index(msg):
-    return render_template('index.html', message=msg)
+    return render_template('index.html', message=msg, timeStamp=video.timeStamp())
 
 @app.route("/")
 def root():
     return index("Ready")
 
+def gen(video):
+    while True:
+        ret,frame,quit = video.readFrame()
+        # ensure the frame was read
+        if not ret:
+           continue
+        # encode the frame in JPEG format
+        (flag, encodedImage) = cv2.imencode(".jpg", outputFrame)
+
+		# ensure the frame was successfully encoded
+        if not flag:
+           continue
+
+        # yield the output frame in the byte format
+        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+			bytearray(encodedImage) + b'\r\n')
+
+@app.route('/video')
+def video_feed():
+    video.capture(args.input)
+    return Response(gen(video),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
 @app.route("/chess/photo", methods=['GET'])
 def photo():
-    video=Video()
     # todo select input device
     video.capture(args.input)
     video.still2File(thisscriptFolder+'/../web/webcamchess/chessboard.jpg')
@@ -77,4 +99,5 @@ class WebChessCamArgs:
 
 if __name__ == '__main__':
     args=WebChessCamArgs(sys.argv[1:]).args
+    video=Video()
     app.run(port='%d' % (args.port), host=args.host)
