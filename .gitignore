@@ -1,5 +1,9 @@
 # Web
-web
+# to be installed via scripts/install
+web/bootstrap
+web/chessboard
+web/md
+web/mdi
 # Deprecated
 deprecated
 # Mac
