@@ -15,3 +15,7 @@ Flask
 Flask-RESTful
 # config and state saving
 PyYAML
+# mss https://pypi.org/project/mss/ An ultra fast cross-platform multiple screenshots module in pure python using ctypes.
+mss
+# PIL Python Image Library fork see https://pillow.readthedocs.io/en/stable/
+Pillow
