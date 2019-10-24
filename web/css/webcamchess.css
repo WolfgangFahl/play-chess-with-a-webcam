@@ -1,0 +1,151 @@
+/*
+ webcam chess stylesheet
+ */
+body {
+	background-attachment: scroll;
+	background-clip: border-box;
+	background-image: none;
+	background-origin: padding-box;
+	background-position: 0% 0%;
+	background-repeat: repeat;
+	background-size: auto auto;
+	color: #212121;
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	line-height: 20px;
+	margin-bottom: 10px;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-top: 10px;
+	padding-bottom: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-top: 0px;
+}
+
+table {
+	border-collapse: collapse;
+	color: #FFFFFF;
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	line-height: 20px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-top: 0px;
+	overflow-x: auto;
+}
+
+tbody {
+	border-collapse: collapse;
+	color: #FFFFFF;
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	line-height: 20px;
+}
+
+th,.thlabel {
+	background-color: #3F51B5; /* PRIMARY COLOR */
+	border-color: #303F9F;
+	border-style: solid;
+	border-width: 1px;
+	border-collapse: collapse;
+	color: #FFFFFF;
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 20px;
+	padding-bottom: 7px;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top: 7px;
+}
+
+td {
+	border-color: #303F9F;
+	border-style: solid;
+	border-width: 1px;
+	border-collapse: collapse;
+	color: black;
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	line-height: 20px;
+	padding-bottom: 7px;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top: 7px;
+}
+
+legend {
+	font-size: 1.2rem !important;
+	font-weight: bold;
+}
+/* material design Indigo
+    https://www.materialpalette.com/indigo/indigo
+    http://stackoverflow.com/questions/4069734/cross-browser-fixed-header-footer-and-scrollable-content
+ */
+#headerbox {
+	background: #303F9F; /* DARK PRIMARY COLOR */
+	color: #FFFFFF;
+	padding: 2px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 32px;
+	right: 0px;
+	overflow: hidden;
+}
+
+#navigationbox {
+	background: #3F51B5; /* PRIMARY COLOR */
+	padding: 4px;
+	color: #FFFFFF;
+	font-size: 18px;
+	position: absolute;
+	top: 32px;
+	left: 0px;
+	height: 32px;
+	right: 0px;
+	overflow: hidden;
+}
+
+#footerbox {
+	background: #303F9F; /* DARK PRIMARY COLOR */
+	position: absolute;
+	bottom: 0px;
+	height: 24px;
+	left: 0px;
+	right: 0px;
+	overflow: hidden;
+}
+
+#contentbox {
+	position: absolute;
+	top: 64px;
+	bottom: 24px;
+	left: 0px;
+	right: 0px;
+	background: white;
+	overflow-y: scroll;
+}
+
+.headerboxicon {
+	color: #FFFFFF;
+	font-size: 24px;
+}
+
+.icon {
+	color: #0000FF;
+	font-size: 24px;
+}
+
+.mediumicon {
+	color: #0000FF;
+	font-size: 48px;
+}
+
+
+.bigicon {
+	color: #0000FF;
+	font-size: 64px;
+}
