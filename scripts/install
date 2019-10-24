@@ -97,19 +97,116 @@ autoinstall() {
   fi
 }
 
-chessBoardJs() {
-  local l_url="https://chessboardjs.com/"
-  for part in js/jquery-3.4.1.min.js js/chessboard-1.0.0.min.js js/chessboard-1.0.0.jscss/chessboard-1.0.0.css css/chessboard-1.0.0.min.css
-  do
-    if [ ! -f "$scriptdir/../web/$part" ]
+# check given part to have been downloaded
+# param 1: targetdir  (create if not existing)
+# param 2: url
+# param 3: part
+checkPart() {
+  local l_targetdir="$1"
+  local l_url="$2"
+  local l_part="$3"
+  local l_target="$l_targetdir/$l_part"
+  if [ ! -f "$l_target" ]
+  then
+    local l_partdir=$(dirname $l_target)
+    if [ ! -d "$l_partdir" ]
     then
-      color_msg $blue "downloading $part from $l_url"
-    else
-      color_msg  $green "$part already downloaded from $l_url"
+      mkdir -p "$l_partdir"
     fi
-  done
+    color_msg $blue "downloading $l_part from $l_url"
+    curl $l_url -s -o "$l_target"
+  else
+    color_msg  $green "$l_part already downloaded"
+  fi
 }
 
+# check parts specified in here document
+checkParts() {
+  read l_target
+  read l_title
+  read l_home
+  read l_url
+  if [ ! -d "$l_target" ]
+  then
+    mkdir -p $l_target
+    color_msg $blue "downloading $l_title (see $l_home) from $l_url"
+    while read part
+    do
+      checkPart "$l_target" "$l_url" $part
+    done
+  else
+    color_msg $green "$l_title already downloaded"
+  fi
+}
+
+# get Material Design Icons from github
+materialDesignIcons() {
+  local l_target="$1"
+  cat << EOF | checkParts "$l_target"
+    $l_target
+    Material Design Icons
+    https://material.io/resources/icons
+    https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/
+    css/materialdesignicons.css
+    css/materialdesignicons.min.css
+    css/materialdesignicons.css.map
+    css/materialdesignicons.min.css.map
+    fonts/materialdesignicons-webfont.woff2
+    fonts/materialdesignicons-webfont.svg
+    fonts/materialdesignicons-webfont.eot
+    fonts/materialdesignicons-webfont.woff
+    fonts/materialdesignicons-webfont.ttf
+EOF
+}
+
+# get CheckBoard.js
+chessBoardJs() {
+  local l_target="$1"
+  cat << EOF | checkParts "$l_target"
+    $l_target
+    chessboard.js
+    https://chessboardjs.com
+    https://chessboardjs.com
+    js/jquery-3.4.1.min.js
+    js/chessboard-1.0.0.min.js
+    js/chessboard-1.0.0.js
+    css/chessboard-1.0.0.css
+    css/chessboard-1.0.0.min.css
+EOF
+}
+
+# get Bootstrap
+bootstrap() {
+  local l_target="$1"
+  cat << EOF | checkParts "$l_target"
+  $l_target
+  Bootstrap
+  https://getbootstrap.com
+  https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css
+css/bootstrap.min.css
+css/bootstrap-reboot.min.css.map
+css/bootstrap.css
+css/bootstrap-grid.css.map
+css/bootstrap-grid.min.css
+css/bootstrap.css.map
+css/bootstrap.min.css.map
+css/bootstrap-reboot.min.css
+css/bootstrap-reboot.css
+css/bootstrap-grid.css
+css/bootstrap-grid.min.css.map
+css/bootstrap-reboot.css.map
+js/bootstrap.bundle.js
+js/bootstrap.bundle.min.js.map
+js/bootstrap.bundle.js.map
+js/bootstrap.js
+js/bootstrap.bundle.min.js
+js/bootstrap.min.js
+js/bootstrap.js.map
+js/bootstrap.min.js.map
+EOF
+}
+
+# install required python modules
 pythonModules() {
   cd $scriptdir/../src
   pip=pip3
@@ -123,7 +220,14 @@ pythonModules() {
   sudo -H $pip install -r requirements.txt
 }
 
-# install required modules
+
 scriptdir=$(dirname $0)
-chessBoardJs
-pythonModules
+
+# get bootstrap
+bootstrap "$scriptdir/../web/bootstrap"
+# get Material Design Icons from github
+#materialDesignIcons "$scriptdir/../web/mdi"
+# get CheckBoard.js
+#chessBoardJs "$scriptdir/../web/chessboard"
+# install required python modules
+#pythonModules
