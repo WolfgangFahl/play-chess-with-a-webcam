@@ -41,24 +41,22 @@ def root():
 
 def gen(video):
     while True:
-        ret,frame,quit = video.readFrame()
-        # ensure the frame was read
+        ret,encodedImage,quit=video.readJpgImage()
+        # ensure we got a valid image
         if not ret:
-           continue
-        # encode the frame in JPEG format
-        (flag, encodedImage) = cv2.imencode(".jpg", outputFrame)
-
-		# ensure the frame was successfully encoded
-        if not flag:
-           continue
-
+            continue
+        if quit:
+            break    
         # yield the output frame in the byte format
         yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
 			bytearray(encodedImage) + b'\r\n')
 
 @app.route('/video')
 def video_feed():
+    # capture from the given video device
     video.capture(args.input)
+    # return the response generated along with the specific media
+	# type (mime type)
     return Response(gen(video),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 

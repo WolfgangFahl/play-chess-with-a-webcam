@@ -14,7 +14,8 @@ def test_ReadJpg():
     video=Video()
     video.open('testMedia/emptyBoard001.avi')
     for frame in range(0,52):
-        jpgImage=video.readJpgImage(show=True)
+        ret,jpgImage,quit=video.readJpgImage(show=True)
+        assert ret
         assert jpgImage is not None
 
 # create a blank image

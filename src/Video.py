@@ -69,7 +69,7 @@ class Video:
             # encode the frame in JPEG format
             (flag, encodedImage) = cv2.imencode(".jpg", frame)
 		# ensure the frame was successfully encoded
-        if flag:
+        if not flag:
            ret=False
         return ret,encodedImage,quit
 
