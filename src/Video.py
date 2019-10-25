@@ -78,14 +78,19 @@ class Video:
         else:
             return True
 
+    # encode the image
+    def imencode(self,frame,format=".jpg"):
+        # encode the frame in JPEG format
+        (flag, encodedImage) = cv2.imencode(format, frame)
+        return flag,encodedImage
+
     # return a video frame as a jpg image
     def readJpgImage(self, show=False, postProcess=None):
         ret, frame, quit = self.readFrame(show, postProcess)
         encodedImage = None
         # ensure the frame was read
         if ret:
-            # encode the frame in JPEG format
-            (flag, encodedImage) = cv2.imencode(".jpg", frame)
+            (flag, encodedImage) =self.imencode(frame)
             # ensure the frame was successfully encoded
             if not flag:
                 ret = False
@@ -122,7 +127,7 @@ class Video:
         self.cap.release()
         cv2.destroyAllWindows()
 
-    def timeStamp(self, separator='_', timeseparator=''):
+    def timeStamp(self, separator=' ', timeseparator=':'):
         return strftime("%Y-%m-%d" + separator + "%H" + timeseparator + "%M" + timeseparator + "%S")
 
     def close(self):
@@ -135,7 +140,7 @@ class Video:
 
     # get a still image
     def still(self, prefix, format="jpg", printHints=True):
-        filename = "%s%s.%s" % (prefix, self.timeStamp(), format)
+        filename = "%s%s.%s" % (prefix, self.timeStamp(separator='_', timeseparator=''), format)
         return self.still2File(filename, format, printHints)
 
     # get a still image
@@ -258,7 +263,7 @@ class Video:
     def addTimeStamp(self, frame, withFPS=True, fontBGRColor=(255, 255, 255), fontScale=0.7, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=1):
         if frame is not None:
             # grab the current timestamp and draw it on the frame
-            now = self.timeStamp(' ', ':')
+            now = self.timeStamp()
             if withFPS:
                 now = now + " %3.0f fps" % (self.fpsCheck.fps())
             text_width, text_height = cv2.getTextSize(
@@ -269,47 +274,48 @@ class Video:
                         font, fontScale, fontBGRColor, lineThickness)
         return frame
 
-    # see https://www.pyimagesearch.com/2017/02/06/faster-video-file-fps-with-cv2-videocapture-and-opencv/
-    class VideoStream(object):
-        """run videograbbing in separate stream"""
+# see https://www.pyimagesearch.com/2017/02/06/faster-video-file-fps-with-cv2-videocapture-and-opencv/
+class VideoStream(object):
+    """run videograbbing in separate stream"""
 
-        def __init__(self, video, show=False, postProcess=None):
-            self.video = video
-            self.show = show
-            self.quit = False
-            # initialize the thread name
-            self.name = name
-            self.postProcess = postProcess
+    def __init__(self, video, show=False, postProcess=None, name='VideoStream'):
+        self.video = video
+        self.show = show
+        self.quit = False
+        self.frame = None
+        # initialize the thread name
+        self.name = name
+        self.postProcess = postProcess
 
-            # initialize the variable used to indicate if the thread should
-            # be stopped
-            self.stopped = False
+        # initialize the variable used to indicate if the thread should
+        # be stopped
+        self.stopped = False
 
-        def start(self):
-            # start the thread to read frames from the video stream
-            t = Thread(target=self.update, name=self.name, args=())
-            t.daemon = True
-            t.start()
-            return self
+    def start(self):
+        # start the thread to read frames from the video stream
+        t = Thread(target=self.update, name=self.name, args=())
+        t.daemon = True
+        t.start()
+        return self
 
-        def update(self):
-            # keep looping infinitely until the thread is stopped
-            while True:
-                # if the thread indicator variable is set, stop the thread
-                if self.stopped:
-                    return
+    def update(self):
+        # keep looping infinitely until the thread is stopped
+        while True:
+            # if the thread indicator variable is set, stop the thread
+            if self.stopped:
+                return
 
-                ret, frame, quit = video.readFrame(self.show, self.postProcess)
-                if ret:
-                    self.frame = frame
+            ret, frame, quit = video.readFrame(self.show, self.postProcess)
+            if ret:
+                self.frame = frame
 
-        def read(self):
-            # return the frame most recently read
-            return self.frame
+    def read(self):
+        # return the frame most recently read
+        return self.frame
 
-        def stop(self):
-            # indicate that the thread should be stopped
-            self.stopped = True
+    def stop(self):
+        # indicate that the thread should be stopped
+        self.stopped = True
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ import platform
 import os.path
 from subprocess import STDOUT
 import argparse
-from Video import Video
+from Video import Video, VideoStream
 from Board import Board
 
 thisscriptFolder = os.path.dirname(os.path.abspath(__file__))
@@ -25,7 +25,8 @@ thisscriptFolder = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, static_url_path='',
             static_folder=thisscriptFolder + '/../web')
 api = Api(app)
-app.logger.addHandler(logging.StreamHandler(STDOUT))
+#app.logger.addHandler(logging.StreamHandler(STDOUT))
+app.logger.setLevel(logging.INFO)
 app.logger.info("python src folder is %s" % (thisscriptFolder))
 # check if we are running on a raspberry PI
 app.logger.info("Running on %s" % (platform.system()))
@@ -34,34 +35,51 @@ if platform.system() == 'Linux' and os.path.exists('/sys/firmware/devicetree/bas
     app.logger.info("Running on Raspberry PI")
 
 # return the index.html template content with the given message
-
-
 def index(msg, cmd=None, value=None):
     return render_template('index.html', cmd=cmd, value=value, message=msg, timeStamp=video.timeStamp())
-
 
 @app.route("/")
 def root():
     return index("Ready")
 
+# streamed video generator
+# @TODO fix this non working code
+def genStreamed(video):
+    global videoStream
+    if videoStream is None:
+       app.logger.info("opening video stream")
+       videoStream=VideoStream(video,show=True,postProcess=video.addTimeStamp)
+       videoStream.start()
+    while True:
+        frame=videoStream.read()
+        if frame is not None:
+            flag,encodedImage=video.imencode(frame)
+            # ensure we got a valid image
+            if not flag:
+                continue
+            # yield the output frame in the byte format
+            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                  bytearray(encodedImage) + b'\r\n')
+
 # video generator
 def gen(video):
-    while True:
-        ret, encodedImage, quit = video.readJpgImage(show=False,postProcess=video.addTimeStamp)
-        # ensure we got a valid image
-        if not ret:
-            continue
-        if quit:
-            break
-        # yield the output frame in the byte format
-        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-              bytearray(encodedImage) + b'\r\n')
+   while True:
+      ret,encodedImage,quit=video.readJpgImage()
+      # ensure we got a valid image
+      if not ret:
+         continue
+      if quit:
+         break
+      # yield the output frame in the byte format
+      yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                       bytearray(encodedImage) + b'\r\n')
 
 
 @app.route('/video')
 def video_feed():
-    # capture from the given video device
-    video.capture(args.input)
+    if video.frames==0:
+        # capture from the given video device
+        video.capture(args.input)
     # return the response generated along with the specific media
     # type (mime type)
     return Response(gen(video),
@@ -81,7 +99,6 @@ def chessPgn():
     board.setPgn(pgn)
     msg = request.args.get('fen')
     return index(msg)
-
 
 @app.route("/chess/move/<move>", methods=['GET'])
 def chessMove(move):
@@ -131,5 +148,6 @@ class WebChessCamArgs:
 if __name__ == '__main__':
     args = WebChessCamArgs(sys.argv[1:]).args
     video = Video()
+    videoStream=None
     board = Board()
     app.run(port='%d' % (args.port), host=args.host)
