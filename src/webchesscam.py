@@ -64,7 +64,9 @@ def genStreamed(video):
 # video generator
 def gen(video):
    while True:
-      ret,encodedImage,quit=video.readJpgImage()
+      #postProcess=video.addTimeStamp
+      postProcess=None
+      ret,encodedImage,quit=video.readJpgImage(show=False,postProcess=postProcess)
       # ensure we got a valid image
       if not ret:
          continue
@@ -90,6 +92,16 @@ def video_pause():
     ispaused=not video.paused()
     video.pause(ispaused)
     msg = "video " + ( 'paused' if ispaused else 'running' )
+    return index(msg)
+
+@app.route("/chess/takeback", methods=['GET'])
+def chessTakeback():
+    msg="take back"
+    return index(msg)
+
+@app.route("/chess/forward", methods=['GET'])
+def chessForward():
+    msg="forward"
     return index(msg)
 
 @app.route("/chess/pgn", methods=['GET'])

@@ -17,7 +17,7 @@ function handleQuery() {
   if (pgn){
     game.load_pgn(pgn);
     board.position(game.fen());
-    showPgn();
+    showPgn(false);
   }
 }
 
@@ -48,13 +48,15 @@ function onDragStart (source, piece) {
 }
 
 // show the pgn notation of the game
-function showPgn() {
+function showPgn(doClick) {
   var pgn=game.pgn();
   // textarea
   document.getElementById("pgn").innerHTML = pgn;
   // input
   var fen=board.fen();
   document.getElementById("fen").innerHTML = fen;
+  if (doClick)
+     document.getElementById('updateGame').click();
 }
 
 function onDrop (source, target) {
@@ -71,7 +73,7 @@ function onDrop (source, target) {
   if (move === null)
     return 'snapback'
   else {
-    showPgn();
+    showPgn(true);
   }
 }
 
