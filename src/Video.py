@@ -5,46 +5,59 @@ import cv2
 import numpy as np
 import sys
 import math
+import datetime
 from time import strftime
 import argparse
 import os
 
 # Video handling e.g. recording/writing
+
+
 class Video:
     # construct me with no parameters
     def __init__(self):
         self.cap = None
         self.frames = 0
+        self.ispaused = False
+        # current Frame
+        self.frame = None
         pass
 
     # check whether s is an int
-    def is_int(self,s):
+    def is_int(self, s):
         try:
             int(s)
             return True
         except ValueError:
             return False
 
+    # return if video is paused
+    def paused(self):
+        return self.ispaused
+
+    # pause the video
+    def pause(self, ispaused):
+        self.ispaused = ispaused
 
     # capture from the given device
     def capture(self, device):
         if self.is_int(device):
             self.device = int(device)
         else:
-            self.device=device
+            self.device = device
             self.open(device)
         self.setup(cv2.VideoCapture(self.device))
 
-    def setup(self,cap):
+    def setup(self, cap):
         self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv2.CAP_PROP_FPS))
         self.cap = cap
 
     def checkFilePath(self, filePath, raiseException=True):
-        ok=os.path.exists(filePath)
+        ok = os.path.exists(filePath)
         if raiseException and not ok:
-           raise Exception("file %s does not exist" % (filePath))
+            raise Exception("file %s does not exist" % (filePath))
         return ok
 
     # capture from the given video filePath
@@ -61,42 +74,50 @@ class Video:
             return True
 
     # return a video frame as a jpg image
-    def readJpgImage(self,show=False):
-        ret,frame,quit = self.readFrame()
-        encodedImage=None
+    def readJpgImage(self, show=False, postProcess=None):
+        ret, frame, quit = self.readFrame(show, postProcess)
+        encodedImage = None
         # ensure the frame was read
         if ret:
             # encode the frame in JPEG format
             (flag, encodedImage) = cv2.imencode(".jpg", frame)
-    		# ensure the frame was successfully encoded
+            # ensure the frame was successfully encoded
             if not flag:
-               ret=False
-        return ret,encodedImage,quit
+                ret = False
+        return ret, encodedImage, quit
 
     # return a video frame as a numpy array
-    def readFrame(self,show=False):
-        ret, frame=self.cap.read()
-        quit=False
+    def readFrame(self, show=False, postProcess=None):
+        # when pausing repeat previous frame
+        if self.ispaused:
+            ret = self.frame is not None
+            frame = self.frame
+        else:
+            ret, self.frame = self.cap.read()
+        quit = False
         if ret == True:
-            self.frames = self.frames + 1
+            if not self.ispaused:
+                if not postProcess is None:
+                    self.frame = postProcess(self.frame)
+                self.frames = self.frames + 1
             if show:
-                quit=not self.showImage(frame,"frame")
-        return ret,frame,quit
+                quit = not self.showImage(self.frame, "frame")
+        return ret, self.frame, quit
 
     # play the given capture
     def play(self):
         while(self.cap.isOpened()):
-            ret, frame, quit=self.readFrame(True)
+            ret, frame, quit = self.readFrame(True)
             if ret == True:
                 if quit:
-                   break
+                    break
             else:
                 break
         self.cap.release()
         cv2.destroyAllWindows()
 
-    def timeStamp(self):
-        return strftime("%Y-%m-%d_%H%M%S")
+    def timeStamp(self,separator='_',timeseparator=''):
+        return strftime("%Y-%m-%d"+separator+"%H"+timeseparator+"%M"+timeseparator+"%S" )
 
     def close(self):
         if self.cap is not None:
@@ -109,22 +130,22 @@ class Video:
     # get a still image
     def still(self, prefix, format="jpg", printHints=True):
         filename = "%s%s.%s" % (prefix, self.timeStamp(), format)
-        return self.still2File(filename,format,printHints)
+        return self.still2File(filename, format, printHints)
 
     # get a still image
     def still2File(self, filename, format="jpg", printHints=True):
         self.checkCap()
-        ret=False
-        frame=None
+        ret = False
+        frame = None
         if (self.cap.isOpened()):
-            ret, frame=self.cap.read()
+            ret, frame = self.cap.read()
             if ret == True:
                 if printHints:
                     print("capture %s with %dx%d" % (
                         filename, self.width, self.height))
                 cv2.imwrite(filename, frame)
             self.close()
-        return ret,frame
+        return ret, frame
 
     # read an image
     def readImage(self, filePath):
@@ -146,12 +167,12 @@ class Video:
                 filename, self.width, self.height, self.fps))
 
         while(self.cap.isOpened()):
-            ret, frame,quit=self.readFrame(True)
+            ret, frame, quit = self.readFrame(True)
             if ret == True:
                 # flip the frame
                 # frame = cv2.flip(frame,0)
                 if quit:
-                    break;
+                    break
                 # write the  frame
                 out.write(frame)
             else:
@@ -195,15 +216,16 @@ class Video:
         Returns: lines"""
         gray = cv2.cvtColor(image,  cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray, 50, 150, apertureSize=3)
-        h,w = image.shape[:2]
-        minLineLength = h/16
-        maxLineGap = h/24
-        lines = cv2.HoughLinesP(edges,1,np.pi/180,100,minLineLength,maxLineGap)
+        h, w = image.shape[:2]
+        minLineLength = h / 16
+        maxLineGap = h / 24
+        lines = cv2.HoughLinesP(edges, 1, np.pi / 180,
+                                100, minLineLength, maxLineGap)
         return lines
 
     #  https://docs.opencv.org/4.1.2/d9/db0/tutorial_hough_lines.html
     def drawLines(self, image, lines):
-        height, width=image.shape[:2]
+        height, width = image.shape[:2]
         for i in range(0, len(lines)):
             rho = lines[i][0][0]
             theta = lines[i][0][1]
@@ -216,15 +238,27 @@ class Video:
             cv2.line(image, pt1, pt2, (0, 0, 255), 3, cv2.LINE_AA)
 
     def getSubRect(self, image, rect):
-        x, y, w, h=rect
+        x, y, w, h = rect
         return image[y:y + h, x:x + h]
 
     # get the intensity sum of a hsv image
     def sumIntensity(self, image):
-        h, s, v=cv2.split(image)
-        height, width=image.shape[:2]
-        sumResult=np.sum(v)
+        h, s, v = cv2.split(image)
+        height, width = image.shape[:2]
+        sumResult = np.sum(v)
         return sumResult
+
+    # add a timeStamp to the given frame
+    def addTimeStamp(self, frame,fontBGRColor=(255,255,255),fontScale=0.7,font=cv2.FONT_HERSHEY_SIMPLEX,lineThickness=1):
+        if frame is not None:
+           # grab the current timestamp and draw it on the frame
+           now = self.timeStamp(' ',':')
+           #print (now)
+           text_width, text_height = cv2.getTextSize(now, font, fontScale, lineThickness)[0]
+           height, width = frame.shape[:2]
+           # https://stackoverflow.com/a/34273603/1497139
+           cv2.putText(frame, now, (width-text_width, text_height),font, fontScale, fontBGRColor, lineThickness)
+        return frame
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Video')

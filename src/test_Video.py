@@ -1,6 +1,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Video import Video
 
+
 # test reading an example video
 def test_ReadVideo():
     video=Video()
@@ -8,6 +9,27 @@ def test_ReadVideo():
     video.play()
     print ("played %d frames" % (video.frames))
     assert video.frames == 52
+
+def test_ReadVideoWithPostProcess():
+    video=Video()
+    video.open('testMedia/emptyBoard001.avi')
+    for frame in range(0,52):
+        ret,jpgImage,quit=video.readFrame(show=True,postProcess=video.addTimeStamp)
+
+# test pausing the video
+def test_ReadVideoWithPause():
+    video=Video()
+    video.open('testMedia/emptyBoard001.avi')
+    for frame in range(0,62):
+        if frame>=10 and frame<20:
+            video.pause(True)
+        else:
+            video.pause(False)
+        ret,jpgImage,quit=video.readJpgImage(show=True)
+        #print (video.frames)
+        assert ret
+        assert jpgImage is not None
+    assert video.frames== 52
 
 # test reading video as jpg frames
 def test_ReadJpg():
@@ -17,6 +39,7 @@ def test_ReadJpg():
         ret,jpgImage,quit=video.readJpgImage(show=True)
         assert ret
         assert jpgImage is not None
+    assert video.frames==52
 
 # create a blank image
 def test_CreateBlank():
@@ -46,6 +69,8 @@ def test_device():
     assert v0==0
 
 test_device()
+test_ReadVideoWithPostProcess()
+test_ReadVideoWithPause()
 test_ReadJpg()
 test_ReadVideo()
 test_getSubRect()
