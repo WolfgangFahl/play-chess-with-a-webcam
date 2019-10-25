@@ -35,6 +35,12 @@ function onDragStart (source, piece) {
   }
 }
 
+// show the pgn notation of the game
+function showPgn() {
+  var pgn=game.pgn();
+  document.getElementById("pgn").innerHTML = pgn;
+}
+
 function onDrop (source, target) {
   removeGreySquares()
 
@@ -46,7 +52,11 @@ function onDrop (source, target) {
   })
 
   // illegal move
-  if (move === null) return 'snapback'
+  if (move === null)
+    return 'snapback'
+  else {
+    showPgn();
+  }
 }
 
 function onMouseoverSquare (square, piece) {
