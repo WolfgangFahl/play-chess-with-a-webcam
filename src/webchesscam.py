@@ -33,8 +33,8 @@ if platform.system() == 'Linux' and os.path.exists('/sys/firmware/devicetree/bas
     app.logger.info("Running on Raspberry PI")
 
 # return the index.html template content with the given message
-def index(msg,cmd=None):
-    return render_template('index.html',cmd=None, message=msg, timeStamp=video.timeStamp())
+def index(msg,cmd=None,value=None):
+    return render_template('index.html',cmd=cmd,value=value,message=msg, timeStamp=video.timeStamp())
 
 @app.route("/")
 def root():
@@ -61,11 +61,18 @@ def video_feed():
     return Response(gen(video),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route("/chess/pgn", methods=['GET'])
+def chessPgn():
+    pgn = request.args.get('pgn')
+    board.setPgn(pgn)
+    msg= request.args.get('fen')
+    return index(msg,"pgn",value=pgn)
+
 @app.route("/chess/move/<move>", methods=['GET'])
 def chessMove(move):
     board.performMove(move)
     msg="move %s -> fen= %s" % (move,board.fen())
-    return index(msg,cmd=("fen",board.fen()))
+    return index(msg,cmd="fen",value=board.fen())
 
 # capture a single still image
 @app.route("/chess/photo", methods=['GET'])

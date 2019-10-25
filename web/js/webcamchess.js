@@ -9,6 +9,18 @@ var game = new Chess()
 var whiteSquareGrey = '#a9a9a9'
 var blackSquareGrey = '#696969'
 
+// execute the given command in the URL parameters
+function handleQuery() {
+  var url=new URL(window.location.href)
+  var searchParams = new URLSearchParams(url.search);
+  var pgn=searchParams.get('pgn')
+  if (pgn){
+    game.load_pgn(pgn);
+    board.position(game.fen());
+    showPgn();
+  }
+}
+
 function removeGreySquares () {
   $('#chessboard .square-55d63').css('background', '')
 }
@@ -38,7 +50,11 @@ function onDragStart (source, piece) {
 // show the pgn notation of the game
 function showPgn() {
   var pgn=game.pgn();
+  // textarea
   document.getElementById("pgn").innerHTML = pgn;
+  // input
+  var fen=board.fen();
+  document.getElementById("fen").innerHTML = fen;
 }
 
 function onDrop (source, target) {

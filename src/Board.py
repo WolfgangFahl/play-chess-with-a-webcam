@@ -4,6 +4,8 @@
 
 # Global imports
 import chess
+import chess.pgn
+import io
 from chess import Move
 
 class RejectedMove(Exception):
@@ -46,6 +48,19 @@ class Board(object):
         san=self.board.san(move)
         self.board.push(move)
         return san
+
+    # get my pgn description
+    def pgn(self):
+        game=chess.pgn.Game.from_board(self.board)
+        return game
+
+    # set my board and game from the given pgn
+    def setPgn(self,pgn):
+        pgnIo=io.StringIO(pgn)
+        game=chess.pgn.read_game(pgnIo)
+        self.board=game.board()
+        for move in game.mainline_moves():
+          self.board.push(move)
 
     #get my fen description
     def fen(self):

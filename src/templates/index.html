@@ -5,23 +5,24 @@
   <div class='row'>
     <div id='chessboard' class="h-100 col-md-4">
       {% include 'js.html' %}
-      <script>
-        /* var config = {
-          position: 'start',
-          pieceTheme: '/img/chesspieces/wikipedia/{piece}.png',
-          draggable: true,
-          dropOffBoard: 'trash'
-        };
-        var chessboard = Chessboard('chessboard', config);*/
-      </script>
-      <script src='/js/webcamchess.js'></script>
     </div>
     <div id='chesswebcam' class="col-md-6">
       <img width='640' height='480' src='/video#{{timeStamp}}'/>
     </div>
     <!-- game notation -->
-    <div id='pgn' class="col-md-2">
-
+    <div id='notation' class="col-md-2">
+      <form action='/chess/pgn' method='GET'>
+         <textarea id='fen' name='fen' cols='30' rows= '3'></textarea>
+         <textarea id='pgn' name="pgn" cols='30' rows='20'></textarea><br>
+         <button type="submit" name="updateGame">Update Game</button>
+      </form>
     </div>
   </div>
+  <!-- web cam chess -->
+  <script src='/js/webcamchess.js'></script>
+  <!-- commands from url -- jinja way ... could also be done directly in javascript -->
+  <script>
+    // handle the url query Parameters
+    handleQuery();
+  </script>
   {% include 'footer.html' %}

@@ -6,8 +6,7 @@ from Board import RejectedMove
 
 # check the sequence of  moves end positon against the expected FEN notation string
 def checkMovesEndPosition(moves,expectedFen):
-    dominatorOffset = (0,-1) # Dominator is on the next cell to the right
-    board = Board(dominatorOffset)
+    board = Board()
     for move in moves:
        try:
           san=board.performMove(move)
@@ -15,11 +14,17 @@ def checkMovesEndPosition(moves,expectedFen):
        except RejectedMove as e:
           print(e)
           pass
+    checkEndPosition(board,expectedFen)
+
+# check the expected end position
+def checkEndPosition(board,expectedFen):
     print("---Final positions---")
     fen=board.fen()
     print (fen)
     unicode=board.unicode()
     print (unicode)
+    pgn=board.pgn()
+    print (pgn)
     assert expectedFen==fen
 
 # test the board state using "easy" notation
@@ -40,4 +45,13 @@ def test_BoardEasy():
     expectedFen="rnbq1rk1/p1Pp1ppp/3bpn2/2P5/Q2P4/8/PP2PPPP/RNB1KBNR"
     checkMovesEndPosition(moves,expectedFen)
 
+# test using pgn notation
+def test_BoardPgn():
+    pgn="1. d4 Nf6 2. c4 e6 3. c5 Bd6 4. Qa4 b5 5. cxb6 O-O 6. bxc7"
+    board=Board()
+    board.setPgn(pgn)
+    expectedFen="rnbq1rk1/p1Pp1ppp/3bpn2/8/Q2P4/8/PP2PPPP/RNB1KBNR"
+    checkEndPosition(board,expectedFen)
+
 test_BoardEasy()
+test_BoardPgn()
