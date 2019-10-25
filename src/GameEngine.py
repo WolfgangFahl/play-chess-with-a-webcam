@@ -4,7 +4,6 @@
 
 # Global imports
 from Args import Args
-from math import sin, cos, sqrt, pi, atan2
 import sys
 import numpy as np
 from collections import defaultdict
@@ -26,6 +25,7 @@ class GameEngine(object):
         self.board = Board(self.cam.getDominatorOffset())
         self.useUCI = not self.cam.args.nouci
 
+    # play loop
     def play(self):
         """This method plays the main loop of the ChessCam project until ArenaQuit or UserExit is received."""
         try:
@@ -35,6 +35,7 @@ class GameEngine(object):
         except UserExit:
             pass
 
+    # main loop
     def mainLoop(self):
         #Synchronize with Arena by knowing if opponent plays first.
         move = ""

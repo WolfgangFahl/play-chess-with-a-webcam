@@ -228,6 +228,18 @@ js/jquery-3.4.1.min.js
 EOF
 }
 
+# get chess.js
+chessJs() {
+  local l_target="$1"
+  cat << EOF | checkParts true
+    $l_target
+    chess.js
+    https://github.com/jhlywa/chess.js
+    https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2
+    chess.js
+EOF
+}
+
 # get Bootstrap
 bootstrap() {
   local l_target="$1"
@@ -283,5 +295,7 @@ materialDesign "$scriptdir/../web/md"
 materialDesignIcons "$scriptdir/../web/mdi"
 # get CheckBoard.js
 chessBoardJs "$scriptdir/../web/chessboard"
+# get chess.js
+chessJs "$scriptdir/../web/chess"
 # install required python modules
 pythonModules

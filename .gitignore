@@ -2,6 +2,7 @@
 # to be installed via scripts/install
 web/bootstrap
 web/chessboard
+web/chess
 web/md
 web/mdi
 # interactive results

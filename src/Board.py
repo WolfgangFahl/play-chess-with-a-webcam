@@ -23,7 +23,8 @@ class Board(object):
     ROW_NUMBER = {0: str(1), 1: str(2), 2: str(3), 3: str(
         4), 4: str(5), 5: str(6), 6: str(7), 7: str(8)}
 
-    def __init__(self, dominatorOffset):
+    # initialize the board with a default dominator next cell to the right
+    def __init__(self, dominatorOffset=(0,-1)):
         self.board = chess.Board()
         self.toPlay = Board.C['w']
         self.dominator = dominatorOffset
@@ -34,20 +35,24 @@ class Board(object):
         # @TODO deprecated use python-chess instead
         return ''.join([Board.COLUMN_LETTER[column], Board.ROW_NUMBER[row]])
 
+    # perform the given move
     def performMove(self, move):
         fromCell=move[0].lower()
         toCell=move[1].lower()
         if Board.debug:
             print ("move %s-%s" % (fromCell,toCell))
+            print ("%s" % (self.unicode()))
         move=Move.from_uci(fromCell+toCell)
         san=self.board.san(move)
         self.board.push(move)
         return san
 
+    #get my fen description
     def fen(self):
         fen=self.board.board_fen()
         return fen
 
+    # get my unicode representation
     def unicode(self):
         unicode=self.board.unicode()
         return unicode

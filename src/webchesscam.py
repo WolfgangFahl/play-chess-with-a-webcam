@@ -15,6 +15,7 @@ import os.path
 from subprocess import STDOUT
 import argparse
 from Video import Video
+from Board import Board
 
 thisscriptFolder=os.path.dirname(os.path.abspath(__file__))
 
@@ -32,8 +33,8 @@ if platform.system() == 'Linux' and os.path.exists('/sys/firmware/devicetree/bas
     app.logger.info("Running on Raspberry PI")
 
 # return the index.html template content with the given message
-def index(msg):
-    return render_template('index.html', message=msg, timeStamp=video.timeStamp())
+def index(msg,cmd=None):
+    return render_template('index.html',cmd=None, message=msg, timeStamp=video.timeStamp())
 
 @app.route("/")
 def root():
@@ -60,11 +61,13 @@ def video_feed():
     return Response(gen(video),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route("/chess/move/<fromField>/<toField>", methods=['GET'])
-def chessMove(fromField,toField):
-    msg="move %s-%s" % (fromField,toField)
-    return index(msg)
+@app.route("/chess/move/<move>", methods=['GET'])
+def chessMove(move):
+    board.performMove(move)
+    msg="move %s -> fen= %s" % (move,board.fen())
+    return index(msg,cmd=("fen",board.fen()))
 
+# capture a single still image
 @app.route("/chess/photo", methods=['GET'])
 def photo():
     # todo select input device
@@ -72,6 +75,7 @@ def photo():
     video.still2File(thisscriptFolder+'/../web/webcamchess/chessboard.jpg')
     return index("still image taken from input %s" % (args.input))
 
+# home
 @app.route("/chess/home", methods=['GET'])
 def home():
     return index("Home")
@@ -103,4 +107,5 @@ class WebChessCamArgs:
 if __name__ == '__main__':
     args=WebChessCamArgs(sys.argv[1:]).args
     video=Video()
+    board=Board()
     app.run(port='%d' % (args.port), host=args.host)
