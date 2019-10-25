@@ -9,8 +9,11 @@ import datetime
 from time import strftime
 from FPSCheck import FPSCheck
 import argparse
+from threading import Thread
 import os
 # Video handling e.g. recording/writing
+
+
 class Video:
     # construct me with no parameters
     def __init__(self):
@@ -19,7 +22,7 @@ class Video:
         self.ispaused = False
         # current Frame
         self.frame = None
-        self.fpsCheck=None
+        self.fpsCheck = None
         pass
 
     # check whether s is an int
@@ -53,7 +56,7 @@ class Video:
         self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv2.CAP_PROP_FPS))
         self.cap = cap
-        self.fpsCheck=FPSCheck()
+        self.fpsCheck = FPSCheck()
         self.fpsCheck.start()
 
     def checkFilePath(self, filePath, raiseException=True):
@@ -119,8 +122,8 @@ class Video:
         self.cap.release()
         cv2.destroyAllWindows()
 
-    def timeStamp(self,separator='_',timeseparator=''):
-        return strftime("%Y-%m-%d"+separator+"%H"+timeseparator+"%M"+timeseparator+"%S" )
+    def timeStamp(self, separator='_', timeseparator=''):
+        return strftime("%Y-%m-%d" + separator + "%H" + timeseparator + "%M" + timeseparator + "%S")
 
     def close(self):
         if self.cap is not None:
@@ -252,24 +255,61 @@ class Video:
         return sumResult
 
     # add a timeStamp to the given frame
-    def addTimeStamp(self, frame,withFPS=True,fontBGRColor=(255,255,255),fontScale=0.7,font=cv2.FONT_HERSHEY_SIMPLEX,lineThickness=1):
+    def addTimeStamp(self, frame, withFPS=True, fontBGRColor=(255, 255, 255), fontScale=0.7, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=1):
         if frame is not None:
-           # grab the current timestamp and draw it on the frame
-           now = self.timeStamp(' ',':')
-           if withFPS:
-             now=now+" %3.0f fps" % (self.fpsCheck.fps())
-           text_width, text_height = cv2.getTextSize(now, font, fontScale, lineThickness)[0]
-           height, width = frame.shape[:2]
-           # https://stackoverflow.com/a/34273603/1497139
-           cv2.putText(frame, now, (width-text_width, text_height),font, fontScale, fontBGRColor, lineThickness)
+            # grab the current timestamp and draw it on the frame
+            now = self.timeStamp(' ', ':')
+            if withFPS:
+                now = now + " %3.0f fps" % (self.fpsCheck.fps())
+            text_width, text_height = cv2.getTextSize(
+                now, font, fontScale, lineThickness)[0]
+            height, width = frame.shape[:2]
+            # https://stackoverflow.com/a/34273603/1497139
+            cv2.putText(frame, now, (width - text_width, text_height),
+                        font, fontScale, fontBGRColor, lineThickness)
         return frame
 
     # see https://www.pyimagesearch.com/2017/02/06/faster-video-file-fps-with-cv2-videocapture-and-opencv/
     class VideoStream(object):
         """run videograbbing in separate stream"""
-        def __init__(self, video):
-            self.video=video
 
+        def __init__(self, video, show=False, postProcess=None):
+            self.video = video
+            self.show = show
+            self.quit = False
+            # initialize the thread name
+            self.name = name
+            self.postProcess = postProcess
+
+            # initialize the variable used to indicate if the thread should
+            # be stopped
+            self.stopped = False
+
+        def start(self):
+            # start the thread to read frames from the video stream
+            t = Thread(target=self.update, name=self.name, args=())
+            t.daemon = True
+            t.start()
+            return self
+
+        def update(self):
+            # keep looping infinitely until the thread is stopped
+            while True:
+                # if the thread indicator variable is set, stop the thread
+                if self.stopped:
+                    return
+
+                ret, frame, quit = video.readFrame(self.show, self.postProcess)
+                if ret:
+                    self.frame = frame
+
+        def read(self):
+            # return the frame most recently read
+            return self.frame
+
+        def stop(self):
+            # indicate that the thread should be stopped
+            self.stopped = True
 
 
 if __name__ == "__main__":
