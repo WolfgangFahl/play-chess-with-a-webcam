@@ -7,12 +7,10 @@ import sys
 import math
 import datetime
 from time import strftime
+from FPSCheck import FPSCheck
 import argparse
 import os
-
 # Video handling e.g. recording/writing
-
-
 class Video:
     # construct me with no parameters
     def __init__(self):
@@ -21,6 +19,7 @@ class Video:
         self.ispaused = False
         # current Frame
         self.frame = None
+        self.fpsCheck=None
         pass
 
     # check whether s is an int
@@ -49,10 +48,13 @@ class Video:
         self.setup(cv2.VideoCapture(self.device))
 
     def setup(self, cap):
+        """ setup the capturing from the given device """
         self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv2.CAP_PROP_FPS))
         self.cap = cap
+        self.fpsCheck=FPSCheck()
+        self.fpsCheck.start()
 
     def checkFilePath(self, filePath, raiseException=True):
         ok = os.path.exists(filePath)
@@ -100,6 +102,7 @@ class Video:
                 if not postProcess is None:
                     self.frame = postProcess(self.frame)
                 self.frames = self.frames + 1
+                self.fpsCheck.update()
             if show:
                 quit = not self.showImage(self.frame, "frame")
         return ret, self.frame, quit
@@ -249,16 +252,25 @@ class Video:
         return sumResult
 
     # add a timeStamp to the given frame
-    def addTimeStamp(self, frame,fontBGRColor=(255,255,255),fontScale=0.7,font=cv2.FONT_HERSHEY_SIMPLEX,lineThickness=1):
+    def addTimeStamp(self, frame,withFPS=True,fontBGRColor=(255,255,255),fontScale=0.7,font=cv2.FONT_HERSHEY_SIMPLEX,lineThickness=1):
         if frame is not None:
            # grab the current timestamp and draw it on the frame
            now = self.timeStamp(' ',':')
-           #print (now)
+           if withFPS:
+             now=now+" %3.0f fps" % (self.fpsCheck.fps())
            text_width, text_height = cv2.getTextSize(now, font, fontScale, lineThickness)[0]
            height, width = frame.shape[:2]
            # https://stackoverflow.com/a/34273603/1497139
            cv2.putText(frame, now, (width-text_width, text_height),font, fontScale, fontBGRColor, lineThickness)
         return frame
+
+    # see https://www.pyimagesearch.com/2017/02/06/faster-video-file-fps-with-cv2-videocapture-and-opencv/
+    class VideoStream(object):
+        """run videograbbing in separate stream"""
+        def __init__(self, video):
+            self.video=video
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Video')

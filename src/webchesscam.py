@@ -47,7 +47,7 @@ def root():
 # video generator
 def gen(video):
     while True:
-        ret, encodedImage, quit = video.readJpgImage()
+        ret, encodedImage, quit = video.readJpgImage(show=False,postProcess=video.addTimeStamp)
         # ensure we got a valid image
         if not ret:
             continue
@@ -66,7 +66,6 @@ def video_feed():
     # type (mime type)
     return Response(gen(video),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
-
 
 @app.route("/chess/pausevideo", methods=['GET'])
 def video_pause():
