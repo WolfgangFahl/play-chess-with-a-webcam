@@ -18,7 +18,7 @@ class BoardDetector:
       self.hsv=None
 
   # analyze the given image
-  def analyze(self,image,distance=3):
+  def analyze(self,image,distance=3,step=1):
      # guess where the centers of the fields are
      # height
      height, width = image.shape[:2]
@@ -32,7 +32,8 @@ class BoardDetector:
            field=self.board.fields[row][col]
            field.pcx=pcx
            field.pcy=pcy
-           color=field.analyzeColor(self.hsv,distance)
+           color=field.analyzeColor(self.hsv,distance,step)
            if BoardDetector.debug:
-               self.video.drawRectangle(image,(field.pcx-distance-1,field.pcy-distance-1),(field.pcx+distance+1,field.pcy+distance+1),thickness=1,color=(0,0,0))
-               self.video.drawRectangle(image,(field.pcx-distance,field.pcy-distance),(field.pcx+distance,field.pcy+distance),thickness=-1,color=color)
+               x1,y1,x2,y2=field.pcx-distance*step,field.pcy-distance*step,field.pcx+distance*step,field.pcy+distance*step
+               self.video.drawRectangle(image,(x1-1,y1-1),(x2+1,y2+1),thickness=1,color=(0,0,0))
+               self.video.drawRectangle(image,(x1  ,y1  ),(x2  ,y2  ),thickness=-1,color=color)
