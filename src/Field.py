@@ -30,11 +30,12 @@ class Field:
         # center pixel position of field
         self.pcx=None
         self.pcx=None
-        self.hsvStats=ColorStats()
+        self.hsvStats=None
 
     # analyze the color arround my center pixel to the given
     # distance
     def analyzeColor(self,hsv,distance=1,step=1):
+        self.hsvStats=ColorStats()
         for dx in range(-distance*step,distance*step+1,step):
           for dy in range(-distance*step,distance*step+1,step):
             ph,ps,pv = hsv[self.pcy+dy, self.pcx+dx]

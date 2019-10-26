@@ -24,10 +24,13 @@ def test_ReadVideoWithPause():
             video.pause(True)
         else:
             video.pause(False)
-        ret,jpgImage,quit=video.readJpgImage(show=True)
+        ret,jpgImage,quit=video.readFrame(show=True)
         #print (video.frames)
         assert ret
         assert jpgImage is not None
+        height, width = jpgImage.shape[:2]
+        #print ("%d: %d x %d" % (frame,width,height))
+        assert (width,height)==(640,480)
     assert video.frames== 52
 
 # test reading video as jpg frames
@@ -35,9 +38,12 @@ def test_ReadJpg():
     video=Video()
     video.open('testMedia/emptyBoard001.avi')
     for frame in range(0,52):
-        ret,jpgImage,quit=video.readJpgImage(show=True)
+        ret,jpgImage,quit=video.readFrame(show=True)
         assert ret
         assert jpgImage is not None
+        height, width = jpgImage.shape[:2]
+        #print ("%d: %d x %d" % (frame,width,height))
+        assert (width,height)==(640,480)
     assert video.frames==52
 
 # create a blank image

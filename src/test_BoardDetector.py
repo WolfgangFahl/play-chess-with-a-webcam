@@ -1,12 +1,15 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
+from Args import Args
 from BoardDetector import BoardDetector
 from Board import Board
 from Video import Video
 from timeit import default_timer as timer
+from WebApp import WebApp
+import cv2
 
-def test_BoardDetector():
+def test_BoardFieldColorDetector():
     video=Video()
     board=Board()
     image=video.readImage("testMedia/chessBoard011.jpg")
@@ -23,4 +26,35 @@ def test_BoardDetector():
             print("%.3fs for distance %2d with %4d pixels %2d x %2d " % (end - start,distance,count,size,size)) # Time in seconds, e.g. 5.38091952400282
             video.showImage(testImage,"fields",True,500)
 
-test_BoardDetector()
+def test_FieldDetector():
+    video=Video()
+    board=Board()
+    webApp=WebApp(Args([]))
+    video.open('testMedia/scholarsmate.avi')
+    BoardDetector.debug=True
+    boardDetector=BoardDetector(board,video)
+    distance=4
+    step=2
+    # setup webApp params to reuse warp method
+    webApp.video=video
+    webApp.rotation=270
+    webApp.addWarpPoint(140,5)
+    webApp.addWarpPoint(506,10)
+    webApp.addWarpPoint(507,377)
+    webApp.addWarpPoint(137,374)
+
+    for frame in range(0,334):
+        ret,bgr,quit=video.readFrame(show=False)
+        assert ret
+        assert bgr is not None
+        #bgr = cv2.cvtColor(jpgImage, cv2.COLOR_RGB2BGR)
+        height, width = bgr.shape[:2]
+        #print ("%d: %d x %d" % (frame,width,height))
+        bgr=webApp.warp(bgr)
+        start = timer()
+        boardDetector.analyze(bgr,distance,step)
+        video.showImage(bgr,"BoardDetector")
+        end = timer()
+
+#test_BoardFieldColorDetector()
+test_FieldDetector()
