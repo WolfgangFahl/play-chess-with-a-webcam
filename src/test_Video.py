@@ -1,7 +1,6 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Video import Video
 
-
 # test reading an example video
 def test_ReadVideo():
     video=Video()

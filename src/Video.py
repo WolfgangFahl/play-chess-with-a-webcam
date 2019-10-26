@@ -8,11 +8,11 @@ import math
 import datetime
 from time import strftime
 from FPSCheck import FPSCheck
+from imutils import perspective
 import argparse
 from threading import Thread
 import os
 # Video handling e.g. recording/writing
-
 
 class Video:
     # construct me with no parameters
@@ -127,6 +127,9 @@ class Video:
         self.cap.release()
         cv2.destroyAllWindows()
 
+    def fileTimeStamp(self):
+        return self.timeStamp(separator='_', timeseparator='')
+
     def timeStamp(self, separator=' ', timeseparator=':'):
         return strftime("%Y-%m-%d" + separator + "%H" + timeseparator + "%M" + timeseparator + "%S")
 
@@ -140,7 +143,7 @@ class Video:
 
     # get a still image
     def still(self, prefix, format="jpg", printHints=True):
-        filename = "%s%s.%s" % (prefix, self.timeStamp(separator='_', timeseparator=''), format)
+        filename = "%s%s.%s" % (prefix, self.fileTimeStamp(), format)
         return self.still2File(filename, format, printHints)
 
     # get a still image
@@ -234,6 +237,15 @@ class Video:
                                 100, minLineLength, maxLineGap)
         return lines
 
+    def drawTrapezoid(self,image,points,color):
+        # loop over the points and draw them on the image
+        prev=None
+        for (x, y) in points:
+           cv2.circle(image, (x, y), 10, color, -1)
+           if prev is not None:
+              cv2.line(image, (x,y), prev, color, 3, cv2.LINE_AA)
+           prev =(x,y)
+
     #  https://docs.opencv.org/4.1.2/d9/db0/tutorial_hough_lines.html
     def drawLines(self, image, lines):
         height, width = image.shape[:2]
@@ -247,6 +259,15 @@ class Video:
             pt1 = (int(x0 + width * (-b)), int(y0 + height * (a)))
             pt2 = (int(x0 - width * (-b)), int(y0 - height * (a)))
             cv2.line(image, pt1, pt2, (0, 0, 255), 3, cv2.LINE_AA)
+
+    def warp(self,image,pts,squared=True):
+       """apply the four point tranform to obtain a birds eye view of the given image """
+       warped = perspective.four_point_transform(image, pts)
+       if squared:
+          height, width = warped.shape[:2]
+          side=min(width,height)
+          warped = cv2.resize(warped,(side,side))
+       return warped
 
     def getSubRect(self, image, rect):
         x, y, w, h = rect

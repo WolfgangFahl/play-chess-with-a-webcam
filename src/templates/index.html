@@ -3,14 +3,27 @@
 <div id='navigationbox' title='Play Chess With a WebCam'>Play Chess With a WebCam</div>
 <div class='container-fluid' id='contentbox'>
   <div class='row'>
-    <div id='chessboard' class="h-100 col-md-4">
-      {% include 'js.html' %}
+    <div id='chessboarddiv' class="h-100 col-md-4">
+      <br>
+      <!-- center the ChessBoard Frame -->
+      <div id='chessboardframe' style='margin-left: 20px'>
+        <div id='chessboard' style="width: 480px">
+          {% include 'js.html' %}
+        </div>
+      </div>
     </div>
-    <div id='chesswebcam' class="col-md-6">
-      <img width='640' height='480' src='/video#{{timeStamp}}'/>
+    <div id='chesswebcamdiv' class="col-md-5">
+      <br>
+      <!-- center the ChessWebCam Frame -->
+      <div id='chesswebcamframe' style='width:480px; margin-left: auto;margin-right:auto'>
+        <a href='/chess/chesswebcamclick/480/480'>
+           <img id='chesswebcam' width='480' height='480' src='/video#{{timeStamp}}' ismap='true'/>
+        </a>
+      </div>
     </div>
     <!-- game notation -->
-    <div id='notation' class="col-md-2">
+    <div id='notation' class="col-md-3">
+      <br>
       <form action='/chess/pgn' method='GET'>
          <textarea id='fen' name='fen' cols='30' rows= '3'></textarea>
          <textarea id='pgn' name="pgn" cols='30' rows='20'></textarea><br>

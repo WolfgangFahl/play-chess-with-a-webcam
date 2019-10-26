@@ -14,8 +14,7 @@ import platform
 import os.path
 from subprocess import STDOUT
 import argparse
-from Video import Video, VideoStream
-from Board import Board
+from WebApp import WebApp
 
 thisscriptFolder = os.path.dirname(os.path.abspath(__file__))
 
@@ -34,83 +33,46 @@ app.logger.info("Running on %s" % (platform.system()))
 if platform.system() == 'Linux' and os.path.exists('/sys/firmware/devicetree/base/model'):
     app.logger.info("Running on Raspberry PI")
 
-# return the index.html template content with the given message
-def index(msg, cmd=None, value=None):
-    return render_template('index.html', cmd=cmd, value=value, message=msg, timeStamp=video.timeStamp())
-
 @app.route("/")
 def root():
-    return index("Ready")
-
-# streamed video generator
-# @TODO fix this non working code
-def genStreamed(video):
-    global videoStream
-    if videoStream is None:
-       app.logger.info("opening video stream")
-       videoStream=VideoStream(video,show=True,postProcess=video.addTimeStamp)
-       videoStream.start()
-    while True:
-        frame=videoStream.read()
-        if frame is not None:
-            flag,encodedImage=video.imencode(frame)
-            # ensure we got a valid image
-            if not flag:
-                continue
-            # yield the output frame in the byte format
-            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                  bytearray(encodedImage) + b'\r\n')
-
-# video generator
-def gen(video):
-   while True:
-      #postProcess=video.addTimeStamp
-      postProcess=None
-      ret,encodedImage,quit=video.readJpgImage(show=False,postProcess=postProcess)
-      # ensure we got a valid image
-      if not ret:
-         continue
-      if quit:
-         break
-      # yield the output frame in the byte format
-      yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                       bytearray(encodedImage) + b'\r\n')
-
+    return webApp.home()
 
 @app.route('/video')
 def video_feed():
-    if video.frames==0:
-        # capture from the given video device
-        video.capture(args.input)
-    # return the response generated along with the specific media
-    # type (mime type)
-    return Response(gen(video),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    return webApp.videoFeed()
+
+@app.route("/chess/debug", methods=['GET'])
+def chessDebug():
+    return webApp.chessDebug()
 
 @app.route("/chess/pausevideo", methods=['GET'])
 def video_pause():
-    ispaused=not video.paused()
-    video.pause(ispaused)
-    msg = "video " + ( 'paused' if ispaused else 'running' )
-    return index(msg)
+    return webApp.videoPause()
 
 @app.route("/chess/takeback", methods=['GET'])
 def chessTakeback():
-    msg="take back"
-    return index(msg)
+    return webApp.chessTakeback()
 
 @app.route("/chess/forward", methods=['GET'])
 def chessForward():
-    msg="forward"
-    return index(msg)
+    return webApp.chessForward()
 
 @app.route("/chess/pgn", methods=['GET'])
 def chessPgn():
     """ set game status from the given pgn"""
     pgn = request.args.get('pgn')
-    board.setPgn(pgn)
-    msg = request.args.get('fen')
-    return index(msg)
+    fen = request.args.get('fen')
+    return webApp.chessPgn(pgn,fen)
+
+@app.route("/chess/chesswebcamclick/<width>/<height>", methods=['GET'])
+def chessWebCamClick(width,height):
+    # click info is in an unnamed query parameter
+    args = request.args.to_dict()
+    click=next(iter(args)).split(',')
+    x,y=click
+    w=int(width)
+    h=int(height)
+    return webApp.chessWebCamClick(int(x),int(y),w,h)
 
 @app.route("/chess/move/<move>", methods=['GET'])
 def chessMove(move):
@@ -121,15 +83,12 @@ def chessMove(move):
 # capture a single still image
 @app.route("/chess/photo", methods=['GET'])
 def photo():
-    # todo select input device
-    video.capture(args.input)
-    video.still2File(thisscriptFolder + '/../web/webcamchess/chessboard.jpg')
-    return index("still image taken from input %s" % (args.input))
+    return webApp.photo(thisscriptFolder + '/../web/webcamchess/')
 
 # home
 @app.route("/chess/home", methods=['GET'])
 def home():
-    return index("Home")
+    return webApp.home()
 
 # default arguments for Chess Cam
 
@@ -159,7 +118,5 @@ class WebChessCamArgs:
 
 if __name__ == '__main__':
     args = WebChessCamArgs(sys.argv[1:]).args
-    video = Video()
-    videoStream=None
-    board = Board()
+    webApp=WebApp(args)
     app.run(port='%d' % (args.port), host=args.host)
