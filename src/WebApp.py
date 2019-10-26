@@ -8,10 +8,10 @@ import numpy as np
 
 class WebApp:
     """ actual Web Application - Flask calls are routed here """
-    # construct me with no parameters
     debug=False
 
     def __init__(self,args,warpPointBGRColor=(0, 255, 0)):
+       """ construct me """
        self.args=args
        self.warpPointColor= warpPointBGRColor
        self.video = Video()
@@ -19,13 +19,19 @@ class WebApp:
        self.board = Board()
        self.warpPointList = []
        self.warpPoints=None
+       self.rotation=0
 
     # return the index.html template content with the given message
     def index(self,msg):
          return render_template('index.html', message=msg, timeStamp=self.video.timeStamp())
 
     def home(self):
+        self.video=Video()
         return self.index("Home")
+
+    def download(self,path,filename):
+        #  https://stackoverflow.com/a/24578372/1497139
+        return send_from_directory(directory=path, filename=filename)
 
     def chessDebug(self):
         WebApp.debug=not WebApp.debug
@@ -46,9 +52,8 @@ class WebApp:
         return self.index(msg)
 
     def addWarpPoint(self,px,py):
-        # make sure we have a maximum of 4 warpPoints
-        # if warppoints are complete when adding reset them
-        # px,py is irrelevant for reset
+        """ make sure we have a maximum of 4 warpPoints if warppoints are complete when adding reset them
+        px,py is irrelevant for reset """
         if len(self.warpPointList)>=4:
           self.warpPointList=[]
           self.warpPoints=None
@@ -67,9 +72,16 @@ class WebApp:
         # todo select input device
         self.video.capture(self.args.input)
         filename='chessboard_%s.jpg' % (self.video.fileTimeStamp())
-        self.video.still2File(path+filename)
-        # @TODO allow download of the given file from path
-        return self.index("still image %s taken from input %s" % (filename,self.args.input))
+        self.video.still2File(path+filename,postProcess=self.warp, close=False)
+        msg="still image <a href='/download/%s'>%s</a> taken from input %s" % (filename,filename,self.args.input)
+        return self.index(msg)
+
+    def videoRotate90(self):
+        self.rotation=self.rotation+90
+        if self.rotation>=360:
+            self.rotation=0
+        msg="rotation: %d°" %(self.rotation)
+        return self.index(msg)
 
     def videoPause(self):
         ispaused=not self.video.paused()
@@ -104,6 +116,7 @@ class WebApp:
                       bytearray(encodedImage) + b'\r\n')
 
     def warp(self,image):
+        """ warp and rotate the image as necessary - add timestamp if in debug mode """
         if self.warpPoints is None:
             warped=image
         else:
@@ -112,6 +125,8 @@ class WebApp:
                 warped=image
             else:
               warped=self.video.warp(image,self.warpPoints)
+        if self.rotation>0:
+           warped=self.video.rotate(warped,self.rotation)
         if WebApp.debug:
            self.video.addTimeStamp(warped)
         return warped

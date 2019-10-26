@@ -41,9 +41,17 @@ def root():
 def video_feed():
     return webApp.videoFeed()
 
+@app.route('/download/<path:filename>', methods=['GET', 'POST'])
+def download(filename):
+    return webApp.download(thisscriptFolder + '/../web/webcamchess/',filename)
+
 @app.route("/chess/debug", methods=['GET'])
 def chessDebug():
     return webApp.chessDebug()
+
+@app.route("/chess/rotatevideo90", methods=['GET'])
+def videoRotate90():
+    return webApp.videoRotate90()
 
 @app.route("/chess/pausevideo", methods=['GET'])
 def video_pause():

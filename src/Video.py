@@ -142,23 +142,24 @@ class Video:
             raise "Capture is not initialized"
 
     # get a still image
-    def still(self, prefix, format="jpg", printHints=True):
+    def still(self, prefix, format="jpg", close=True, printHints=True, show=False, postProcess=None):
         filename = "%s%s.%s" % (prefix, self.fileTimeStamp(), format)
-        return self.still2File(filename, format, printHints)
+        return self.still2File(filename, format=format, close=close, printHints=printHints, show=show, postProcess=postProcess)
 
     # get a still image
-    def still2File(self, filename, format="jpg", printHints=True):
+    def still2File(self, filename, format="jpg", close=True,printHints=True, show=False, postProcess=None):
         self.checkCap()
         ret = False
         frame = None
         if (self.cap.isOpened()):
-            ret, frame = self.cap.read()
+            ret, frame, quit = self.readFrame(show, postProcess)
             if ret == True:
                 if printHints:
                     print("capture %s with %dx%d" % (
                         filename, self.width, self.height))
                 cv2.imwrite(filename, frame)
-            self.close()
+            if close:
+                self.close()
         return ret, frame
 
     # read an image
@@ -260,6 +261,22 @@ class Video:
             pt2 = (int(x0 - width * (-b)), int(y0 - height * (a)))
             cv2.line(image, pt1, pt2, (0, 0, 255), 3, cv2.LINE_AA)
 
+    def rotate(self,image, angle, center=None, scale=1.0):
+        # grab the dimensions of the image
+        (h, w) = image.shape[:2]
+
+        # if the center is None, initialize it as the center of
+        # the image
+        if center is None:
+            center = (w // 2, h // 2)
+
+        # perform the rotation
+        M = cv2.getRotationMatrix2D(center, angle, scale)
+        rotated = cv2.warpAffine(image, M, (w, h))
+
+        # return the rotated image
+        return rotated
+
     def warp(self,image,pts,squared=True):
        """apply the four point tranform to obtain a birds eye view of the given image """
        warped = perspective.four_point_transform(image, pts)
@@ -281,17 +298,19 @@ class Video:
         return sumResult
 
     # add a timeStamp to the given frame
-    def addTimeStamp(self, frame, withFPS=True, fontBGRColor=(255, 255, 255), fontScale=0.7, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=1):
+    def addTimeStamp(self, frame,withFrames=True, withFPS=True, fontBGRColor=(0, 255, 0), fontScale=1.2, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=2):
         if frame is not None:
             # grab the current timestamp and draw it on the frame
             now = self.timeStamp()
+            if withFrames:
+                now = now + " %d" % (self.frames)
             if withFPS:
-                now = now + " %3.0f fps" % (self.fpsCheck.fps())
+                now = now + "@%.0f fps" % (self.fpsCheck.fps())
             text_width, text_height = cv2.getTextSize(
                 now, font, fontScale, lineThickness)[0]
             height, width = frame.shape[:2]
             # https://stackoverflow.com/a/34273603/1497139
-            cv2.putText(frame, now, (width - text_width, text_height),
+            cv2.putText(frame, now, (width - int(text_width*1.1), int(text_height*1.2)),
                         font, fontScale, fontBGRColor, lineThickness)
         return frame
 
