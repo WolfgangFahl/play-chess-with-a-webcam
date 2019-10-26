@@ -12,12 +12,13 @@ def test_BoardDetector():
     image=video.readImage("testMedia/chessBoard011.jpg")
     BoardDetector.debug=True
     boardDetector=BoardDetector(board,video)
-    for distance in range(1,21,2):
+    for distance in range(0,7,1):
         testImage=image.copy()
         start = timer()
         boardDetector.analyze(testImage,distance)
         end = timer()
-        print("%.3fs for distance %d" % (end - start,distance)) # Time in seconds, e.g. 5.38091952400282
+        count=(2*distance+1)*(2*distance+1)
+        print("%.3fs for distance %2d with %4d pixels" % (end - start,distance,count)) # Time in seconds, e.g. 5.38091952400282
         video.showImage(testImage,"fields",True,500)
 
 test_BoardDetector()
