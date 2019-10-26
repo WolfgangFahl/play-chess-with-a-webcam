@@ -292,7 +292,8 @@ class Video:
           warped = cv2.resize(warped,(side,side))
        return warped
 
-    def getSubRect(self, image, rect):
+    @staticmethod
+    def getSubRect(image, rect):
         x, y, w, h = rect
         return image[y:y + h, x:x + h]
 

@@ -302,10 +302,10 @@ class BoardFinder(object):
 
         H,W = tmp.shape[:2]
 
-        top = self.video.getSubRect(tmp, (0, 0, W, H//4))
-        left = self.video.getSubRect(tmp, (0, 0, W//4, H))
-        bottom = self.video.getSubRect(tmp, (0, H*3//4, W, H//4))
-        right = self.video.getSubRect(tmp, (W*3//4, 0, W//4, H))
+        top = Video.getSubRect(tmp, (0, 0, W, H//4))
+        left = Video.getSubRect(tmp, (0, 0, W//4, H))
+        bottom = Video.getSubRect(tmp, (0, H*3//4, W, H//4))
+        right = Video.getSubRect(tmp, (W*3//4, 0, W//4, H))
 
         whitenesses = []
         whitenesses.append(self.video.sumIntensity(top))

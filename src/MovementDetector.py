@@ -67,7 +67,7 @@ class MovementDetector(object):
 
         for key in list(currentBoard.keys()):
             coords = currentBoard[key].GetCoords()
-            region = video.getSubRect(diff, coords)
+            region = Video.getSubRect(diff, coords)
 
             variance = sum(cv2.integral(np.asarray(region))[-1][-1])
             if variance > 35000:
