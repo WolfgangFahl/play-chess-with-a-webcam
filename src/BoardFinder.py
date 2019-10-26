@@ -12,8 +12,7 @@ import bisect
 
 # Local imports
 from MovementDetector import MovementDetector
-from mathUtils import (intersect, distance, median, findBoundingSkewedSquare,
-                       getRotationAndTranslationMatrix,getIndexRange)
+from mathUtils import (median, getRotationAndTranslationMatrix,getIndexRange)
 
 CHESSCAM_PARZEN_THRESHOLD = 5
 CHESSCAM_ORIENTATION_SMOOTHING = 5

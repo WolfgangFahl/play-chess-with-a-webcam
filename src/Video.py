@@ -12,9 +12,9 @@ from imutils import perspective
 import argparse
 from threading import Thread
 import os
-# Video handling e.g. recording/writing
 
 class Video:
+    """ Video handling e.g. recording/writing """
     # construct me with no parameters
     def __init__(self):
         self.cap = None
@@ -246,6 +246,12 @@ class Video:
            if prev is not None:
               cv2.line(image, (x,y), prev, color, 3, cv2.LINE_AA)
            prev =(x,y)
+
+    def drawCircle(self,image,center,radius=10,color=(0,255,0),thickness=1):
+       cv2.circle(image,center,radius,color=color,thickness=thickness)
+
+    def drawRectangle(self,image,pt1,pt2,color=(0,255,0),thickness=1):
+       cv2.rectangle(image,pt1,pt2,color,thickness)
 
     #  https://docs.opencv.org/4.1.2/d9/db0/tutorial_hough_lines.html
     def drawLines(self, image, lines):

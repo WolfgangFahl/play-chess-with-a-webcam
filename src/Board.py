@@ -7,6 +7,7 @@ import chess
 import chess.pgn
 import io
 from chess import Move
+from Field import Field
 
 class RejectedMove(Exception):
     def __init__(self, value):
@@ -20,22 +21,24 @@ class Board(object):
     debug=True
 
     C = {'w': 0, 'b': 1}
-    COLUMN_LETTER = {0: 'A', 1: 'B', 2: 'C',
-        3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H'}
-    ROW_NUMBER = {0: str(1), 1: str(2), 2: str(3), 3: str(
-        4), 4: str(5), 5: str(6), 6: str(7), 7: str(8)}
-
     # initialize the board with a default dominator next cell to the right
     def __init__(self, dominatorOffset=(0,-1)):
         self.board = chess.Board()
         self.toPlay = Board.C['w']
         self.dominator = dominatorOffset
+        self.fieldsByAn={}
 
-    @staticmethod
-    def GetCellName(column, row):
+        self.fields = [[0 for x in range(Field.rows)] for y in range(Field.cols)]
+        for row in range(Field.rows):
+            for col in range(Field.cols):
+                field=Field(row,col)
+                self.fieldsByAn[field.an]=field
+                self.fields[row][col]=field
+
+    def GetCellName(self,col, row):
         """Returns the cell name string given 0-based column and row"""
-        # @TODO deprecated use python-chess instead
-        return ''.join([Board.COLUMN_LETTER[column], Board.ROW_NUMBER[row]])
+        field=self.fields[row][col]
+        return  field.an.upper()
 
     # perform the given move
     def performMove(self, move):

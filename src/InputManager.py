@@ -14,8 +14,6 @@ import time
 import bisect
 
 # Local imports
-from mathUtils import (intersect, distance, median, findBoundingSkewedSquare,
-                       getRotationAndTranslationMatrix)
 from MovementDetector import MovementDetector
 
 #CHESSCAM_WIDTH = 640

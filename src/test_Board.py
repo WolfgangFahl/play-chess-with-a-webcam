@@ -53,5 +53,16 @@ def test_BoardPgn():
     expectedFen="rnbq1rk1/p1Pp1ppp/3bpn2/8/Q2P4/8/PP2PPPP/RNB1KBNR"
     checkEndPosition(board,expectedFen)
 
+def test_cellNames():
+    board=Board()
+    str=""
+    for row in range(0,8):
+       for col in range(0,8):
+          str=str+board.GetCellName(row,col)
+    print (str)
+    assert str=="A1A2A3A4A5A6A7A8B1B2B3B4B5B6B7B8C1C2C3C4C5C6C7C8D1D2D3D4D5D6D7D8E1E2E3E4E5E6E7E8F1F2F3F4F5F6F7F8G1G2G3G4G5G6G7G8H1H2H3H4H5H6H7H8"
+
+
+test_cellNames()
 test_BoardEasy()
 test_BoardPgn()

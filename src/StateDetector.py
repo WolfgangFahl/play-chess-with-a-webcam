@@ -135,6 +135,7 @@ class StateDetector(object):
 
         diagonal = fulldiag
         #Create cells from diagonal
+        chessBoard=Board()
         for row in range(0,8):
             for col in range (0,8):
                 #Raise error if cell would be outside image
@@ -142,7 +143,7 @@ class StateDetector(object):
                     raise CannotBuildStateException('Cell Overflow: a cell would be outside board')
                 coords = (diagonal[col][0] + 3*cellWidth/10, diagonal[row][1] + 3*cellHeight/10, cellWidth*2/5, cellHeight*2/5)
                 newCell = Cell(coords)
-                self.board[Board.GetCellName(col,7-row)] = newCell
+                self.board[chessBoard.GetCellName(col,7-row)] = newCell
 
 if __name__ == "__main__":
     sys.stderr.write("Not a stand alone")
