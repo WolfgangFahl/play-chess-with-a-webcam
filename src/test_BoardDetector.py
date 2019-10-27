@@ -74,6 +74,6 @@ def test_ColorDistance():
     colorKey=cStats.colorKey()
     assert 49152==colorKey
 
-#test_ColorDistance()
-#test_BoardFieldColorDetector()
+test_ColorDistance()
+test_BoardFieldColorDetector()
 test_FieldDetector()

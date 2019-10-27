@@ -3,6 +3,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Video import Video, VideoStream
 from Board import Board
+from BoardDetector import BoardDetector
 from flask import Flask, request, render_template, send_from_directory, abort, Response
 import numpy as np
 from YamlAbleMixin import YamlAbleMixin
@@ -17,6 +18,7 @@ class Warp(YamlAbleMixin,JsonAbleMixin):
        self.bgrColor=bgrColor
        self.pointList = []
        self.points=None
+       self.warping=False
 
     def rotate(self,angle):
        self.rotation=self.rotation+angle
@@ -34,6 +36,7 @@ class Warp(YamlAbleMixin,JsonAbleMixin):
         else:
           self.pointList.append([px,py])
           self.points=np.array(self.pointList)
+          self.warping=len(self.pointList)==4
 
 
 class WebApp:
@@ -63,6 +66,7 @@ class WebApp:
 
     def chessDebug(self):
         WebApp.debug=not WebApp.debug
+        BoardDetector.debug=WebApp.debug
         msg = "debug " + ( 'on' if WebApp.debug else 'off' )
         return self.index(msg)
 
@@ -74,9 +78,18 @@ class WebApp:
         msg="forward"
         return self.index(msg)
 
+    def chessFEN(self,fen):
+        msg=fen
+        try:
+          self.board.setFEN(fen)
+          msg="game update from fen %s" % (fen)
+        except ValueError as ve:
+          msg=str(ve)
+        return self.index(msg)
+
     def chessPgn(self,pgn,fen):
         self.board.setPgn(pgn)
-        msg=fen
+        msg="game updated from pgn"
         return self.index(msg)
 
     def chessWebCamClick(self,x,y,w,h):
@@ -143,6 +156,13 @@ class WebApp:
               warped=self.video.warp(image,self.warp.points)
         if self.warp.rotation>0:
            warped=self.video.rotate(warped,self.warp.rotation)
+        # analyze the board if warping is active
+        if self.warp.warping:
+           boardDetector=BoardDetector(self.board,self.video)
+           #@TODO make configurable via settings
+           distance=5
+           step=3
+           warped=boardDetector.analyze(warped,self.video.frames,distance,step)
         if WebApp.debug:
            self.video.addTimeStamp(warped)
         return warped

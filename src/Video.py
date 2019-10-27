@@ -304,21 +304,23 @@ class Video:
         sumResult = np.sum(v)
         return sumResult
 
-    # add a timeStamp to the given frame
-    def addTimeStamp(self, frame,withFrames=True, withFPS=True, fontBGRColor=(0, 255, 0), fontScale=1.2, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=2):
+    # add a timeStamp to the given frame fontScale 1.0
+    def addTimeStamp(self, frame,withFrames=True, withFPS=True, fontBGRColor=(0, 255, 0), fontScale=1.0, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=2):
         if frame is not None:
+            height, width = frame.shape[:2]
             # grab the current timestamp and draw it on the frame
             now = self.timeStamp()
             if withFrames:
                 now = now + " %d" % (self.frames)
             if withFPS:
                 now = now + "@%.0f fps" % (self.fpsCheck.fps())
+            fontFactor=width/960
             text_width, text_height = cv2.getTextSize(
-                now, font, fontScale, lineThickness)[0]
+                now, font, fontScale*fontFactor, lineThickness)[0]
             height, width = frame.shape[:2]
             # https://stackoverflow.com/a/34273603/1497139
             cv2.putText(frame, now, (width - int(text_width*1.1), int(text_height*1.2)),
-                        font, fontScale, fontBGRColor, lineThickness)
+                        font, fontScale*fontFactor, fontBGRColor, lineThickness)
         return frame
 
 # see https://www.pyimagesearch.com/2017/02/06/faster-video-file-fps-with-cv2-videocapture-and-opencv/

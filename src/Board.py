@@ -80,9 +80,15 @@ class Board(object):
     def setPgn(self,pgn):
         pgnIo=io.StringIO(pgn)
         game=chess.pgn.read_game(pgnIo)
+        if game is None:
+           # TODO log a warning
+           return
         self.chessboard=game.board()
         for move in game.mainline_moves():
           self.chessboard.push(move)
+
+    def setFEN(self,fen):
+        self.chessboard=chess.Board(fen)
 
     #get my fen description
     def fen(self):

@@ -68,9 +68,14 @@ def chessForward():
 @app.route("/chess/pgn", methods=['GET'])
 def chessPgn():
     """ set game status from the given pgn"""
+    updateGame=request.args.get('updateGame')
+    updateFEN=request.args.get('updateFEN')
     pgn = request.args.get('pgn')
     fen = request.args.get('fen')
-    return webApp.chessPgn(pgn,fen)
+    if updateFEN is not None:
+       return webApp.chessFEN(fen)
+    else:
+       return webApp.chessPgn(pgn,fen)
 
 @app.route("/chess/chesswebcamclick/<width>/<height>", methods=['GET'])
 def chessWebCamClick(width,height):

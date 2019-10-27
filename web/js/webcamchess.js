@@ -14,8 +14,16 @@ function handleQuery() {
   var url=new URL(window.location.href)
   var searchParams = new URLSearchParams(url.search);
   var pgn=searchParams.get('pgn')
-  if (pgn){
+  var fen=searchParams.get('fen')
+  var updateGame=searchParams.get('updateGame')
+  var updateFEN=searchParams.get('updateFEN')
+  if (pgn && updateGame ){
     game.load_pgn(pgn);
+    board.position(game.fen());
+    showPgn(false);
+  }
+  if (fen && updateFEN) {
+    game=new Chess(fen)
     board.position(game.fen());
     showPgn(false);
   }

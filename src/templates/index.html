@@ -25,9 +25,10 @@
     <div id='notation' class="col-md-3">
       <br>
       <form action='/chess/pgn' method='GET'>
-         <textarea id='fen' name='fen' cols='30' rows= '3'></textarea>
+         <textarea id='fen' name='fen' cols='30' rows= '3'></textarea><br>
+         <button id="updateFen" type="submit" value="updateFEN", name="updateFEN">Update FEN</button><br>
          <textarea id='pgn' name="pgn" cols='30' rows='20'></textarea><br>
-         <button id="updateGame" type="submit" name="updateGame">Update Game</button>
+         <button id="updateGame" type="submit" value="updateGame" name="updateGame">Update Game</button>
       </form>
     </div>
   </div>
