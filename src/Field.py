@@ -112,11 +112,11 @@ class Field:
         #print("(%3d,%3d)=(%3d,%3d,%3d) (%3d,%3d,%3d)" % (self.pcx,self.pcy,h,s,v,r,g,b))
         return bgr
 
-    def drawDebug(self,video,image,color):
+    def drawDebug(self,video,image,color,borderColor=(0,0,0)):
         pcx=self.pcx
         pcy=self.pcy
         distance=self.distance
         step=self.step
         x1,y1,x2,y2=pcx-distance*step,pcy-distance*step,pcx+distance*step,pcy+distance*step
-        video.drawRectangle(image,(x1-1,y1-1),(x2+1,y2+1),thickness=1,color=(0,0,0))
+        video.drawRectangle(image,(x1-1,y1-1),(x2+1,y2+1),thickness=1,color=borderColor)
         video.drawRectangle(image,(x1  ,y1  ),(x2  ,y2  ),thickness=-1,color=color)
