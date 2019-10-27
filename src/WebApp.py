@@ -83,7 +83,7 @@ class WebApp:
         px=x*self.video.width//w
         py=y*self.video.height//h
         self.warp.addPoint(px,py)
-        msg="clicked warppoint %d pixel %d,%d mouseclick %d,%d in image %d x %d" % (len(warp.pointList),px,py,x,y,w,h)
+        msg="clicked warppoint %d pixel %d,%d mouseclick %d,%d in image %d x %d" % (len(self.warp.pointList),px,py,x,y,w,h)
         return self.index(msg)
 
     def photo(self,path):

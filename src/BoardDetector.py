@@ -4,7 +4,7 @@
 
 from Video import Video
 from Board import Board
-from Field import Field
+from Field import Field, FieldState
 import cv2
 
 class BoardDetector:
@@ -28,28 +28,36 @@ class BoardDetector:
         for col in range (Field.cols):
            pcx=int(fieldWidth*(2*col+1)//2)
            pcy=int(fieldHeight*(2*row+1)//2)
-           field=self.board.fields[row][col]
+           field=self.board.fieldAt(row,col)
            field.pcx=pcx
            field.pcy=pcy
-           field.analyzeColor(self.hsv,distance,step)
+           field.analyzeColor(image,self.hsv,distance,step)
 
   # analyze the given image
   def analyze(self,image,frameIndex,distance=3,step=1):
       self.analyzeColors(image,distance,step)
-      sortedFields=sorted(self.board.fieldsByAn.values(),key=lambda field:field.hsvStats.colorKey())
+      # sort by color colorKey,luminance or rgbColorKey
+      sortedFields=sorted(self.board.fieldsByAn.values(),key=lambda field:field.rgbColorKey)
+
       if BoardDetector.debug:
           overlay = image.copy()
+          counts=self.board.fieldStateCounts()
+
           for index,field in enumerate(sortedFields):
-              print ("frame %5d %2d: %s %.0f" % (frameIndex,index,field.an,field.hsvStats.colorKey()))
+              lmean,lstdv=field.luminance
+              #print ("frame %5d %2d: %s luminance: %3.0f ± %3.0f rgbColorKey: %3.0f colorKey: %.0f" % (frameIndex,index,field.an,lmean,lstdv,field.rgbColorKey,field.colorKey))
               color=field.getColor()
-              if index<16:
+              darkGreyLimit=counts[FieldState.BLACK_BLACK]
+              blackLimit=darkGreyLimit+counts[FieldState.BLACK_EMPTY]
+              #lightGreyLimit=darkGreyLimit+counts[FieldState.WHITE_BLACK]
+              if index<darkGreyLimit:
                   color=Field.darkGrey
-              elif index<32:
+              elif index<blackLimit:
                   color=Field.black
-              elif index<48:
+              elif index>=64-counts[FieldState.WHITE_EMPTY]:
                   color=Field.white
-              else:
-                  color=Field.lightGrey
+              #else:
+              #  color=Field.lightGrey
               field.drawDebug(self.video,overlay,color)
           alpha = 0.6  # Transparency factor.
           # Following line overlays transparent rectangle over the image

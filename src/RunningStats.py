@@ -70,6 +70,11 @@ class ColorStats:
         other.push(0,0,0)
         return ColorStats.distance(self,other)
 
+    def rgbColorKey(self):
+        import ciede2000
+        value=ciede2000.ciede2000FromRGB(self.mean(),(0,0,0))
+        return value
+
     @staticmethod
     def distance(this,other):
         """ simple eucledian color distance see e.g. https://en.wikipedia.org/wiki/Color_difference """

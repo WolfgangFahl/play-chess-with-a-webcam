@@ -29,35 +29,43 @@ def test_BoardFieldColorDetector():
 
 def test_FieldDetector():
     video=Video()
-    board=Board()
     webApp=WebApp(Args([]))
-    video.open('testMedia/scholarsmate.avi')
-    BoardDetector.debug=True
-    boardDetector=BoardDetector(board,video)
-    distance=5
-    step=3
-    # setup webApp params to reuse warp method
-    webApp.video=video
-    webApp.warp.rotation=270
-    webApp.warp.addPoint(140,5)
-    webApp.warp.addPoint(506,10)
-    webApp.warp.addPoint(507,377)
-    webApp.warp.addPoint(137,374)
+    frames=None
+    for boardIndex in range(2):
+        board=Board()
+        BoardDetector.debug=True
+        boardDetector=BoardDetector(board,video)
+        distance=5
+        step=3
+        # setup webApp params to reuse warp method
+        webApp.video=video
+        if boardIndex==1:
+            video.open('testMedia/emptyBoard001.avi')
+            board.chessboard.clear_board()
+            frames=52
+        if boardIndex==0:
+            video.open('testMedia/scholarsmate.avi')
+            frames=334
+        webApp.warp.rotation=270
+        webApp.warp.pointList=[]
+        webApp.warp.addPoint(140,5)
+        webApp.warp.addPoint(506,10)
+        webApp.warp.addPoint(507,377)
+        webApp.warp.addPoint(137,374)
 
-    for frame in range(0,334):
-        ret,bgr,quit=video.readFrame(show=False)
-        assert ret
-        assert bgr is not None
-        #bgr = cv2.cvtColor(jpgImage, cv2.COLOR_RGB2BGR)
-        height, width = bgr.shape[:2]
-        #print ("%d: %d x %d" % (frame,width,height))
-        bgr=webApp.warpAndRotate(bgr)
-        start = timer()
-        bgr=boardDetector.analyze(bgr,frame,distance,step)
-        image = cv2.resize(bgr,(int(width*1.5),int(height*1.5)))
-        video.showImage(image,"BoardDetector",keyWait=200)
-        end = timer()
-
+        for frame in range(0,frames):
+            ret,bgr,quit=video.readFrame(show=False)
+            assert ret
+            assert bgr is not None
+            #bgr = cv2.cvtColor(jpgImage, cv2.COLOR_RGB2BGR)
+            height, width = bgr.shape[:2]
+            #print ("%d: %d x %d" % (frame,width,height))
+            bgr=webApp.warpAndRotate(bgr)
+            start = timer()
+            bgr=boardDetector.analyze(bgr,frame,distance,step)
+            image = cv2.resize(bgr,(int(width*1.5),int(height*1.5)))
+            video.showImage(image,"BoardDetector",keyWait=200)
+            end = timer()
 
 def test_ColorDistance():
     assert 25==ColorStats.square(5)
