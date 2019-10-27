@@ -2,6 +2,9 @@
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import colorsys
+#from colormath.color_objects import sRGBColor, LabColor
+#from colormath.color_conversions import convert_color
+#from colormath.color_diff import delta_e_cie2000
 from RunningStats import ColorStats
 from Video import Video
 
@@ -46,8 +49,3 @@ class Field:
         bgr=(b,g,r)
         #print("(%3d,%3d)=(%3d,%3d,%3d) (%3d,%3d,%3d)" % (self.pcx,self.pcy,h,s,v,r,g,b))
         return bgr
-
-    # analyze the color arround my center pixel to the given
-    # distance
-    def analyzeColor1(self,hsv,distance=1):
-        rect=Video.GetSubRect(hsv,self.px-distance,se)

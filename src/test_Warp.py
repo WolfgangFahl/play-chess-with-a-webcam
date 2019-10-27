@@ -1,26 +1,47 @@
+#!/usr/bin/python3
+# -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from Video import Video
-import numpy as np
-import cv2
+from WebApp import Warp
+from YamlAbleMixin import YamlAbleMixin
+from JsonAbleMixin import JsonAbleMixin
+import tempfile
 
-def test_Warp():
-    video=Video()
-    image=video.readImage("testMedia/chessBoard010.jpg")
-    # load the image, clone it, and initialize the 4 points
-    # that correspond to the 4 corners of the chessboard
-    pts = np.array([(432,103), (1380, 94), (1659, 1029), (138, 1052)])
+def getTestWarp():
+    warp=Warp()
+    warp.addPoint(678,25)
+    warp.addPoint(1406,270)
+    warp.addPoint(1136,1048)
+    warp.addPoint(236,666)
+    return warp
 
-    # apply the four point tranform to obtain a "birds eye view" of
-    # the chessboard
-    warped=video.warp(image,pts)
-    image = cv2.resize(image,(960,540))
-    height, width = warped.shape[:2]
-    print ("%d x %d " % (width,height))
-    # show the original and warped images
-    cv2.imshow("Original", image)
-    cv2.imshow("Warped", warped)
-    assert width==993
-    assert height==993
-    cv2.waitKey(1000)
+def test_Rotation():
+    warp=Warp()
+    warp.rotate(80)
+    warp.rotate(300)
+    assert warp.rotation==20
 
-test_Warp()
+def test_WarpPoints():
+    warp=getTestWarp()
+    warp.addPoint(679,25)
+    warp.addPoint(1408,270)
+    warp.addPoint(1136,1049)
+    warp.addPoint(236,667)
+    #print (warp.pointList)
+    #print (warp.points)
+    assert warp.pointList==[[1408, 270], [1136, 1049], [236, 667]]
+
+def test_Persistence():
+    #YamlAbleMixin.debug=True
+    temp=tempfile.gettempdir()
+    warp=getTestWarp()
+    warp.writeYaml(temp+"/warp")
+    ywarp=Warp.readYaml(temp+"/warp")
+    assert ywarp.pointList==warp.pointList
+    #JsonAbleMixin.debug=True
+    warp.writeJson(temp+"/warp")
+    jwarp=Warp.readJson(temp+"/warp")
+    assert jwarp.pointList==warp.pointList
+
+test_Rotation()
+test_WarpPoints()
+test_Persistence()

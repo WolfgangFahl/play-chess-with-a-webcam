@@ -60,3 +60,21 @@ class ColorStats:
 
     def standard_deviation(self):
         return (self.c1Stats.standard_deviation(),self.c2Stats.standard_deviation(),self.c3Stats.standard_deviation())
+
+    @staticmethod
+    def square(value):
+        return value*value
+
+    def colorKey(self):
+        other=ColorStats()
+        other.push(0,0,0)
+        return ColorStats.distance(self,other)
+
+    @staticmethod
+    def distance(this,other):
+        """ simple eucledian color distance see e.g. https://en.wikipedia.org/wiki/Color_difference """
+        c1s=ColorStats.square(this.c1Stats.mean()-other.c1Stats.mean())
+        c2s=ColorStats.square(this.c2Stats.mean()-other.c2Stats.mean())
+        c3s=ColorStats.square(this.c3Stats.mean()-other.c3Stats.mean())
+        dist=c1s+c2s+c3s
+        return dist

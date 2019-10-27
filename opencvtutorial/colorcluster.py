@@ -10,7 +10,7 @@ import time as t
 import sys
 
 def do_cluster(hsv_image, K, channels):
-    # gets height, width and the number of channes from the image shape
+    # gets height, width and the number of channels from the image shape
     h,w,c = hsv_image.shape
     # prepares data for clustering by reshaping the image matrix into a (h*w) x c matrix of pixels
     cluster_data = hsv_image.reshape( (h*w,c) )

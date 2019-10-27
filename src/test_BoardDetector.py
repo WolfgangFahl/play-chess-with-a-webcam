@@ -7,6 +7,7 @@ from Board import Board
 from Video import Video
 from timeit import default_timer as timer
 from WebApp import WebApp
+from RunningStats import ColorStats
 import cv2
 
 def test_BoardFieldColorDetector():
@@ -37,11 +38,11 @@ def test_FieldDetector():
     step=2
     # setup webApp params to reuse warp method
     webApp.video=video
-    webApp.rotation=270
-    webApp.addWarpPoint(140,5)
-    webApp.addWarpPoint(506,10)
-    webApp.addWarpPoint(507,377)
-    webApp.addWarpPoint(137,374)
+    webApp.warp.rotation=270
+    webApp.warp.addPoint(140,5)
+    webApp.warp.addPoint(506,10)
+    webApp.warp.addPoint(507,377)
+    webApp.warp.addPoint(137,374)
 
     for frame in range(0,334):
         ret,bgr,quit=video.readFrame(show=False)
@@ -50,11 +51,21 @@ def test_FieldDetector():
         #bgr = cv2.cvtColor(jpgImage, cv2.COLOR_RGB2BGR)
         height, width = bgr.shape[:2]
         #print ("%d: %d x %d" % (frame,width,height))
-        bgr=webApp.warp(bgr)
+        bgr=webApp.warpAndRotate(bgr)
         start = timer()
         boardDetector.analyze(bgr,distance,step)
-        video.showImage(bgr,"BoardDetector")
+        image = cv2.resize(bgr,(int(width*1.5),int(height*1.5)))
+        video.showImage(image,"BoardDetector",keyWait=200)
         end = timer()
+        sortedFields=sorted(board.fieldsByAn.values(),key=lambda field:field.hsvStats.colorKey())
 
+def test_ColorDistance():
+    assert 25==ColorStats.square(5)
+    cStats=ColorStats()
+    cStats.push(128,128,128)
+    colorKey=cStats.colorKey()
+    assert 49152==colorKey
+
+test_ColorDistance()
 #test_BoardFieldColorDetector()
 test_FieldDetector()

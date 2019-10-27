@@ -5,21 +5,49 @@ from Video import Video, VideoStream
 from Board import Board
 from flask import Flask, request, render_template, send_from_directory, abort, Response
 import numpy as np
+from YamlAbleMixin import YamlAbleMixin
+from JsonAbleMixin import JsonAbleMixin
+
+class Warp(YamlAbleMixin,JsonAbleMixin):
+    """ holds the trapezoid points to be use for warping an image take from a peculiar angle """
+
+    # construct me from the given setting
+    def __init__(self,rotation=0,bgrColor=(0, 255, 0)):
+       self.rotation=rotation
+       self.bgrColor=bgrColor
+       self.pointList = []
+       self.points=None
+
+    def rotate(self,angle):
+       self.rotation=self.rotation+angle
+       if self.rotation>=360:
+         self.rotation=self.rotation % 360
+
+    def addPoint(self,px,py):
+        """ add a point with the given px,py coordinate
+        to the warp points make sure we have a maximum of 4 warpPoints if warppoints are complete when adding reset them
+        this allows to support click UIs that need an unwarped image before setting new warp points.
+        px,py is irrelevant for reset """
+        if len(self.pointList)>=4:
+          self.pointList=[]
+          self.points=None
+        else:
+          self.pointList.append([px,py])
+          self.points=np.array(self.pointList)
+
 
 class WebApp:
-    """ actual Web Application - Flask calls are routed here """
+    """ actual Play Chess with a WebCam Application - Flask calls are routed here """
     debug=False
 
+    # construct me with the given settings
     def __init__(self,args,warpPointBGRColor=(0, 255, 0)):
        """ construct me """
        self.args=args
-       self.warpPointColor= warpPointBGRColor
        self.video = Video()
        self.videoStream = None
        self.board = Board()
-       self.warpPointList = []
-       self.warpPoints=None
-       self.rotation=0
+       self.warp=Warp()
 
     # return the index.html template content with the given message
     def index(self,msg):
@@ -51,21 +79,11 @@ class WebApp:
         msg=fen
         return self.index(msg)
 
-    def addWarpPoint(self,px,py):
-        """ make sure we have a maximum of 4 warpPoints if warppoints are complete when adding reset them
-        px,py is irrelevant for reset """
-        if len(self.warpPointList)>=4:
-          self.warpPointList=[]
-          self.warpPoints=None
-        else:
-           self.warpPointList.append([px,py])
-           self.warpPoints=np.array(self.warpPointList)
-
     def chessWebCamClick(self,x,y,w,h):
         px=x*self.video.width//w
         py=y*self.video.height//h
-        self.addWarpPoint(px,py)
-        msg="clicked warppoint %d pixel %d,%d mouseclick %d,%d in image %d x %d" % (len(self.warpPointList),px,py,x,y,w,h)
+        self.warp.addPoint(px,py)
+        msg="clicked warppoint %d pixel %d,%d mouseclick %d,%d in image %d x %d" % (len(warp.pointList),px,py,x,y,w,h)
         return self.index(msg)
 
     def photo(self,path):
@@ -77,10 +95,8 @@ class WebApp:
         return self.index(msg)
 
     def videoRotate90(self):
-        self.rotation=self.rotation+90
-        if self.rotation>=360:
-            self.rotation=0
-        msg="rotation: %d°" %(self.rotation)
+        self.warp.rotate(90)
+        msg="rotation: %d°" %(self.warp.rotation)
         return self.index(msg)
 
     def videoPause(self):
@@ -115,18 +131,18 @@ class WebApp:
                 yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                       bytearray(encodedImage) + b'\r\n')
 
-    def warp(self,image):
+    def warpAndRotate(self,image):
         """ warp and rotate the image as necessary - add timestamp if in debug mode """
-        if self.warpPoints is None:
+        if self.warp.points is None:
             warped=image
         else:
-            if len(self.warpPoints) < 4:
-                self.video.drawTrapezoid(image,self.warpPoints,self.warpPointColor)
+            if len(self.warp.points) < 4:
+                self.video.drawTrapezoid(image,self.warp.points,self.warp.bgrColor)
                 warped=image
             else:
-              warped=self.video.warp(image,self.warpPoints)
-        if self.rotation>0:
-           warped=self.video.rotate(warped,self.rotation)
+              warped=self.video.warp(image,self.warp.points)
+        if self.warp.rotation>0:
+           warped=self.video.rotate(warped,self.warp.rotation)
         if WebApp.debug:
            self.video.addTimeStamp(warped)
         return warped
@@ -135,7 +151,7 @@ class WebApp:
     def genVideo(self,video):
        while True:
           # postProcess=video.addTimeStamp
-          postProcess=self.warp
+          postProcess=self.warpAndRotate
           ret,encodedImage,quit=video.readJpgImage(show=False,postProcess=postProcess)
           # ensure we got a valid image
           if not ret:
