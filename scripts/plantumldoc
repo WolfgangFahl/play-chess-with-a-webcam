@@ -1,13 +1,27 @@
-scr#!/bin/bash
+#!/bin/bash
 # WF 2019-10-20
 # document the python software with plant uml
 # used e.g. for  https://github.com/WolfgangFahl/play-chess-with-a-webcam
 scriptdir=$(dirname $0)
-echo "<uml>"
-echo "  hide circle"
-for src in $(find $scriptdir/../src -name "*.py")
+# source the color message handling
+. $scriptdir/colormsg
+
+# create plantuml documentation for the given
+# directory title and github url
+umldoc() {
+  local l_src="$1"
+  local l_title="$2"
+  local l_githuburl="$3"
+  cat << EOF
+     click classes to see source code at [$l_githuburl $l_title]
+  <uml>
+     hide circle
+     left to right direction
+EOF
+for src in $(find "$l_src" -name "*.py")
 do
-  cat $src | gawk '
+  srcfile=$(basename $src)
+  cat $src | gawk -v srcfile="$srcfile" -v githuburl="$l_githuburl" '
 /class .*:/ {
   finishClass()
   classLine=$0
@@ -44,7 +58,7 @@ function finishClass() {
          dot=""
       printf("\n  note top of %s: %s%s\n",className,trim(doc),dot)
   }
-   printf("  class %s {\n",className)
+   printf("  class %s [[%s]] {\n",className,githuburl"/"srcfile)
    for (method in methods) {
      printf("    %s\n",methods[method])
    }
@@ -60,4 +74,7 @@ END {
 }
 '
 done
-echo "</uml>"
+  echo "</uml>"
+}
+
+umldoc $scriptdir/../src "Play Chess With A WebCam github repository" https://github.com/WolfgangFahl/play-chess-with-a-webcam/tree/master/src
