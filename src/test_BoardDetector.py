@@ -67,5 +67,5 @@ def test_ColorDistance():
     assert 49152==colorKey
 
 test_ColorDistance()
-#test_BoardFieldColorDetector()
+test_BoardFieldColorDetector()
 test_FieldDetector()
