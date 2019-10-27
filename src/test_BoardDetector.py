@@ -34,8 +34,8 @@ def test_FieldDetector():
     video.open('testMedia/scholarsmate.avi')
     BoardDetector.debug=True
     boardDetector=BoardDetector(board,video)
-    distance=4
-    step=2
+    distance=5
+    step=3
     # setup webApp params to reuse warp method
     webApp.video=video
     webApp.warp.rotation=270
@@ -53,11 +53,11 @@ def test_FieldDetector():
         #print ("%d: %d x %d" % (frame,width,height))
         bgr=webApp.warpAndRotate(bgr)
         start = timer()
-        boardDetector.analyze(bgr,distance,step)
+        bgr=boardDetector.analyze(bgr,frame,distance,step)
         image = cv2.resize(bgr,(int(width*1.5),int(height*1.5)))
         video.showImage(image,"BoardDetector",keyWait=200)
         end = timer()
-        sortedFields=sorted(board.fieldsByAn.values(),key=lambda field:field.hsvStats.colorKey())
+
 
 def test_ColorDistance():
     assert 25==ColorStats.square(5)
@@ -66,6 +66,6 @@ def test_ColorDistance():
     colorKey=cStats.colorKey()
     assert 49152==colorKey
 
-test_ColorDistance()
-test_BoardFieldColorDetector()
+#test_ColorDistance()
+#test_BoardFieldColorDetector()
 test_FieldDetector()
