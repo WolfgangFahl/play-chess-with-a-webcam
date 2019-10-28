@@ -104,8 +104,12 @@ def test_PieceAt():
     """
     see https://stackoverflow.com/questions/55650138/how-to-get-a-piece-in-python-chess
     see https://python-chess.readthedocs.io/en/latest/core.html """
+    debug=False
     board = chess.Board()
-    #print (board.unicode())
+    if debug:
+       print (board.unicode())
+       print(" square | row | col | type | piece | color | field")
+       print("--------+-----+-----+------+-------+-------+------")
     for row in range(0,8):
       for col in range(0,8):
         squareIndex=row*8+col
@@ -115,7 +119,8 @@ def test_PieceAt():
         if piece is None:
            assert row in {2,3,4,5}
         else:
-           #print(row,col,square,piece.piece_type,piece.symbol(),piece.color,col%2!=row%2)
+           if debug:
+              print("%7d | %3d | %3d | %4d | %5s | %4s | %4s" % (square,row,col,piece.piece_type,piece.symbol(),"white" if piece.color else "black","black" if col%2!=row%2 else "white"))
            if row in {0,1}:
               assert piece.color==chess.WHITE
               # white symbols are upper case
