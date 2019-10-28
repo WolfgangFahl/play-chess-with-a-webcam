@@ -74,7 +74,30 @@ END {
 }
 '
 done
-  echo "</uml>"
+cat << EOF
+  skinparam titleFontSize 18
+  skinparam titleFontStyle bold
+  skinparam titleFontName Arial
+
+  skinparam classBackgroundColor white
+  skinparam classBorderColor #FF8000
+  skinparam classFontColor black
+  skinparam classFontSize 14
+  skinparam classFontStyle bold
+  skinparam classFontName Arial
+
+  skinparam classAttributeFontName Arial
+  skinparam classAttributeFontSize 14
+
+  skinparam classArrowFontName Arial
+  skinparam classArrowFontSize 14
+
+  skinparam noteBackgroundColor #FFFFFF
+  skinparam noteBorderColor #000080
+  skinparam noteFontName Arial
+  skinparam noteFontSize 14
+</uml>
+EOF
 }
 
 umldoc $scriptdir/../src "Play Chess With A WebCam github repository" https://github.com/WolfgangFahl/play-chess-with-a-webcam/tree/master/src

@@ -103,7 +103,7 @@ class WebApp:
         # todo select input device
         self.video.capture(self.args.input)
         filename='chessboard_%s.jpg' % (self.video.fileTimeStamp())
-        self.video.still2File(path+filename,postProcess=self.warp, close=False)
+        self.video.still2File(path+filename,postProcess=self.warpAndRotate, close=False)
         msg="still image <a href='/download/%s'>%s</a> taken from input %s" % (filename,filename,self.args.input)
         return self.index(msg)
 
