@@ -47,18 +47,23 @@ class BoardDetector:
               lmean,lstdv=field.luminance
               #print ("frame %5d %2d: %s luminance: %3.0f ± %3.0f rgbColorKey: %3.0f colorKey: %.0f" % (frameIndex,index,field.an,lmean,lstdv,field.rgbColorKey,field.colorKey))
               color=field.getColor()
+              borderColor=(0,0,0)
+              green=(0,255,0)
               darkGreyLimit=counts[FieldState.BLACK_BLACK]
               blackLimit=darkGreyLimit+counts[FieldState.BLACK_EMPTY]
               #lightGreyLimit=darkGreyLimit+counts[FieldState.WHITE_BLACK]
               if index<darkGreyLimit:
                   color=Field.darkGrey
+                  borderColor=green
               elif index<blackLimit:
                   color=Field.black
+                  borderColor=green
               elif index>=64-counts[FieldState.WHITE_EMPTY]:
                   color=Field.white
+                  borderColor=green
               #else:
               #  color=Field.lightGrey
-              field.drawDebug(self.video,overlay,color)
+              field.drawDebug(self.video,overlay,color,borderColor=borderColor)
           alpha = 0.6  # Transparency factor.
           # Following line overlays transparent rectangle over the image
           image_new = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
