@@ -22,6 +22,9 @@ def test_Rotation():
 
 def test_WarpPoints():
     warp=getTestWarp()
+    print (warp.pointList)
+    print (warp.points)
+    assert warp.pointList==[[678, 25], [1406, 270], [1136, 1048], [236, 666]]
     # simulate clear click
     warp.addPoint(0,0)
     warp.addPoint(679,25)
