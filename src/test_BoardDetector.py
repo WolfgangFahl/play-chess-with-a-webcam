@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from Args import Args
+from webchesscam import  WebChessCamArgs
 from BoardDetector import BoardDetector
 from Board import Board
 from Video import Video
@@ -13,23 +13,32 @@ import cv2
 def test_BoardFieldColorDetector():
     video=Video()
     board=Board()
+    board.chessboard.clear()
     image=video.readImage("testMedia/chessBoard011.jpg")
     BoardDetector.debug=True
     boardDetector=BoardDetector(board,video)
-    for distance in range(0,7,1):
-        for step in range(1,6,1):
+    maxDistance=5
+    maxSteps=30
+    stepSteps=4
+    # how long to show results (e.g. 2 secs)
+    totalWaitTime=2000
+    # wait only a fraction of the totalWaitTime
+    waitTime=int(totalWaitTime/(maxDistance*maxSteps/stepSteps))
+    for distance in range(0,maxDistance+1,1):
+       for step in range(1,maxSteps+1,stepSteps):
             testImage=image.copy()
             start = timer()
-            boardDetector.analyze(testImage,distance,step)
+            testImage=boardDetector.analyze(testImage,distance,step)
             end = timer()
             count=(2*distance+1)*(2*distance+1)
             size=distance*(step+1)
             print("%.3fs for distance %2d with %4d pixels %2d x %2d " % (end - start,distance,count,size,size)) # Time in seconds, e.g. 5.38091952400282
-            video.showImage(testImage,"fields",True,500)
+            video.showImage(testImage,"fields",True,waitTime)
+    video.close()
 
 def test_FieldDetector():
     video=Video()
-    webApp=WebApp(Args([]))
+    webApp=WebApp(WebChessCamArgs(["--debug"]).args)
     frames=None
     for boardIndex in range(2):
         board=Board()
@@ -66,6 +75,7 @@ def test_FieldDetector():
             image = cv2.resize(bgr,(int(width*1.5),int(height*1.5)))
             video.showImage(image,"BoardDetector",keyWait=200)
             end = timer()
+    video.close()
 
 def test_ColorDistance():
     assert 25==ColorStats.square(5)

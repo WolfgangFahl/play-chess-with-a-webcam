@@ -147,5 +147,5 @@ class WebChessCamArgs:
 
 if __name__ == '__main__':
     args = WebChessCamArgs(sys.argv[1:]).args
-    webApp=WebApp(args)
+    webApp=WebApp(args,app.logger)
     app.run(port='%d' % (args.port), host=args.host)

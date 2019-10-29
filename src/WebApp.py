@@ -17,13 +17,20 @@ class Warp(YamlAbleMixin,JsonAbleMixin):
        self.rotation=rotation
        self.bgrColor=bgrColor
        self.pointList = pointList
-       self.points=None
-       self.warping=False
+       self.updatePoints()
 
     def rotate(self,angle):
        self.rotation=self.rotation+angle
        if self.rotation>=360:
          self.rotation=self.rotation % 360
+
+    def updatePoints(self):
+      pointLen=len(self.pointList)
+      if pointLen==0:
+        self.points=None
+      else:
+        self.points=np.array(self.pointList)
+      self.warping=pointLen==4
 
     def addPoint(self,px,py):
         """ add a point with the given px,py coordinate
@@ -32,11 +39,9 @@ class Warp(YamlAbleMixin,JsonAbleMixin):
         px,py is irrelevant for reset """
         if len(self.pointList)>=4:
           self.pointList=[]
-          self.points=None
         else:
           self.pointList.append([px,py])
-          self.points=np.array(self.pointList)
-          self.warping=len(self.pointList)==4
+        self.updatePoints()
 
 
 class WebApp:
@@ -44,18 +49,22 @@ class WebApp:
     debug=False
 
     # construct me with the given settings
-    def __init__(self,args,warpPointBGRColor=(0, 255, 0)):
+    def __init__(self,args,logger=None,warpPointBGRColor=(0, 255, 0)):
        """ construct me """
        self.args=args
+       self.logger=logger
        self.setDebug(args.debug)
        self.video = Video()
        self.videoStream = None
        self.board = Board()
-       if WebApp.debug:
-          print ("Warp: %s"  % (args.warpPointList))    
+       self.log("Warp: %s"  % (args.warpPointList))
        self.warp=Warp(args.warpPointList)
        self.warp.rotation=args.rotation
 
+    def log(self,msg):
+       if WebApp.debug and self.logger is not None:
+          self.logger.info(msg)
+               
     # return the index.html template content with the given message
     def index(self,msg):
          return render_template('index.html', message=msg, timeStamp=self.video.timeStamp())

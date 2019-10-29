@@ -124,8 +124,7 @@ class Video:
                     break
             else:
                 break
-        self.cap.release()
-        cv2.destroyAllWindows()
+        self.close()
 
     def fileTimeStamp(self):
         return self.timeStamp(separator='_', timeseparator='')
@@ -136,6 +135,7 @@ class Video:
     def close(self):
         if self.cap is not None:
             self.cap.release()
+        cv2.destroyAllWindows()
 
     def checkCap(self):
         if self.cap is None:
