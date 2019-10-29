@@ -5,6 +5,7 @@
 # Global imports
 from flask import Flask, request, render_template, send_from_directory, abort, Response
 from flask_restful import Resource, Api
+import ast
 import json
 import logging
 import sys
@@ -26,6 +27,9 @@ app = Flask(__name__, static_url_path='',
 api = Api(app)
 #app.logger.addHandler(logging.StreamHandler(STDOUT))
 app.logger.setLevel(logging.INFO)
+if WebApp.debug:
+  app.logger.setLevel(logging.DEBUG)
+
 app.logger.info("python src folder is %s" % (thisscriptFolder))
 # check if we are running on a raspberry PI
 app.logger.info("Running on %s" % (platform.system()))
@@ -123,10 +127,22 @@ class WebChessCamArgs:
         self.parser.add_argument('--host',
                                  default="0.0.0.0",
                                  help="host to allow access for")
+
         self.parser.add_argument('--debug',
                                  action='store_true',
                                  help="show debug output")
+
+        self.parser.add_argument('--rotation',
+                                 type=int,
+                                 default=0,
+                                 help="rotation of chessboard")
+
+        self.parser.add_argument('--warp',
+                                 default="[]",
+                                 help="warp points")
+
         self.args = self.parser.parse_args(argv)
+        self.args.warpPointList=ast.literal_eval(self.args.warp)
 
 
 if __name__ == '__main__':

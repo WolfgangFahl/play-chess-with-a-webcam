@@ -13,10 +13,10 @@ class Warp(YamlAbleMixin,JsonAbleMixin):
     """ holds the trapezoid points to be use for warping an image take from a peculiar angle """
 
     # construct me from the given setting
-    def __init__(self,rotation=0,bgrColor=(0, 255, 0)):
+    def __init__(self,pointList=[],rotation=0,bgrColor=(0, 255, 0)):
        self.rotation=rotation
        self.bgrColor=bgrColor
-       self.pointList = []
+       self.pointList = pointList
        self.points=None
        self.warping=False
 
@@ -47,10 +47,14 @@ class WebApp:
     def __init__(self,args,warpPointBGRColor=(0, 255, 0)):
        """ construct me """
        self.args=args
+       self.setDebug(args.debug)
        self.video = Video()
        self.videoStream = None
        self.board = Board()
-       self.warp=Warp()
+       if WebApp.debug:
+          print ("Warp: %s"  % (args.warpPointList))    
+       self.warp=Warp(args.warpPointList)
+       self.warp.rotation=args.rotation
 
     # return the index.html template content with the given message
     def index(self,msg):
@@ -64,9 +68,13 @@ class WebApp:
         #  https://stackoverflow.com/a/24578372/1497139
         return send_from_directory(directory=path, filename=filename)
 
-    def chessDebug(self):
-        WebApp.debug=not WebApp.debug
+    def setDebug(self,debug):
+        WebApp.debug=debug
         BoardDetector.debug=WebApp.debug
+
+    # toggle the debug flag
+    def chessDebug(self):
+        self.setDebug(not WebApp.debug)
         msg = "debug " + ( 'on' if WebApp.debug else 'off' )
         return self.index(msg)
 
