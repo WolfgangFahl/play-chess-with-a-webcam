@@ -7,7 +7,7 @@ from JsonAbleMixin import JsonAbleMixin
 import tempfile
 
 def getTestWarp():
-    warp=Warp()
+    warp=Warp([])
     warp.addPoint(678,25)
     warp.addPoint(1406,270)
     warp.addPoint(1136,1048)
