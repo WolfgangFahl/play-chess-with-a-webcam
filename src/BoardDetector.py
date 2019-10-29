@@ -44,26 +44,27 @@ class BoardDetector:
           counts=self.board.fieldStateCounts()
 
           for index,field in enumerate(sortedFields):
-              lmean,lstdv=field.luminance
-              #print ("frame %5d %2d: %s luminance: %3.0f ± %3.0f rgbColorKey: %3.0f colorKey: %.0f" % (frameIndex,index,field.an,lmean,lstdv,field.rgbColorKey,field.colorKey))
-              color=field.getColor()
-              borderColor=(0,0,0)
-              green=(0,255,0)
-              darkGreyLimit=counts[FieldState.BLACK_BLACK]
-              blackLimit=darkGreyLimit+counts[FieldState.BLACK_EMPTY]
-              #lightGreyLimit=darkGreyLimit+counts[FieldState.WHITE_BLACK]
-              if index<darkGreyLimit:
-                  color=Field.darkGrey
-                  borderColor=green
-              elif index<blackLimit:
-                  color=Field.black
-                  borderColor=green
-              elif index>=64-counts[FieldState.WHITE_EMPTY]:
-                  color=Field.white
-                  borderColor=green
-              #else:
-              #  color=Field.lightGrey
-              field.drawDebug(self.video,overlay,color,borderColor=borderColor)
+              l=field.luminance
+              print ("frame %5d %2d: %s luminance: %3.0f ± %3.0f (%d) rgbColorKey: %3.0f colorKey: %.0f" % (frameIndex,index,field.an,l.mean(),l.standard_deviation(),l.n,field.rgbColorKey,field.colorKey))
+              limit1=counts[FieldState.BLACK_BLACK]
+              limit2=limit1+counts[FieldState.BLACK_WHITE]
+              limit3=limit2+counts[FieldState.BLACK_EMPTY]
+              limit4=limit3+counts[FieldState.WHITE_BLACK]
+              limit5=limit4+counts[FieldState.WHITE_BLACK]
+              fieldState=None
+              if index<limit1:
+                  fieldState=FieldState.BLACK_BLACK
+              elif index<limit2:
+                  fieldState=FieldState.BLACK_WHITE
+              elif index<limit3:
+                  fieldState=FieldState.BLACK_EMPTY
+              elif index<limit4:
+                  fieldState=FieldState.WHITE_BLACK
+              elif index<limit5:
+                 fieldState=FieldState.WHITE_WHITE
+              else:
+                 fieldState=FieldState.WHITE_EMPTY
+              field.drawDebug(self.video,overlay,fieldState)
           alpha = 0.6  # Transparency factor.
           # Following line overlays transparent rectangle over the image
           image_new = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)

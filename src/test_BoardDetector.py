@@ -90,4 +90,4 @@ if len(sys.argv) >= 2:
   test_BoardFieldColorDetector()
   test_FieldDetector()
 else:
-  print ("call me with any parameter to run")  
+  print ("call me with any parameter to run")

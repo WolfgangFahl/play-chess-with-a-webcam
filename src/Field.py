@@ -22,9 +22,12 @@ class Field:
     """ a single Field of a chessboard as observed from a WebCam"""
     rows=8
     cols=8
+    # bgr colors
     white=(255,255,255)
     lightGrey=(64,64,64)
     darkGrey=(192,192,192)
+    green=(0,255,0)
+    red=(0,0,255)
     black=(0,0,0)
 
     @staticmethod
@@ -101,7 +104,7 @@ class Field:
             #print ("(%3d,%3d)=(%3d,%3d,%3d)" % (self.pcx+dx,self.pcy+dy,ph,ps,pv))
             self.hsvStats.push(ph,ps,pv)
             self.rgbStats.push(r,g,b)
-        self.luminance=(self.hsvStats.c3Stats.mean(),self.hsvStats.c3Stats.standard_deviation())
+        self.luminance=self.hsvStats.c3Stats
         self.rgbColorKey=self.rgbStats.rgbColorKey()
         self.colorKey=self.hsvStats.colorKey()
 
@@ -112,11 +115,21 @@ class Field:
         #print("(%3d,%3d)=(%3d,%3d,%3d) (%3d,%3d,%3d)" % (self.pcx,self.pcy,h,s,v,r,g,b))
         return bgr
 
-    def drawDebug(self,video,image,color,borderColor=(0,0,0)):
+    def drawDebug(self,video,image,detectedFieldState):
         pcx=self.pcx
         pcy=self.pcy
         distance=self.distance
         step=self.step
+        fieldState=self.getFieldState()
+        detectColor=Field.green if fieldState==detectedFieldState else Field.red
+        fieldColor=self.getColor()
         x1,y1,x2,y2=pcx-distance*step,pcy-distance*step,pcx+distance*step,pcy+distance*step
-        video.drawRectangle(image,(x1-1,y1-1),(x2+1,y2+1),thickness=1,color=borderColor)
-        video.drawRectangle(image,(x1  ,y1  ),(x2  ,y2  ),thickness=-1,color=color)
+        # outer thickness for displaying detect state: green ok red - there is an issue
+        ot=2
+        it=3
+        video.drawRectangle(image,(x1-ot,y1-ot),(x2+ot,y2+ot),thickness=ot,color=detectColor)
+        video.drawRectangle(image,(x1   ,y1   ),(x2   ,y2   ),thickness=it,color=fieldColor)
+        piece=self.getPiece()
+        if piece is None:
+           emptyFieldColor=Field.white if fieldState==FieldState.WHITE_EMPTY else Field.black
+           video.drawRectangle(image,(x1-it,y1-it),(x2-it,y2+it),thickness=-1,color=emptyFieldColor)

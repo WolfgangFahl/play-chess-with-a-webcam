@@ -39,13 +39,18 @@ class RunningStats:
     def standard_deviation(self):
         return math.sqrt(self.variance())
 
-class ColorStats:
+class ColorStats():
     """ calculate the RunningStats for 3 color channels like RGB or HSV simultaneously"""
 
     def __init__(self):
         self.c1Stats=RunningStats()
         self.c2Stats=RunningStats()
         self.c3Stats=RunningStats()
+
+    def clear(self):
+        self.c1Stats.clear()
+        self.c2Stats.clear()
+        self.c3Stats.clear()    
 
     def push(self,c1,c2,c3):
         self.c1Stats.push(c1)
