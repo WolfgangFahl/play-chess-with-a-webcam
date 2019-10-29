@@ -14,12 +14,12 @@ def test_findBoard():
 # test which side is black
 def test_getBlackMaxSide():
     # fixme - this is not really the expected result
-    expected=[0,0,2,2,0]
+    expected=[1,0,3,1,0]
     for index in range(0,5):
         image=getImage(index+1)
         finder=BoardFinder(image)
         side=finder.getBlackMaxSide(image)
-        print ("black is at %d" % (side))
+        print ("black is at %d for index %d" % (side,index))
         assert expected[index]==side
 
 # test hough transformation
