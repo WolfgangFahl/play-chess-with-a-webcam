@@ -11,8 +11,8 @@ from RunningStats import ColorStats
 import cv2
 import os
 
-scriptbase=os.path.basename(os.path.dirname(os.path.abspath(__file__)))
-relroot=".." if scriptbase=="src" else "."
+#relroot=".." if len(scriptpath)==2 else "."
+relroot="."
 testMedia=relroot+"/testMedia/"
 frameDebug=True
 
@@ -22,7 +22,7 @@ def test_BoardFieldColorDetector():
     board.chessboard.clear()
     image=video.readImage(testMedia+"chessBoard011.jpg")
     # this is a still image
-    frameIndex=1 
+    frameIndex=1
     BoardDetector.debug=True
     boardDetector=BoardDetector(board,video)
     maxDistance=5
