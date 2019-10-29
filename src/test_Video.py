@@ -1,5 +1,6 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Video import Video
+import sys
 
 # test reading an example video
 def test_ReadVideo():
@@ -73,10 +74,13 @@ def test_device():
     v0=int("0")
     assert v0==0
 
-test_device()
-test_ReadVideoWithPostProcess()
-test_ReadVideoWithPause()
-test_ReadJpg()
-test_ReadVideo()
-test_getSubRect()
-test_CreateBlank()
+if len(sys.argv) >= 2:
+    test_device()
+    test_ReadVideoWithPostProcess()
+    test_ReadVideoWithPause()
+    test_ReadJpg()
+    test_ReadVideo()
+    test_getSubRect()
+    test_CreateBlank()
+else:
+    print ("call me with any parameter to run")

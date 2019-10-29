@@ -9,6 +9,7 @@ from timeit import default_timer as timer
 from WebApp import WebApp
 from RunningStats import ColorStats
 import cv2
+import sys
 
 def test_BoardFieldColorDetector():
     video=Video()
@@ -84,6 +85,9 @@ def test_ColorDistance():
     colorKey=cStats.colorKey()
     assert 49152==colorKey
 
-test_ColorDistance()
-test_BoardFieldColorDetector()
-test_FieldDetector()
+if len(sys.argv) >= 2:
+  test_ColorDistance()
+  test_BoardFieldColorDetector()
+  test_FieldDetector()
+else:
+  print ("call me with any parameter to run")  
