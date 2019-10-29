@@ -20,6 +20,5 @@ def test_StringRepresentationOfList():
     assert warpPointList==expected
 
 
-if __name__ == '__main__':
-  test_StringRepresentationOfList()
-  test_WebChessCamArgs()
+test_StringRepresentationOfList()
+test_WebChessCamArgs()

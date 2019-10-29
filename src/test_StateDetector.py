@@ -7,12 +7,13 @@ from HelpTesting import getImage
 
 # test the StateDetector
 def test_StateDetector():
-   for index in range(0,9):
-      image=getImage(index+1)
-      stateDetector=StateDetector()
-      try:
-         stateDetector.detectState(image)
-      except  CannotBuildStateException as cbse:
-         print(cbse)
-         pass
+    for index in range(0,9):
+        image=getImage(index+1)
+        stateDetector=StateDetector()
+        try:
+            stateDetector.detectState(image)
+        except  CannotBuildStateException as cbse:
+            print(cbse)
+            pass
+        
 test_StateDetector()
