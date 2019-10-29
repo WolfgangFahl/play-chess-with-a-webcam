@@ -28,8 +28,8 @@ def test_WarpPoints():
     warp.addPoint(1408,270)
     warp.addPoint(1136,1049)
     warp.addPoint(236,667)
-    #print (warp.pointList)
-    #print (warp.points)
+    print (warp.pointList)
+    print (warp.points)
     assert warp.pointList==[[679, 25], [1408, 270], [1136, 1049], [236, 667]]
 
 def test_Persistence():
