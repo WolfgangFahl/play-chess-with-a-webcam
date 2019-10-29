@@ -9,6 +9,8 @@ web/mdi
 web/webcamchess
 # Deprecated
 deprecated
+# Eclipse 
+.settings
 # Mac
 *.DS_Store
 # Videos
