@@ -3,17 +3,13 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
 # Global imports
-from flask import Flask, request, render_template, send_from_directory, abort, Response
-from flask_restful import Resource, Api
+from flask import Flask, request
+from flask_restful import Api
 import ast
-import json
 import logging
 import sys
-import time
-import yaml
 import platform
 import os.path
-from subprocess import STDOUT
 import argparse
 from WebApp import WebApp
 
@@ -28,7 +24,7 @@ api = Api(app)
 #app.logger.addHandler(logging.StreamHandler(STDOUT))
 app.logger.setLevel(logging.INFO)
 if WebApp.debug:
-  app.logger.setLevel(logging.DEBUG)
+    app.logger.setLevel(logging.DEBUG)
 
 app.logger.info("python src folder is %s" % (thisscriptFolder))
 # check if we are running on a raspberry PI
@@ -77,9 +73,11 @@ def chessPgn():
     pgn = request.args.get('pgn')
     fen = request.args.get('fen')
     if updateFEN is not None:
-       return webApp.chessFEN(fen)
+        return webApp.chessFEN(fen)
+    elif updateGame is not None:
+        return webApp.chessPgn(pgn)
     else:
-       return webApp.chessPgn(pgn,fen)
+        return webApp.index("expected updateGame or updateFEN but no such request found")
 
 @app.route("/chess/chesswebcamclick/<width>/<height>", methods=['GET'])
 def chessWebCamClick(width,height):
@@ -93,9 +91,7 @@ def chessWebCamClick(width,height):
 
 @app.route("/chess/move/<move>", methods=['GET'])
 def chessMove(move):
-    board.performMove(move)
-    msg = "move %s -> fen= %s" % (move, board.fen())
-    return index(msg, cmd="fen", value=board.fen())
+    return webApp.chessMove(move)
 
 # capture a single still image
 @app.route("/chess/photo", methods=['GET'])
@@ -107,7 +103,7 @@ def photo():
 def home():
     return webApp.home()
 
-# default arguments for Chess Cam
+# default arguments for Web Chess Camera
 
 
 class WebChessCamArgs:
