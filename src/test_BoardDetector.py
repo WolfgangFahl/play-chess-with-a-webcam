@@ -9,31 +9,39 @@ from timeit import default_timer as timer
 from WebApp import WebApp
 from RunningStats import ColorStats
 import cv2
-import sys
+import os
+
+scriptbase=os.path.basename(os.path.dirname(os.path.abspath(__file__)))
+relroot=".." if scriptbase=="src" else "."
+testMedia=relroot+"/testMedia/"
+frameDebug=True
 
 def test_BoardFieldColorDetector():
     video=Video()
     board=Board()
     board.chessboard.clear()
-    image=video.readImage("testMedia/chessBoard011.jpg")
+    image=video.readImage(testMedia+"chessBoard011.jpg")
+    # this is a still image
+    frameIndex=1 
     BoardDetector.debug=True
     boardDetector=BoardDetector(board,video)
     maxDistance=5
-    maxSteps=30
-    stepSteps=4
+    maxSteps=7
+    stepSteps=1
     # how long to show results (e.g. 2 secs)
     totalWaitTime=2000
     # wait only a fraction of the totalWaitTime
     waitTime=int(totalWaitTime/(maxDistance*maxSteps/stepSteps))
-    for distance in range(0,maxDistance+1,1):
+    for distance in range(1,maxDistance+1,1):
         for step in range(1,maxSteps+1,stepSteps):
             testImage=image.copy()
             start = timer()
-            testImage=boardDetector.analyze(testImage,distance,step)
+            testImage=boardDetector.analyze(testImage,frameIndex,distance,step)
             end = timer()
             count=(2*distance+1)*(2*distance+1)
             size=distance*(step+1)
-            print("%.3fs for distance %2d with %4d pixels %2d x %2d " % (end - start,distance,count,size,size)) # Time in seconds, e.g. 5.38091952400282
+            if frameDebug:
+                print("%.3fs for distance %2d with %4d pixels %2d x %2d " % (end - start,distance,count,size,size)) # Time in seconds, e.g. 5.38091952400282
             video.showImage(testImage,"fields",True,waitTime)
     video.close()
 
@@ -50,11 +58,11 @@ def test_FieldDetector():
         # setup webApp params to reuse warp method
         webApp.video=video
         if boardIndex==1:
-            video.open('testMedia/emptyBoard001.avi')
+            video.open(testMedia+'emptyBoard001.avi')
             board.chessboard.clear_board()
             frames=52
         if boardIndex==0:
-            video.open('testMedia/scholarsmate.avi')
+            video.open(testMedia+'scholarsmate.avi')
             frames=334
         webApp.warp.rotation=270
         webApp.warp.pointList=[]
@@ -64,7 +72,7 @@ def test_FieldDetector():
         webApp.warp.addPoint(137,374)
 
         for frame in range(0,frames):
-            ret,bgr,quit=video.readFrame(show=False)
+            ret,bgr,quitWanted=video.readFrame(show=False)
             assert ret
             assert bgr is not None
             # bgr = cv2.cvtColor(jpgImage, cv2.COLOR_RGB2BGR)
@@ -85,13 +93,6 @@ def test_ColorDistance():
     colorKey=cStats.colorKey()
     assert 49152==colorKey
 
-if len(sys.argv) >= 2:
-    test_ColorDistance()
-    test_BoardFieldColorDetector()
-    test_FieldDetector()
-else:
-<<<<<<< HEAD
-  print ("call me with any parameter to run")
-=======
-    print ("call me with any parameter to run")  
->>>>>>> 3b4b1b731c2708f0840dc2dce6b13af4ab2c6b95
+test_ColorDistance()
+test_BoardFieldColorDetector()
+test_FieldDetector()

@@ -3,9 +3,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import cv2
 import numpy as np
-import sys
 import math
-import datetime
 from time import strftime
 from FPSCheck import FPSCheck
 from imutils import perspective
@@ -79,14 +77,14 @@ class Video:
             return True
 
     # encode the image
-    def imencode(self,frame,format=".jpg"):
+    def imencode(self,frame,imgformat=".jpg"):
         # encode the frame in JPEG format
-        (flag, encodedImage) = cv2.imencode(format, frame)
+        (flag, encodedImage) = cv2.imencode(imgformat, frame)
         return flag,encodedImage
 
     # return a video frame as a jpg image
     def readJpgImage(self, show=False, postProcess=None):
-        ret, frame, quit = self.readFrame(show, postProcess)
+        ret, frame, quitWanted = self.readFrame(show, postProcess)
         encodedImage = None
         # ensure the frame was read
         if ret:
@@ -94,7 +92,7 @@ class Video:
             # ensure the frame was successfully encoded
             if not flag:
                 ret = False
-        return ret, encodedImage, quit
+        return ret, encodedImage, quitWanted
 
     # return a video frame as a numpy array
     def readFrame(self, show=False, postProcess=None):
@@ -104,7 +102,7 @@ class Video:
             frame = self.frame
         else:
             ret, self.frame = self.cap.read()
-        quit = False
+        quitWanted = False
         if ret == True:
             if not self.ispaused:
                 if not postProcess is None:
@@ -112,16 +110,19 @@ class Video:
                 self.frames = self.frames + 1
                 self.fpsCheck.update()
             if show:
-                quit = not self.showImage(self.frame, "frame")
-        return ret, self.frame, quit
+                quitWanted = not self.showImage(self.frame, "frame")
+        return ret, self.frame, quitWanted
 
     # play the given capture
     def play(self):
         while(self.cap.isOpened()):
-            ret, frame, quit = self.readFrame(True)
+            ret, frame, quitWanted = self.readFrame(True)
             if ret == True:
-                if quit:
+                if quitWanted:
                     break
+                if frame is None:
+                    # TODO decide whether to log a warning here
+                    pass
             else:
                 break
         self.close()
@@ -142,8 +143,8 @@ class Video:
             raise "Capture is not initialized"
 
     # get a still image
-    def still(self, prefix, format="jpg", close=True, printHints=True, show=False, postProcess=None):
-        filename = "%s%s.%s" % (prefix, self.fileTimeStamp(), format)
+    def still(self, prefix, imgformat="jpg", close=True, printHints=True, show=False, postProcess=None):
+        filename = "%s%s.%s" % (prefix, self.fileTimeStamp(), imgformat)
         return self.still2File(filename, format=format, close=close, printHints=printHints, show=show, postProcess=postProcess)
 
     # get a still image
@@ -152,7 +153,7 @@ class Video:
         ret = False
         frame = None
         if (self.cap.isOpened()):
-            ret, frame, quit = self.readFrame(show, postProcess)
+            ret, frame, quitWanted = self.readFrame(show, postProcess)
             if ret == True:
                 if printHints:
                     print("capture %s with %dx%d" % (
@@ -182,11 +183,11 @@ class Video:
                 filename, self.width, self.height, self.fps))
 
         while(self.cap.isOpened()):
-            ret, frame, quit = self.readFrame(True)
+            ret, frame, quitWanted = self.readFrame(True)
             if ret == True:
                 # flip the frame
                 # frame = cv2.flip(frame,0)
-                if quit:
+                if quitWanted:
                     break
                 # write the  frame
                 out.write(frame)
@@ -242,13 +243,13 @@ class Video:
         # loop over the points and draw them on the image
         prev=None
         for (x, y) in points:
-           cv2.circle(image, (x, y), 10, color, -1)
-           if prev is not None:
-              cv2.line(image, (x,y), prev, color, 3, cv2.LINE_AA)
-           prev =(x,y)
+            cv2.circle(image, (x, y), 10, color, -1)
+            if prev is not None:
+                cv2.line(image, (x,y), prev, color, 3, cv2.LINE_AA)
+            prev =(x,y)
 
     def drawCircle(self,image,center,radius=10,color=(0,255,0),thickness=1):
-       cv2.circle(image,center,radius,color=color,thickness=thickness)
+        cv2.circle(image,center,radius,color=color,thickness=thickness)
 
     def drawRectangle(self,image,pt1,pt2,color=(0,255,0),thickness=1):
        cv2.rectangle(image,pt1,pt2,color,thickness)
@@ -284,18 +285,18 @@ class Video:
         return rotated
 
     def warp(self,image,pts,squared=True):
-       """apply the four point tranform to obtain a birds eye view of the given image """
-       warped = perspective.four_point_transform(image, pts)
-       if squared:
-          height, width = warped.shape[:2]
-          side=min(width,height)
-          warped = cv2.resize(warped,(side,side))
-       return warped
+        """apply the four point tranform to obtain a birds eye view of the given image """
+        warped = perspective.four_point_transform(image, pts)
+        if squared:
+            height, width = warped.shape[:2]
+            side=min(width,height)
+            warped = cv2.resize(warped,(side,side))
+        return warped
 
     @staticmethod
     def getSubRect(image, rect):
         x, y, w, h = rect
-        return image[y:y + h, x:x + h]
+        return image[y:y + h, x:x + w]
 
     # get the intensity sum of a hsv image
     def sumIntensity(self, image):
@@ -354,7 +355,10 @@ class VideoStream(object):
             if self.stopped:
                 return
 
-            ret, frame, quit = video.readFrame(self.show, self.postProcess)
+            ret, frame, quitWanted = video.readFrame(self.show, self.postProcess)
+            if quitWanted:
+                return
+            
             if ret:
                 self.frame = frame
 

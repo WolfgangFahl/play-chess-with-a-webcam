@@ -3,7 +3,6 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
 # Global imports
-import chess
 import chess.pgn
 import io
 from chess import Move
@@ -81,11 +80,11 @@ class Board(object):
         pgnIo=io.StringIO(pgn)
         game=chess.pgn.read_game(pgnIo)
         if game is None:
-           # TODO log a warning
-           return
+            # TODO log a warning
+            return
         self.chessboard=game.board()
         for move in game.mainline_moves():
-          self.chessboard.push(move)
+            self.chessboard.push(move)
 
     def setFEN(self,fen):
         self.chessboard=chess.Board(fen)
