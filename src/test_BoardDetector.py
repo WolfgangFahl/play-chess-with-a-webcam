@@ -26,7 +26,7 @@ def test_BoardFieldColorDetector():
     # wait only a fraction of the totalWaitTime
     waitTime=int(totalWaitTime/(maxDistance*maxSteps/stepSteps))
     for distance in range(0,maxDistance+1,1):
-       for step in range(1,maxSteps+1,stepSteps):
+        for step in range(1,maxSteps+1,stepSteps):
             testImage=image.copy()
             start = timer()
             testImage=boardDetector.analyze(testImage,distance,step)
@@ -67,9 +67,9 @@ def test_FieldDetector():
             ret,bgr,quit=video.readFrame(show=False)
             assert ret
             assert bgr is not None
-            #bgr = cv2.cvtColor(jpgImage, cv2.COLOR_RGB2BGR)
+            # bgr = cv2.cvtColor(jpgImage, cv2.COLOR_RGB2BGR)
             height, width = bgr.shape[:2]
-            #print ("%d: %d x %d" % (frame,width,height))
+            # print ("%d: %d x %d" % (frame,width,height))
             bgr=webApp.warpAndRotate(bgr)
             start = timer()
             bgr=boardDetector.analyze(bgr,frame,distance,step)
@@ -86,8 +86,8 @@ def test_ColorDistance():
     assert 49152==colorKey
 
 if len(sys.argv) >= 2:
-  test_ColorDistance()
-  test_BoardFieldColorDetector()
-  test_FieldDetector()
+    test_ColorDistance()
+    test_BoardFieldColorDetector()
+    test_FieldDetector()
 else:
-  print ("call me with any parameter to run")  
+    print ("call me with any parameter to run")  

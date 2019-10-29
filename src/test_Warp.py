@@ -6,6 +6,8 @@ from YamlAbleMixin import YamlAbleMixin
 from JsonAbleMixin import JsonAbleMixin
 import tempfile
 
+debug=False
+
 def getTestWarp():
     warp=Warp([])
     warp.addPoint(678,25)
@@ -36,13 +38,15 @@ def test_WarpPoints():
     assert warp.pointList==[[679, 25], [1408, 270], [1136, 1049], [236, 667]]
 
 def test_Persistence():
-    #YamlAbleMixin.debug=True
+    if debug:
+        YamlAbleMixin.debug=True
     temp=tempfile.gettempdir()
     warp=getTestWarp()
     warp.writeYaml(temp+"/warp")
     ywarp=Warp.readYaml(temp+"/warp")
     assert ywarp.pointList==warp.pointList
-    #JsonAbleMixin.debug=True
+    if debug:
+        JsonAbleMixin.debug=True
     warp.writeJson(temp+"/warp")
     jwarp=Warp.readJson(temp+"/warp")
     assert jwarp.pointList==warp.pointList
