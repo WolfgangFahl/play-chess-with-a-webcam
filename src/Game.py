@@ -25,12 +25,23 @@ class WebCamGame(JsonAbleMixin):
         self.game = Game(name)
         self.warp = Warp()
         
+    def checkDir(self,path):    
+        print (path)
+        if not os.path.isdir(path):
+            try:
+                os.mkdir(path)
+            except OSError:
+                print ("Creation of the directory %s failed" % path)
+            else:
+                print ("Successfully created the directory %s " % path)
+ 
     def save(self, path="games"):
         env = Environment()
-        savedir = str(env.projectPath) + "/" + path+"/"+self.name
-        print (savedir)
-        if not os.path.isdir(savedir):
-            print ("need to create " + savedir)
+        savepath=str(env.projectPath) + "/" + path
+        self.checkDir(savepath)
+        savedir = savepath+"/"+self.name
+        self.checkDir(savedir)
+       
             
     @staticmethod       
     def getWebCamGames(path):

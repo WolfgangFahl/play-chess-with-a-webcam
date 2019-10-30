@@ -8,7 +8,6 @@ from Video import Video
 import cv2
 import time
 
-
 # CHESSCAM_WIDTH = 640
 # CHESSCAM_HEIGHT = 480
 CHESSCAM_PARZEN_THRESHOLD = 5
