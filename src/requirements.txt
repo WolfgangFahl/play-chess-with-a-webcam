@@ -13,6 +13,7 @@ python-chess
 # web tools
 Flask
 Flask-RESTful
+Flask-AutoIndex
 # config and state saving
 PyYAML
 # mss https://pypi.org/project/mss/ An ultra fast cross-platform multiple screenshots module in pure python using ctypes.

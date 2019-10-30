@@ -4,6 +4,7 @@
 
 # Global imports
 from flask import Flask, request
+from flask_autoindex import AutoIndex
 from flask_restful import Api
 import ast
 import logging
@@ -20,6 +21,7 @@ thisscriptFolder = os.path.dirname(os.path.abspath(__file__))
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='',
             static_folder=thisscriptFolder + '/../web')
+files_index=AutoIndex(app, browse_root=thisscriptFolder+'/../games',add_url_rules=False)
 api = Api(app)
 # app.logger.addHandler(logging.StreamHandler(STDOUT))
 app.logger.setLevel(logging.INFO)
@@ -38,6 +40,11 @@ if platform.system() == 'Linux' and os.path.exists('/sys/firmware/devicetree/bas
 def root():
     return webApp.home()
 
+# https://stackoverflow.com/a/41527903/1497139
+@app.route('/games')
+@app.route('/games/<path:path>')
+def autoindex(path='.'):
+    return files_index.render_autoindex(path)
 
 @app.route('/video')
 def video_feed():
