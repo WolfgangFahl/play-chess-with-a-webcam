@@ -1,44 +1,51 @@
-{% include 'header.html' %}
-{% include 'menu.html' %}
-<div id='navigationbox' title='Play Chess With a WebCam'>Play Chess With a WebCam</div>
+{% include 'header.html' %} {% include 'menu.html' %}
+<div id='navigationbox' title='Play Chess With a WebCam'>Play
+	Chess With a WebCam</div>
 <div class='container-fluid' id='contentbox'>
-  <div class='row'>
-    <div id='chessboarddiv' class="h-100 col-md-4">
-      <br>
-      <!-- center the ChessBoard Frame -->
-      <div id='chessboardframe' style='margin-left: 20px'>
-        <div id='chessboard' style="width: 512px">
-          {% include 'js.html' %}
-        </div>
-      </div>
-    </div>
-    <div id='chesswebcamdiv' class="col-md-5">
-      <br>
-      <!-- center the ChessWebCam Frame -->
-      <div id='chesswebcamframe' style='width:512px; margin-left: auto;margin-right:auto'>
-        <a href='/chess/chesswebcamclick/512/512'>
-           <img id='chesswebcam' width='512' height='512' src='/video#{{timeStamp}}' ismap='true'/>
-        </a>
-      </div>
-    </div>
-    <!-- game notation -->
-    <div id='notation' class="col-md-3">
-      <br>
-      <form action='/chess/pgn' method='GET'>
-         <fieldset>
-           <label>Game:<input type='text' id='gamename' name='gamename' value='{{gamename}}'/></label>
-         </<fieldset>
-         <textarea id='fen' name='fen' cols='30' rows= '3'></textarea><br>
-         <button id="updateFen" type="submit" value="updateFEN", name="updateFEN">Update FEN</button><br>
-         <textarea id='pgn' name="pgn" cols='30' rows='20'></textarea><br>
-         <button id="updateGame" type="submit" value="updateGame" name="updateGame">Update Game</button>
-      </form>
-    </div>
-  </div>
-  <!-- web cam chess -->
-  <script src='/js/webcamchess.js'></script>
-  <script>
-    // handle the url query Parameters
-    handleQuery();
-  </script>
-  {% include 'footer.html' %}
+	<div class='row'>
+		<div id='chessboarddiv' class="h-100 col-md-4">
+			<br>
+			<!-- center the ChessBoard Frame -->
+			<div id='chessboardframe' style='margin-left: 20px'>
+				<div id='chessboard' style="width: 512px">{% include 'js.html'
+					%}</div>
+			</div>
+		</div>
+		<div id='chesswebcamdiv' class="col-md-5">
+			<br>
+			<!-- center the ChessWebCam Frame -->
+			<div id='chesswebcamframe'
+				style='width: 512px; margin-left: auto; margin-right: auto'>
+				<a href='/chess/chesswebcamclick/512/512'> <img id='chesswebcam'
+					width='512' height='512' src='/video#{{timeStamp}}' ismap />
+				</a>
+			</div>
+		</div>
+		<!-- game notation -->
+		<div id='notation' class="col-md-3">
+			<br>
+			<form action='/chess/pgn' method='GET'>
+				<fieldset>
+					<label>Game:<input type='text' id='gamename' size='30'
+						name='gamename' value='{{gamename}}'></input></label>
+				</fieldset>
+				<textarea id='fen' name='fen' cols='30' rows='3'></textarea>
+				<br>
+				<button id="updateFen" type="submit" value="updateFEN"
+					name="updateFEN">Update FEN</button>
+				<br>
+				<textarea id='pgn' name="pgn" cols='30' rows='20'></textarea>
+				<br>
+				<button id="updateGame" type="submit" value="updateGame"
+					name="updateGame">Update Game</button>
+			</form>
+		</div>
+	</div>
+	<!-- web cam chess -->
+	<script src='/js/webcamchess.js'></script>
+	<script>
+		// handle the url query Parameters
+		handleQuery();
+	</script>
+</div>
+{% include 'footer.html' %}

@@ -1,31 +1,56 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Game import Game, WebCamGame
 from Environment import Environment
+from WebApp import WebApp
+from webchesscam import WebChessCamArgs
+from unittest.mock import Mock
 
-
+debug=True
 def test_Game001():
     game = Game('test001')
     game.fen = "8/8/8/8/8/8/8/8 w - -"
     json = game.asJson()
-    print (json)
-    assert json == '{"fen": "8/8/8/8/8/8/8/8 w - -", "name": "test001", "py/object": "Game.Game"}'
+    if debug:
+        print (json)
+    assert json == '{"fen": "8/8/8/8/8/8/8/8 w - -", "moveIndex": 0, "name": "test001", "pgn": null, "py/object": "Game.Game"}'
     
 
 def test_WebCamGame():
     webCamGame = WebCamGame("chessBoard001")    
     webCamGame.game.fen = "8/8/8/8/8/8/8/8 w - -"
     json = webCamGame.asJson()
-    print (json)
-
+    if debug:
+        print (json)
+    assert json=='{"game": {"fen": "8/8/8/8/8/8/8/8 w - -", "moveIndex": 0, "name": "chessBoard001", "pgn": null, "py/object": "Game.Game"}, "name": "chessBoard001", "py/object": "Game.WebCamGame", "warp": {"bgrColor": {"py/tuple": [0, 255, 0]}, "pointList": [], "points": null, "py/object": "Game.Warp", "rotation": 0, "warping": false}}'
     
 def test_WebCamGames():
     # get the testEnvironment    
     testEnv = Environment()
     for webCamGame in WebCamGame.getWebCamGames(testEnv.testMediaPath).values():
-        print (webCamGame.asJson())
-        webCamGame.save("testGames")
-
+        if debug:
+            print (webCamGame.asJson())
+        webCamGame.save("testGames")        
+        
+def test_WebApp():
+    webApp=WebApp(WebChessCamArgs(["--debug"]).args)
+    WebApp.index=Mock(return_value="")
+    game=webApp.game
+    fen='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -'
+    webApp.chessFEN(fen)
+    assert game.fen==fen
+    assert game.moveIndex==0
+    webApp.chessMove("e2e4")
+    assert game.moveIndex==1
+    webApp.chessMove("e7e5")
+    assert game.moveIndex==2
+    webApp.chessMove("d2d3")
+    assert game.moveIndex==3
+    webApp.chessTakeback()
+    assert game.moveIndex==2
+    webApp.chessSave()
+  
 
 test_Game001()
 test_WebCamGame()
 test_WebCamGames()
+test_WebApp()

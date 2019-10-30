@@ -66,13 +66,19 @@ class Board(object):
     def performMove(self, move):
         fromCell = move[0].lower()
         toCell = move[1].lower()
-        if Board.debug:
-            print ("move %s-%s" % (fromCell, toCell))
-            print ("%s" % (self.unicode()))
-        move = Move.from_uci(fromCell + toCell)
+        return self.move(fromCell + "-"+toCell)
+    
+    def move(self,ucimove):    
+        move = Move.from_uci(ucimove)
         san = self.chessboard.san(move)
         self.chessboard.push(move)
+        if Board.debug:
+            print ("move %s" % (ucimove))
+            print ("%s" % (self.unicode()))
         return san
+    
+    def takeback(self):
+        self.chessboard.pop()
 
     # get my pgn description
     def pgn(self):

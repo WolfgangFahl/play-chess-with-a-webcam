@@ -64,6 +64,10 @@ def video_pause():
     return webApp.videoPause()
 
 
+@app.route("/chess/save", methods=['GET'])
+def chessSave():
+    return webApp.chessSave()
+
 @app.route("/chess/takeback", methods=['GET'])
 def chessTakeback():
     return webApp.chessTakeback()

@@ -14,6 +14,15 @@ class Game(JsonAbleMixin):
     
     def __init__(self, name):
         self.name = name
+        self.fen=None
+        # http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm
+        self.pgn=None
+        self.moveIndex=0 
+        
+    def showDebug(self):
+        print ("fen: %s" % (self.fen))  
+        print ("pgn: %s" % (self.pgn))
+        print ("moveIndex: %d" % (self.moveIndex))         
         
     
 class WebCamGame(JsonAbleMixin):
@@ -41,6 +50,15 @@ class WebCamGame(JsonAbleMixin):
         self.checkDir(savepath)
         savedir = savepath+"/"+self.name
         self.checkDir(savedir)
+        jsonFile=savedir+"/"+self.name+"-webcamgame"
+        self.writeJson(jsonFile)
+        if self.game.fen is not None:
+            fenFile=savedir+"/"+self.name+".fen"
+            print (self.game.fen,file=open(fenFile, 'w'))
+        if self.game.pgn is not None:
+            pgnFile=savedir+"/"+self.name+".pgn"
+            print (self.game.fen,file=open(pgnFile, 'w'))
+        return savedir    
        
             
     @staticmethod       

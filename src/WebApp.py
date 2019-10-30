@@ -22,9 +22,10 @@ class WebApp:
         self.videoStream = None
         self.board = Board()
         if args.game is None:
-            self.webCamGame = WebCamGame("game" + self.video.timeStamp())
+            self.webCamGame = WebCamGame("game" + self.video.fileTimeStamp())
         else:
-            self.webCamGame = WebCamGame.readJson(args.game)  
+            self.webCamGame = WebCamGame.readJson(args.game)
+        self.game=self.webCamGame.game    
         self.log("Warp: %s" % (args.warpPointList))
         self.warp = Warp(args.warpPointList)
         self.warp.rotation = args.rotation
@@ -32,7 +33,7 @@ class WebApp:
     def log(self, msg):
         if WebApp.debug and self.logger is not None:
             self.logger.info(msg)
-               
+
     # return the index.html template content with the given message
     def index(self, msg):
         return render_template('index.html', message=msg, timeStamp=self.video.timeStamp(), gamename=self.webCamGame.name)
@@ -57,22 +58,38 @@ class WebApp:
 
     def chessTakeback(self):
         msg = "take back"
+        self.board.takeback()
+        self.game.moveIndex=self.game.moveIndex-1
+        if WebApp.debug:
+            self.game.showDebug()
+        return self.index(msg)
+    
+    def chessSave(self):
+        self.webCamGame.warp=self.warp
+        self.webCamGame.save()
+        msg=self.webCamGame
         return self.index(msg)
 
     def chessForward(self):
         msg = "forward"
         return self.index(msg)
-    
+
     def chessMove(self, move):
-        self.board.performMove(move)
-        msg = "move %s -> fen= %s" % (move, self.board.fen())
-        return self.index(msg, cmd="fen", value=self.board.fen())
+        self.board.move(move)
+        self.game.moveIndex=self.game.moveIndex+1
+        self.game.fen=self.board.fen()
+        self.game.pgn=self.board.pgn()
+        msg = "move %s -> fen= %s" % (move, self.game.fen)
+        if WebApp.debug:
+            self.game.showDebug()
+        return self.index(msg, cmd="fen", value=self.game.fen)
 
     def chessFEN(self, fen):
         msg = fen
         try:
             self.board.setFEN(fen)
             msg = "game update from fen %s" % (fen)
+            self.game.fen=fen
         except ValueError as ve:
             msg = str(ve)
         return self.index(msg)
@@ -131,7 +148,7 @@ class WebApp:
                 if not flag:
                     continue
                 # yield the output frame in the byte format
-                yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
+                yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                       bytearray(encodedImage) + b'\r\n')
 
     def warpAndRotate(self, image):
@@ -169,5 +186,5 @@ class WebApp:
             if quitWanted:
                 break
             # yield the output frame in the byte format
-            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
+            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                            bytearray(encodedImage) + b'\r\n')
