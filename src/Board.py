@@ -66,7 +66,7 @@ class Board(object):
     def performMove(self, move):
         fromCell = move[0].lower()
         toCell = move[1].lower()
-        return self.move(fromCell + "-"+toCell)
+        return self.move(fromCell +toCell)
     
     def move(self,ucimove):    
         move = Move.from_uci(ucimove)
