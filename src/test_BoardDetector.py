@@ -8,19 +8,17 @@ from Video import Video
 from timeit import default_timer as timer
 from WebApp import WebApp
 from RunningStats import ColorStats
+from HelpTesting import TheTestEnv
 import cv2
-import os
 
-#relroot=".." if len(scriptpath)==2 else "."
-relroot="."
-testMedia=relroot+"/testMedia/"
+testEnv=TheTestEnv()
 frameDebug=True
 
 def test_BoardFieldColorDetector():
     video=Video()
     board=Board()
     board.chessboard.clear()
-    image=video.readImage(testMedia+"chessBoard011.jpg")
+    image=video.readImage(testEnv.testMedia+"chessBoard011.jpg")
     # this is a still image
     frameIndex=1
     BoardDetector.debug=True
@@ -58,12 +56,14 @@ def test_FieldDetector():
         # setup webApp params to reuse warp method
         webApp.video=video
         if boardIndex==1:
-            video.open(testMedia+'emptyBoard001.avi')
+            video.open(testEnv.testMedia+'emptyBoard001.avi')
             board.chessboard.clear_board()
             frames=52
         if boardIndex==0:
-            video.open(testMedia+'scholarsmate.avi')
-            frames=334
+            video.open(testEnv.testMedia+'scholarsmate.avi')
+            frames=30
+            # @TODO speed up and test all frames again
+            # frames=334
         webApp.warp.rotation=270
         webApp.warp.pointList=[]
         webApp.warp.addPoint(140,5)

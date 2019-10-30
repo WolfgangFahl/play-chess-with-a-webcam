@@ -123,6 +123,11 @@ class WebChessCamArgs:
         self.parser.add_argument('--host',
                                  default="0.0.0.0",
                                  help="host to allow access for")
+        
+        self.parser.add_argument('--game',
+                                 default=None,
+                                 help="game to initialize with")
+        
 
         self.parser.add_argument('--debug',
                                  action='store_true',

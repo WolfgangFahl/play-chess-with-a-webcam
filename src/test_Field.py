@@ -18,9 +18,9 @@ def test_hsv2rgb():
     rgbs=[(63,127,128)]
 
     for i,hsv in enumerate(hsvs):
-       h,s,v=hsv
-       rgb=Field.hsv255_to_rgb255(h,s,v)
-       assert rgbs[i]==rgb
+        h,s,v=hsv
+        rgb=Field.hsv255_to_rgb255(h,s,v)
+        assert rgbs[i]==rgb
 
 test_FieldAlgebraicNotation()
 test_hsv2rgb()

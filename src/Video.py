@@ -306,10 +306,10 @@ class Video:
         return sumResult
 
     # add a timeStamp to the given frame fontScale 1.0
-    def addTimeStamp(self, frame,withFrames=True, withFPS=True, fontBGRColor=(0, 255, 0), fontScale=1.0, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=2):
+    def addTimeStamp(self, frame,withFrames=True, withFPS=True, fontBGRColor=(0, 255, 0), fontScale=1.0, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=1):
         if frame is not None:
             height, width = frame.shape[:2]
-            # grab the current timestamp and draw it on the frame
+            # grab the current time stamp and draw it on the frame
             now = self.timeStamp()
             if withFrames:
                 now = now + " %d" % (self.frames)
@@ -320,6 +320,7 @@ class Video:
                 now, font, fontScale*fontFactor, lineThickness)[0]
             height, width = frame.shape[:2]
             # https://stackoverflow.com/a/34273603/1497139
+            frame=frame.copy()
             cv2.putText(frame, now, (width - int(text_width*1.1), int(text_height*1.2)),
                         font, fontScale*fontFactor, fontBGRColor, lineThickness)
         return frame

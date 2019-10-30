@@ -3,46 +3,9 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Video import Video, VideoStream
 from Board import Board
+from Game import WebCamGame, Warp
 from BoardDetector import BoardDetector
-from flask import Flask, request, render_template, send_from_directory, Response
-import numpy as np
-from YamlAbleMixin import YamlAbleMixin
-from JsonAbleMixin import JsonAbleMixin
-
-
-class Warp(YamlAbleMixin, JsonAbleMixin):
-    """ holds the trapezoid points to be use for warping an image take from a peculiar angle """
-
-    # construct me from the given setting
-    def __init__(self, pointList=[], rotation=0, bgrColor=(0, 255, 0)):
-       self.rotation = rotation
-       self.bgrColor = bgrColor
-       self.pointList = pointList
-       self.updatePoints()
-
-    def rotate(self, angle):
-       self.rotation = self.rotation + angle
-       if self.rotation >= 360:
-         self.rotation = self.rotation % 360
-
-    def updatePoints(self):
-      pointLen = len(self.pointList)
-      if pointLen == 0:
-        self.points = None
-      else:
-        self.points = np.array(self.pointList)
-      self.warping = pointLen == 4
-
-    def addPoint(self, px, py):
-        """ add a point with the given px,py coordinate
-        to the warp points make sure we have a maximum of 4 warpPoints if warppoints are complete when adding reset them
-        this allows to support click UIs that need an unwarped image before setting new warp points.
-        px,py is irrelevant for reset """
-        if len(self.pointList) >= 4:
-          self.pointList = []
-        else:
-          self.pointList.append([px, py])
-        self.updatePoints()
+from flask import render_template, send_from_directory, Response
 
 
 class WebApp:
@@ -50,7 +13,7 @@ class WebApp:
     debug = False
 
     # construct me with the given settings
-    def __init__(self, args, logger=None, warpPointBGRColor=(0, 255, 0)):
+    def __init__(self, args, logger=None):
         """ construct me """
         self.args = args
         self.logger = logger
@@ -58,6 +21,10 @@ class WebApp:
         self.video = Video()
         self.videoStream = None
         self.board = Board()
+        if args.game is None:
+            self.webCamGame=WebCamGame("game"+self.video.timeStamp())
+        else:
+            self.webCamGame=WebCamGame.readJson(args.game)  
         self.log("Warp: %s" % (args.warpPointList))
         self.warp = Warp(args.warpPointList)
         self.warp.rotation = args.rotation
@@ -68,7 +35,7 @@ class WebApp:
                
     # return the index.html template content with the given message
     def index(self, msg):
-        return render_template('index.html', message=msg, timeStamp=self.video.timeStamp())
+        return render_template('index.html', message=msg, timeStamp=self.video.timeStamp(),gamename=self.webCamGame.name)
 
     def home(self):
         self.video = Video()
@@ -187,20 +154,20 @@ class WebApp:
             step = 3
             warped = boardDetector.analyze(warped, self.video.frames, distance, step)
         if WebApp.debug:
-            self.video.addTimeStamp(warped)
+            warped=self.video.addTimeStamp(warped)
         return warped
 
     # video generator
     def genVideo(self, video):
-         while True:
-             # postProcess=video.addTimeStamp
-             postProcess = self.warpAndRotate
-             ret, encodedImage, quit = video.readJpgImage(show=False, postProcess=postProcess)
-             # ensure we got a valid image
-             if not ret:
-                 continue
-             if quit:
-                 break
-             # yield the output frame in the byte format
-             yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
+        while True:
+            # postProcess=video.addTimeStamp
+            postProcess = self.warpAndRotate
+            ret, encodedImage, quitWanted = video.readJpgImage(show=False, postProcess=postProcess)
+            # ensure we got a valid image
+            if not ret:
+                continue
+            if quitWanted:
+                break
+            # yield the output frame in the byte format
+            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
                            bytearray(encodedImage) + b'\r\n')
