@@ -1,0 +1,1 @@
+{"game": {"fen": "8/8/8/8/8/8/8/8 w - -", "moveNo": 1, "name": "chessBoard001", "pgn": null, "py/object": "Game.Game", "turn": null}, "name": "chessBoard001", "py/object": "Game.WebCamGame", "warp": {"bgrColor": {"py/tuple": [0, 255, 0]}, "pointList": [], "points": null, "py/object": "Game.Warp", "rotation": 0, "warping": false}}
