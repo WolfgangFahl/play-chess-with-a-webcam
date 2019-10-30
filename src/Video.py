@@ -11,8 +11,10 @@ import argparse
 from threading import Thread
 import os
 
+
 class Video:
     """ Video handling e.g. recording/writing """
+
     # construct me with no parameters
     def __init__(self):
         self.cap = None
@@ -77,10 +79,10 @@ class Video:
             return True
 
     # encode the image
-    def imencode(self,frame,imgformat=".jpg"):
+    def imencode(self, frame, imgformat=".jpg"):
         # encode the frame in JPEG format
         (flag, encodedImage) = cv2.imencode(imgformat, frame)
-        return flag,encodedImage
+        return flag, encodedImage
 
     # return a video frame as a jpg image
     def readJpgImage(self, show=False, postProcess=None):
@@ -88,7 +90,7 @@ class Video:
         encodedImage = None
         # ensure the frame was read
         if ret:
-            (flag, encodedImage) =self.imencode(frame)
+            (flag, encodedImage) = self.imencode(frame)
             # ensure the frame was successfully encoded
             if not flag:
                 ret = False
@@ -148,7 +150,7 @@ class Video:
         return self.still2File(filename, format=format, close=close, printHints=printHints, show=show, postProcess=postProcess)
 
     # get a still image
-    def still2File(self, filename, format="jpg", close=True,printHints=True, show=False, postProcess=None):
+    def still2File(self, filename, format="jpg", close=True, printHints=True, show=False, postProcess=None):
         self.checkCap()
         ret = False
         frame = None
@@ -221,7 +223,7 @@ class Video:
         """Performs an Hough Transform to given image.
 
         Returns: lines"""
-        gray = cv2.cvtColor(image,  cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray, 50, 150, apertureSize=3)
         lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
         return lines
@@ -230,7 +232,7 @@ class Video:
         """Performs a probabilistic Hough Transform to given image.
 
         Returns: lines"""
-        gray = cv2.cvtColor(image,  cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray, 50, 150, apertureSize=3)
         h, w = image.shape[:2]
         minLineLength = h / 16
@@ -239,20 +241,20 @@ class Video:
                                 100, minLineLength, maxLineGap)
         return lines
 
-    def drawTrapezoid(self,image,points,color):
+    def drawTrapezoid(self, image, points, color):
         # loop over the points and draw them on the image
-        prev=None
+        prev = None
         for (x, y) in points:
             cv2.circle(image, (x, y), 10, color, -1)
             if prev is not None:
-                cv2.line(image, (x,y), prev, color, 3, cv2.LINE_AA)
-            prev =(x,y)
+                cv2.line(image, (x, y), prev, color, 3, cv2.LINE_AA)
+            prev = (x, y)
 
-    def drawCircle(self,image,center,radius=10,color=(0,255,0),thickness=1):
-        cv2.circle(image,center,radius,color=color,thickness=thickness)
+    def drawCircle(self, image, center, radius=10, color=(0, 255, 0), thickness=1):
+        cv2.circle(image, center, radius, color=color, thickness=thickness)
 
-    def drawRectangle(self,image,pt1,pt2,color=(0,255,0),thickness=1):
-       cv2.rectangle(image,pt1,pt2,color,thickness)
+    def drawRectangle(self, image, pt1, pt2, color=(0, 255, 0), thickness=1):
+       cv2.rectangle(image, pt1, pt2, color, thickness)
 
     #  https://docs.opencv.org/4.1.2/d9/db0/tutorial_hough_lines.html
     def drawLines(self, image, lines):
@@ -268,7 +270,7 @@ class Video:
             pt2 = (int(x0 - width * (-b)), int(y0 - height * (a)))
             cv2.line(image, pt1, pt2, (0, 0, 255), 3, cv2.LINE_AA)
 
-    def rotate(self,image, angle, center=None, scale=1.0):
+    def rotate(self, image, angle, center=None, scale=1.0):
         # grab the dimensions of the image
         (h, w) = image.shape[:2]
 
@@ -284,13 +286,13 @@ class Video:
         # return the rotated image
         return rotated
 
-    def warp(self,image,pts,squared=True):
+    def warp(self, image, pts, squared=True):
         """apply the four point tranform to obtain a birds eye view of the given image """
         warped = perspective.four_point_transform(image, pts)
         if squared:
             height, width = warped.shape[:2]
-            side=min(width,height)
-            warped = cv2.resize(warped,(side,side))
+            side = min(width, height)
+            warped = cv2.resize(warped, (side, side))
         return warped
 
     @staticmethod
@@ -306,7 +308,7 @@ class Video:
         return sumResult
 
     # add a timeStamp to the given frame fontScale 1.0
-    def addTimeStamp(self, frame,withFrames=True, withFPS=True, fontBGRColor=(0, 255, 0), fontScale=1.0, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=1):
+    def addTimeStamp(self, frame, withFrames=True, withFPS=True, fontBGRColor=(0, 255, 0), fontScale=1.0, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=1):
         if frame is not None:
             height, width = frame.shape[:2]
             # grab the current time stamp and draw it on the frame
@@ -315,15 +317,16 @@ class Video:
                 now = now + " %d" % (self.frames)
             if withFPS:
                 now = now + "@%.0f fps" % (self.fpsCheck.fps())
-            fontFactor=width/960
+            fontFactor = width / 960
             text_width, text_height = cv2.getTextSize(
-                now, font, fontScale*fontFactor, lineThickness)[0]
+                now, font, fontScale * fontFactor, lineThickness)[0]
             height, width = frame.shape[:2]
             # https://stackoverflow.com/a/34273603/1497139
-            frame=frame.copy()
-            cv2.putText(frame, now, (width - int(text_width*1.1), int(text_height*1.2)),
-                        font, fontScale*fontFactor, fontBGRColor, lineThickness)
+            frame = frame.copy()
+            cv2.putText(frame, now, (width - int(text_width * 1.1), int(text_height * 1.2)),
+                        font, fontScale * fontFactor, fontBGRColor, lineThickness)
         return frame
+
 
 # see https://www.pyimagesearch.com/2017/02/06/faster-video-file-fps-with-cv2-videocapture-and-opencv/
 class VideoStream(object):

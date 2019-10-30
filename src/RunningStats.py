@@ -3,9 +3,11 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import math
 
+
 # see https://stackoverflow.com/a/17637351/1497139
 class RunningStats:
     """ calculate mean, variance and standard deviation in one pass using Welfford's algorithm """
+
     def __init__(self):
         self.n = 0
         self.old_m = 0
@@ -18,7 +20,7 @@ class RunningStats:
 
     def push(self, xvalue):
         self.n += 1
-        x=float(xvalue)
+        x = float(xvalue)
 
         if self.n == 1:
             self.old_m = self.new_m = x
@@ -39,52 +41,53 @@ class RunningStats:
     def standard_deviation(self):
         return math.sqrt(self.variance())
 
+
 class ColorStats():
     """ calculate the RunningStats for 3 color channels like RGB or HSV simultaneously"""
 
     def __init__(self):
-        self.c1Stats=RunningStats()
-        self.c2Stats=RunningStats()
-        self.c3Stats=RunningStats()
+        self.c1Stats = RunningStats()
+        self.c2Stats = RunningStats()
+        self.c3Stats = RunningStats()
 
     def clear(self):
         self.c1Stats.clear()
         self.c2Stats.clear()
         self.c3Stats.clear()    
 
-    def push(self,c1,c2,c3):
+    def push(self, c1, c2, c3):
         self.c1Stats.push(c1)
         self.c2Stats.push(c2)
         self.c3Stats.push(c3)
 
     def mean(self):
-        return (self.c1Stats.mean(),self.c2Stats.mean(),self.c3Stats.mean())
+        return (self.c1Stats.mean(), self.c2Stats.mean(), self.c3Stats.mean())
 
     def variance(self):
-        return (self.c1Stats.variance(),self.c2Stats.variance(),self.c3Stats.variance())
+        return (self.c1Stats.variance(), self.c2Stats.variance(), self.c3Stats.variance())
 
     def standard_deviation(self):
-        return (self.c1Stats.standard_deviation(),self.c2Stats.standard_deviation(),self.c3Stats.standard_deviation())
+        return (self.c1Stats.standard_deviation(), self.c2Stats.standard_deviation(), self.c3Stats.standard_deviation())
 
     @staticmethod
     def square(value):
-        return value*value
+        return value * value
 
     def colorKey(self):
-        other=ColorStats()
-        other.push(0,0,0)
-        return ColorStats.distance(self,other)
+        other = ColorStats()
+        other.push(0, 0, 0)
+        return ColorStats.distance(self, other)
 
     def rgbColorKey(self):
         import ciede2000
-        value=ciede2000.ciede2000FromRGB(self.mean(),(0,0,0))
+        value = ciede2000.ciede2000FromRGB(self.mean(), (0, 0, 0))
         return value
 
     @staticmethod
-    def distance(this,other):
+    def distance(this, other):
         """ simple eucledian color distance see e.g. https://en.wikipedia.org/wiki/Color_difference """
-        c1s=ColorStats.square(this.c1Stats.mean()-other.c1Stats.mean())
-        c2s=ColorStats.square(this.c2Stats.mean()-other.c2Stats.mean())
-        c3s=ColorStats.square(this.c3Stats.mean()-other.c3Stats.mean())
-        dist=c1s+c2s+c3s
+        c1s = ColorStats.square(this.c1Stats.mean() - other.c1Stats.mean())
+        c2s = ColorStats.square(this.c2Stats.mean() - other.c2Stats.mean())
+        c3s = ColorStats.square(this.c3Stats.mean() - other.c3Stats.mean())
+        dist = c1s + c2s + c3s
         return dist

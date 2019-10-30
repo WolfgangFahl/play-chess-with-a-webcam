@@ -4,6 +4,7 @@
 # Global imports
 import sys
 
+
 class Cell(object):
         
     def __init__(self, coords):
@@ -14,6 +15,7 @@ class Cell(object):
     
     def GetCoords(self):
         return self.coords
+
         
 if __name__ == "__main__":
     sys.stderr.write("Not a stand alone")

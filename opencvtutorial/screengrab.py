@@ -12,15 +12,15 @@ import time
 
 last_time = time.time()
 bbox = {'top': 50, 'left': 50, 'width': 800, 'height': 640}
-sum=0
-count=0
+sum = 0
+count = 0
 sct = mss()
 while 1:
     sct_img = sct.grab(bbox)
-    grabtime=time.time()-last_time
-    sum+=1/grabtime
-    count=count+1
-    print('grab took %3.2f s= %4.1f fps avg=%4.1f fps' % (grabtime,1/grabtime,sum/count))
+    grabtime = time.time() - last_time
+    sum += 1 / grabtime
+    count = count + 1
+    print('grab took %3.2f s= %4.1f fps avg=%4.1f fps' % (grabtime, 1 / grabtime, sum / count))
     cv2.imshow('screen', np.array(sct_img))
     last_time = time.time()
 

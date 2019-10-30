@@ -4,8 +4,10 @@
 # Global imports
 import sys
 
+
 class ArenaQuit(Exception):
     pass
+
 
 class Uci(object):
     """This class interacts with stdin and stdout with Arena in the UCI
@@ -17,7 +19,7 @@ class Uci(object):
         move = move.lower()
         with open('output.txt', 'a') as f:
             f.write("SENT:bestmove {0}\n".format(move))
-        sys.stdout.write("bestmove {0}\n".format(move)) #+ " ponder " + "a8a6"
+        sys.stdout.write("bestmove {0}\n".format(move))  # + " ponder " + "a8a6"
         sys.stdout.flush()
 
     def getResponse(self):
@@ -62,7 +64,7 @@ class Uci(object):
         chess960."""
 
         move = tokens[-1].upper()
-        if len(move) == 5: #Ensure that the promotion piece is lowercase
+        if len(move) == 5:  # Ensure that the promotion piece is lowercase
             move = move[:-1] + move[-1].lower()
         with open('output.txt', 'a') as f:
             f.write("Move received: {0}\n".format(move))

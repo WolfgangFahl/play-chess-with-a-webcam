@@ -18,14 +18,16 @@ from BoardFinder import BoardFinder, BadSegmentation
 from MovementDetector import MovementDetector, BadImage
 from Video import Video
 
+
 class UserExit(Exception):
     pass
+
 
 class ChessCam(object):
     """ Chess Camera get next move by analyzing movements."""
 
     def __init__(self):
-        self.video=Video()
+        self.video = Video()
         pass
 
     def getNextMove(self):
@@ -44,14 +46,14 @@ class ChessCam(object):
                                      " coordinates of the board)")
                     continue
 
-                quit=not video.showImage(processedImages[2],"chessCam")
+                quit = not video.showImage(processedImages[2], "chessCam")
                 if quit:
                    raise UserExit
 
                 try:
                     move = self.moveDetector.detectMove(processedImages[0])
                 except BadImage as e:
-                    #print str(e)
+                    # print str(e)
                     pass
                 except cv2.error as e:
                     print(str(e))
@@ -61,26 +63,26 @@ class ChessCam(object):
     def getDominatorOffset(self):
         return self.finder.getDominatorOffset()
 
-    def prepare(self,argv):
+    def prepare(self, argv):
         self.captureHdl = InputManager(argv)
-        self.args=self.captureHdl.args
+        self.args = self.captureHdl.args
 
         # Create window(s)
         cv2.namedWindow("chessCam", 1)
-        #cv2.resizeWindow("chessCam", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
+        # cv2.resizeWindow("chessCam", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
         if self.args.fullScreen:
-            #https://stackoverflow.com/a/34337534/1497139
-            cv2.setWindowProperty("chessCam",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+            # https://stackoverflow.com/a/34337534/1497139
+            cv2.setWindowProperty("chessCam", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-        #cv.NamedWindow("chessCamDebug", 1)
-        #cv.ResizeWindow("chessCamDebug", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
+        # cv.NamedWindow("chessCamDebug", 1)
+        # cv.ResizeWindow("chessCamDebug", CHESSCAM_WIDTH, CHESSCAM_HEIGHT)
 
-        BoardFinder.debug=self.args.debug
+        BoardFinder.debug = self.args.debug
         if self.args.cornermarker is not None:
-            video=Video()
-            cornerMarkerImage=video.readImage(self.args.cornermarker)
-            indexRanges=BoardFinder.calibrateCornerMarker(cornerMarkerImage)
-            BoardFinder.dotHSVRanges=indexRanges
+            video = Video()
+            cornerMarkerImage = video.readImage(self.args.cornermarker)
+            indexRanges = BoardFinder.calibrateCornerMarker(cornerMarkerImage)
+            BoardFinder.dotHSVRanges = indexRanges
         # initialize my board finder
         self.analyzeFrame()
 
@@ -90,7 +92,7 @@ class ChessCam(object):
         self.finder.prepare()
 
     def detectMovement(self):
-        #Initialize the MovementDetector
+        # Initialize the MovementDetector
         success = False
 
         while not success:
@@ -102,7 +104,7 @@ class ChessCam(object):
             except (BadImage, BadSegmentation):
                 success = False
 
-    def playChessWithCam(self,args):
+    def playChessWithCam(self, args):
         self.prepare(args)
         self.detectMovement()
         self.playChessWithCamMoves()
@@ -117,6 +119,7 @@ class ChessCam(object):
 
         except UserExit:
             pass
+
 
 if __name__ == "__main__":
     chessCam = ChessCam()

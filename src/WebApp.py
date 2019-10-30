@@ -22,9 +22,9 @@ class WebApp:
         self.videoStream = None
         self.board = Board()
         if args.game is None:
-            self.webCamGame=WebCamGame("game"+self.video.timeStamp())
+            self.webCamGame = WebCamGame("game" + self.video.timeStamp())
         else:
-            self.webCamGame=WebCamGame.readJson(args.game)  
+            self.webCamGame = WebCamGame.readJson(args.game)  
         self.log("Warp: %s" % (args.warpPointList))
         self.warp = Warp(args.warpPointList)
         self.warp.rotation = args.rotation
@@ -35,7 +35,7 @@ class WebApp:
                
     # return the index.html template content with the given message
     def index(self, msg):
-        return render_template('index.html', message=msg, timeStamp=self.video.timeStamp(),gamename=self.webCamGame.name)
+        return render_template('index.html', message=msg, timeStamp=self.video.timeStamp(), gamename=self.webCamGame.name)
 
     def home(self):
         self.video = Video()
@@ -154,7 +154,7 @@ class WebApp:
             step = 3
             warped = boardDetector.analyze(warped, self.video.frames, distance, step)
         if WebApp.debug:
-            warped=self.video.addTimeStamp(warped)
+            warped = self.video.addTimeStamp(warped)
         return warped
 
     # video generator

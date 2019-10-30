@@ -1,17 +1,19 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
+from Environment import Environment
 from JsonAbleMixin import JsonAbleMixin
 from YamlAbleMixin import YamlAbleMixin
 import numpy as  np
+import os
+
 
 class Game(JsonAbleMixin):
     """ keeps track of a games state in a JavaScript compatible way to exchange game State information
     across platforms e.g. between Python backend and JavaScript frontend"""
     
     def __init__(self, name):
-        self.name=name
-
+        self.name = name
         
     
 class WebCamGame(JsonAbleMixin):
@@ -19,11 +21,28 @@ class WebCamGame(JsonAbleMixin):
     across platforms e.g. between Python backend and JavaScript frontend"""
     
     def __init__(self, name):
-        self.name=name
-        self.game=Game(name)
-        self.warp=Warp()
+        self.name = name
+        self.game = Game(name)
+        self.warp = Warp()
         
-
+    def save(self, path="games"):
+        env = Environment()
+        savedir = str(env.projectPath) + "/" + path+"/"+self.name
+        print (savedir)
+        if not os.path.isdir(savedir):
+            print ("need to create " + savedir)
+            
+    @staticmethod       
+    def getWebCamGames(path):
+        webCamGames = {}
+        for file  in os.listdir(path):
+            if file.endswith(".json"):
+                filePath = os.path.join(path, file)
+                webCamGame = WebCamGame.readJson(filePath, '')
+                webCamGames[webCamGame.name] = webCamGame
+        return webCamGames               
+        
+           
 class Warp(YamlAbleMixin, JsonAbleMixin):
     """ holds the trapezoid points to be use for warping an image take from a peculiar angle """
 

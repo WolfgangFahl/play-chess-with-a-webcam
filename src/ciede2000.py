@@ -26,14 +26,17 @@
 
 import numpy as np
 
+
 # Converts RGB pixel array to XYZ format.
 # Implementation derived from http://www.easyrgb.com/en/math.php
 def rgb2xyz(rgb):
+
     def format(c):
         c = c / 255.
         if c > 0.04045: c = ((c + 0.055) / 1.055) ** 2.4
         else: c = c / 12.92
         return c * 100
+
     rgb = list(map(format, rgb))
     xyz = [None, None, None]
     xyz[0] = rgb[0] * 0.4124 + rgb[1] * 0.3576 + rgb[2] * 0.1805
@@ -41,13 +44,16 @@ def rgb2xyz(rgb):
     xyz[2] = rgb[0] * 0.0193 + rgb[1] * 0.1192 + rgb[2] * 0.9505
     return xyz
 
+
 # Converts XYZ pixel array to LAB format.
 # Implementation derived from http://www.easyrgb.com/en/math.php
 def xyz2lab(xyz):
+
     def format(c):
         if c > 0.008856: c = c ** (1. / 3.)
         else: c = (7.787 * c) + (16. / 116.)
         return c
+
     xyz[0] = xyz[0] / 95.047
     xyz[1] = xyz[1] / 100.00
     xyz[2] = xyz[2] / 108.883
@@ -58,20 +64,26 @@ def xyz2lab(xyz):
     lab[2] = 200. * (xyz[1] - xyz[2])
     return lab
 
+
 # Converts RGB pixel array into LAB format.
 def rgb2lab(rgb):
     return xyz2lab(rgb2xyz(rgb))
 
-def ciede2000FromRGB(rgb1,rgb2):
-    lab1=rgb2lab(rgb1)
-    lab2=rgb2lab(rgb2)
-    return ciede2000(lab1,lab2)
+
+def ciede2000FromRGB(rgb1, rgb2):
+    lab1 = rgb2lab(rgb1)
+    lab2 = rgb2lab(rgb2)
+    return ciede2000(lab1, lab2)
+
 
 # Returns CIEDE2000 comparison results of two LAB formatted colors.
 # Translated from CIEDE2000 implementation in https://github.com/markusn/color-diff
 def ciede2000(lab1, lab2):
+
     def degrees(n): return n * (180. / np.pi)
+
     def radians(n): return n * (np.pi / 180.)
+
     def hpf(x, y):
         if x == 0 and y == 0: return 0
         else:
@@ -79,18 +91,21 @@ def ciede2000(lab1, lab2):
             if tmphp >= 0: return tmphp
             else: return tmphp + 360.
         return None
+
     def dhpf(c1, c2, h1p, h2p):
         if c1 * c2 == 0: return 0
         elif np.abs(h2p - h1p) <= 180: return h2p - h1p
         elif h2p - h1p > 180: return (h2p - h1p) - 360.
         elif h2p - h1p < 180: return (h2p - h1p) + 360.
         else: return None
+
     def ahpf(c1, c2, h1p, h2p):
         if c1 * c2 == 0: return h1p + h2p
         elif np.abs(h1p - h2p) <= 180: return (h1p + h2p) / 2.
         elif np.abs(h1p - h2p) > 180 and h1p + h2p < 360: return (h1p + h2p + 360.) / 2.
         elif np.abs(h1p - h2p) > 180 and h1p + h2p >= 360: return (h1p + h2p - 360.) / 2.
         return None
+
     L1 = lab1[0]
     A1 = lab1[1]
     B1 = lab1[2]

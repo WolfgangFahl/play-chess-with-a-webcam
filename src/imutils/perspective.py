@@ -7,6 +7,7 @@ from scipy.spatial import distance as dist
 import numpy as np
 import cv2
 
+
 def order_points(pts):
     # sort the points based on their x-coordinates
     xSorted = pts[np.argsort(pts[:, 0]), :]
@@ -33,6 +34,7 @@ def order_points(pts):
     # return the coordinates in top-left, top-right,
     # bottom-right, and bottom-left order
     return np.array([tl, tr, br, bl], dtype="float32")
+
 
 def four_point_transform(image, pts):
     # obtain a consistent order of the points and unpack them

@@ -5,10 +5,11 @@ import sys
 import cv2
 from scipy.spatial import distance as dist
 import numpy as np
-#top left 437,328
-#top right 1390,1042
-#bottom left 142,107
-#bottom right 1667,1250
+# top left 437,328
+# top right 1390,1042
+# bottom left 142,107
+# bottom right 1667,1250
+
 
 def order_points(pts):
     # sort the points based on their x-coordinates
@@ -36,6 +37,7 @@ def order_points(pts):
     # return the coordinates in top-left, top-right,
     # bottom-right, and bottom-left order
     return np.array([tl, tr, br, bl], dtype="float32")
+
 
 def four_point_transform(image, pts):
     # obtain a consistent order of the points and unpack them
@@ -75,13 +77,14 @@ def four_point_transform(image, pts):
     # return the warped image
     return warped
 
+
 def main(argv):
     default_file = '../testMedia/chessBoard010.jpg'
     filename = argv[0] if len(argv) > 0 else default_file
     image = cv2.imread(filename)
     # load the image, clone it, and initialize the 4 points
     # that correspond to the 4 corners of the chessboard
-    pts = np.array([(432,103), (1380, 94), (1659, 1029), (138, 1052)])
+    pts = np.array([(432, 103), (1380, 94), (1659, 1029), (138, 1052)])
 
     # loop over the points and draw them on the image
     for (x, y) in pts:
@@ -90,16 +93,17 @@ def main(argv):
     # apply the four point tranform to obtain a "birds eye view" of
     # the chessboard
     warped = four_point_transform(image, pts)
-    image = cv2.resize(image,(960,540))
+    image = cv2.resize(image, (960, 540))
 
     # show the original and warped images
     cv2.imshow("Original", image)
     height, width = warped.shape[:2]
-    warped = cv2.resize(warped,(width//2,height//2))
+    warped = cv2.resize(warped, (width // 2, height // 2))
     cv2.imshow("Warped", warped)
     # refresh
     while not cv2.waitKey(10) & 0xFF == ord('q'):
        continue
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

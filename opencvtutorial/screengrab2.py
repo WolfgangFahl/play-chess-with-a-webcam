@@ -10,11 +10,11 @@ import time
 
 last_time = time.time()
 while(True):
-    bbox=(50,50,800,640)
+    bbox = (50, 50, 800, 640)
     screen = ig.grab(bbox=bbox)
-    grabtime=time.time()-last_time
-    print('grab took %3.1f s= %3.1f fps' % (grabtime,1/grabtime))
-    title="screen %d,%d %d,%d " % (bbox)
+    grabtime = time.time() - last_time
+    print('grab took %3.1f s= %3.1f fps' % (grabtime, 1 / grabtime))
+    title = "screen %d,%d %d,%d " % (bbox)
     cv2.imshow(title, np.array(screen))
     last_time = time.time()
     if cv2.waitKey(25) & 0xFF == ord('q'):

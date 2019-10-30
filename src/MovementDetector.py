@@ -10,8 +10,10 @@ from collections import defaultdict
 
 
 class BadImage(Exception):
+
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
 
@@ -19,7 +21,7 @@ class BadImage(Exception):
 class MovementDetector(object):
     """This class used to detect if a move has occured in the board.
     It also needs to be tolerant to sudden lighting changes"""
-    debug=False
+    debug = False
 
     def __init__(self, colorImage):
         """To be built correctly, this class need the image of the starting position"""
@@ -33,7 +35,7 @@ class MovementDetector(object):
 
         self.images = [initialImage, initialImage]
         self.board = initialBoard
-        self.video=Video()
+        self.video = Video()
 
     def detectMove(self, colorImage):
         """This public function receives a clean image.
@@ -58,12 +60,12 @@ class MovementDetector(object):
         movements = []
         currentBoard = self.board
 
-        pastImage = np.asarray(self.images[0][:,:])
-        currentImage = np.asarray(self.images[1][:,:])
+        pastImage = np.asarray(self.images[0][:, :])
+        currentImage = np.asarray(self.images[1][:, :])
 
         diff = cv2.absdiff(pastImage, currentImage)
         if MovementDetector.debug:
-            video.showImage(diff,"chessCamDebug")
+            video.showImage(diff, "chessCamDebug")
 
         for key in list(currentBoard.keys()):
             coords = currentBoard[key].GetCoords()
@@ -73,11 +75,12 @@ class MovementDetector(object):
             if variance > 35000:
                 movements.append(key)
 
-        if len(movements) < 2: #at least two cells must be moved
+        if len(movements) < 2:  # at least two cells must be moved
             movements = []
 
-        self.images[0] = self.images[1] #Recalibrate
+        self.images[0] = self.images[1]  # Recalibrate
         return movements
+
 
 if __name__ == "__main__":
     sys.stderr.write("This module is not designed to be run standalone.")

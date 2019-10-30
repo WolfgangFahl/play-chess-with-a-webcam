@@ -13,6 +13,7 @@ from Board import Board, RejectedMove
 from uci import Uci, ArenaQuit
 from ChessCam import ChessCam, UserExit
 
+
 class GameEngine(object):
     """This class is used to change the game state using StateClass.
     It also communicates moves with the chess ai facade and an observer to detect
@@ -37,7 +38,7 @@ class GameEngine(object):
 
     # main loop
     def mainLoop(self):
-        #Synchronize with Arena by knowing if opponent plays first.
+        # Synchronize with Arena by knowing if opponent plays first.
         move = ""
         camToPlay = True
         if self.useUCI:
@@ -48,7 +49,7 @@ class GameEngine(object):
 
         while True:
             if camToPlay:
-                #Get a move from the camera and validate that move
+                # Get a move from the camera and validate that move
                 with open('output.txt', 'a') as f:
                     f.write("camToPlay: Waiting for out move...\n")
                 moveFromCamera = self.cam.getNextMove()
@@ -64,7 +65,7 @@ class GameEngine(object):
                     sys.stderr.write("Undo OK")
                     continue
 
-                #Inform arena of that move
+                # Inform arena of that move
                 with open('output.txt', 'a') as f:
                     f.write("camToPlay: sendMove: {0}.\n".format(move))
                 self.uci.sendMove(move)
@@ -73,12 +74,12 @@ class GameEngine(object):
                 if self.useUCI:
                     camToPlay = False
 
-            elif move != "": #a move needs to be played by the cam to synchronize with Arena
+            elif move != "":  # a move needs to be played by the cam to synchronize with Arena
                 with open('output.txt', 'a') as f:
                     f.write("remotePlay: Do the showed move...\n")
                 moveFromCamera = self.cam.getNextMove()
                 try:
-                    self.board.performMove(moveFromCamera) # We accept the move by default, the user is gentle with us!
+                    self.board.performMove(moveFromCamera)  # We accept the move by default, the user is gentle with us!
                 except RejectedMove as e:
                     sys.stderr.write(str(e))
                     continue
@@ -86,8 +87,8 @@ class GameEngine(object):
                 move = ""
                 camToPlay = True
 
-            else: #It's the opponent's turn
-                #Receive a counter move
+            else:  # It's the opponent's turn
+                # Receive a counter move
                 move = self.uci.getResponse()
 
 

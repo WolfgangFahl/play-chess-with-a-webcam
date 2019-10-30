@@ -12,7 +12,7 @@ import bisect
 
 # Local imports
 from MovementDetector import MovementDetector
-from mathUtils import (median, getRotationAndTranslationMatrix,getIndexRange)
+from mathUtils import (median, getRotationAndTranslationMatrix, getIndexRange)
 
 CHESSCAM_PARZEN_THRESHOLD = 5
 CHESSCAM_ORIENTATION_SMOOTHING = 5
@@ -24,24 +24,25 @@ smoothFunc = lambda x: sum(x) / float(len(x))
 class BadSegmentation(Exception):
     pass
 
+
 # Board Finder
 class BoardFinder(object):
-    debug=True
-    debugShowTime=1000
-    dotHSVRanges=[(70, 120), (85, 255), (0, 255)]
+    debug = True
+    debugShowTime = 1000
+    dotHSVRanges = [(70, 120), (85, 255), (0, 255)]
 
     # construct me from the given input Image
     def __init__(self, inImage):
-        self.video=Video()
+        self.video = Video()
         self.frame = inImage
-        self.height,self.width = self.frame.shape[:2]
+        self.height, self.width = self.frame.shape[:2]
         # set initial side
         self.setSide(0)
 
         # Green indicator dot has hue between ~70 and ~120, saturation  between 85 and 255 and Luminosity value between 0 and 255.
         # take a picture or your own dot and calibrate using the commandline option
         if BoardFinder.debug:
-            print("BoardFinder for %dx%d image" % (self.width,self.height))
+            print("BoardFinder for %dx%d image" % (self.width, self.height))
 
     def prepare(self):
         # Init smoothing angle
@@ -55,10 +56,10 @@ class BoardFinder(object):
         side = self.getBlackMaxSide(self.GetFullImageBoard()[0])
         self.setSide(side)
 
-    def setSide(self,side):
+    def setSide(self, side):
         # 0:top,1:left,2:bottom,3:right.
         optionsRotation = {0: 0,
-                           1: -90,
+                           1:-90,
                            2: 180,
                            3: 90}
         # 0:top,1:left,2:bottom,3:right. (x,y) offset of dominator
@@ -67,7 +68,7 @@ class BoardFinder(object):
                             2: (0, 1),
                             3: (1, 0)}
 
-        #Black's initial position sets the correction move to place black team at the top.
+        # Black's initial position sets the correction move to place black team at the top.
         self.initialRotation = optionsRotation[side]
         self.dominatorOffset = optionsDominator[side]
 
@@ -83,14 +84,13 @@ class BoardFinder(object):
         computes the orientation and coordinates from these."""
 
         if self.frame is not None:
-            self.lines=self.video.houghTransform(self.frame)
+            self.lines = self.video.houghTransform(self.frame)
             if BoardFinder.debug:
                 print ("found %d lines" % (self.lines.size))
             self.BoardOrientation = self.DetectBoardOrientation()
             if all(self.BoardOrientation):
                 self.boardCoordinates = self.GetChessBoardCoordinates(
                     smoothFunc(list(zip(*self.smoothOrientation))[0]))
-
 
     def DetectBoardOrientation(self):
         """Finds the two dominants angles of the Hough Transform.
@@ -140,7 +140,7 @@ class BoardFinder(object):
                           key=lambda x: abs(x))
 
         if BoardFinder.debug:
-            print ("Boardorientation %f.2° - %f.2°" % (degrees(retValue[0]),degrees(retValue[1])))
+            print ("Boardorientation %f.2° - %f.2°" % (degrees(retValue[0]), degrees(retValue[1])))
         # Record return value for smoothing purposes
         self.smoothOrientation.appendleft(retValue)
         return retValue
@@ -153,24 +153,24 @@ class BoardFinder(object):
                  of the chessboard."""
         # Blur image and convert it to HSV
         # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_filtering/py_filtering.html
-        self.hsv =cv2.blur(self.frame,(4,4))
+        self.hsv = cv2.blur(self.frame, (4, 4))
         if BoardFinder.debug:
-            self.video.showImage(self.hsv,"blur",True,BoardFinder.debugShowTime)
+            self.video.showImage(self.hsv, "blur", True, BoardFinder.debugShowTime)
 
         # De-Rotate the hsv version of the image to support rotated chessboards
         # Because marker detection is really cheaply done
         rotationMatrix = getRotationAndTranslationMatrix(-rotation, (0, 0))
-        hsv2 = cv2.warpPerspective(np.asarray(self.hsv[:,:]),
+        hsv2 = cv2.warpPerspective(np.asarray(self.hsv[:, :]),
                                    rotationMatrix,
                                    (self.width, self.height))
         if BoardFinder.debug:
-            self.video.showImage(hsv2,"warp",True,BoardFinder.debugShowTime)
+            self.video.showImage(hsv2, "warp", True, BoardFinder.debugShowTime)
         self.hsv = cv2.cvtColor(hsv2, cv2.COLOR_BGR2HSV)
         # Threshold the HSV value according to the cornerMarker being used
-        ht,st,vt=BoardFinder.dotHSVRanges
+        ht, st, vt = BoardFinder.dotHSVRanges
         # ignore the Luminosity range
         self.debugimg = cv2.inRange(self.hsv,
-                                    np.array([ ht[0], st[0],   0], np.uint8),
+                                    np.array([ ht[0], st[0], 0], np.uint8),
                                     np.array([ ht[1], st[1], 255], np.uint8))
         contours, hierarchy = cv2.findContours(self.debugimg,
                                                cv2.RETR_TREE,
@@ -179,32 +179,32 @@ class BoardFinder(object):
         ur, ll = (0, 0), (0, 0)
         for cnt in contours:
             cnt_len = cv2.arcLength(cnt, True)
-            cnt = cv2.approxPolyDP(cnt, 0.01*cnt_len, True)
+            cnt = cv2.approxPolyDP(cnt, 0.01 * cnt_len, True)
             for a in cnt:
-                if sqrt(a[0][0]**2 + a[0][1]**2) < sqrt(mini[0]**2 + mini[1]**2):
+                if sqrt(a[0][0] ** 2 + a[0][1] ** 2) < sqrt(mini[0] ** 2 + mini[1] ** 2):
                     mini = (a[0][0], a[0][1])
-                if sqrt((a[0][0] - self.width)**2 + (a[0][1] - self.height)**2) < sqrt((maxi[0] - self.width)**2 + (maxi[1] - self.height)**2):
+                if sqrt((a[0][0] - self.width) ** 2 + (a[0][1] - self.height) ** 2) < sqrt((maxi[0] - self.width) ** 2 + (maxi[1] - self.height) ** 2):
                     maxi = (a[0][0], a[0][1])
-                if sqrt((a[0][0] - self.width)**2 + a[0][1]**2) < sqrt((ur[0] - self.width)**2 + ur[1]**2):
+                if sqrt((a[0][0] - self.width) ** 2 + a[0][1] ** 2) < sqrt((ur[0] - self.width) ** 2 + ur[1] ** 2):
                     ur = (a[0][0], a[0][1])
-                if sqrt(a[0][0]**2 + (a[0][1] - self.height)**2) < sqrt(ll[0]**2 + (ll[1] - self.height)**2):
+                if sqrt(a[0][0] ** 2 + (a[0][1] - self.height) ** 2) < sqrt(ll[0] ** 2 + (ll[1] - self.height) ** 2):
                     ll = (a[0][0], a[0][1])
 
         if BoardFinder.debug:
-            self.video.showImage(self.debugimg,"debug image",True,BoardFinder.debugShowTime)
+            self.video.showImage(self.debugimg, "debug image", True, BoardFinder.debugShowTime)
         # Debug
         if BoardFinder.debug:
-            rectImage=self.frame.copy()
+            rectImage = self.frame.copy()
             cv2.circle(rectImage, mini, 10, color=(255, 255, 0), thickness=6)
             cv2.circle(rectImage, maxi, 10, color=(255, 255, 0), thickness=3)
-            self.video.showImage(rectImage,"board corners",True,BoardFinder.debugShowTime)
+            self.video.showImage(rectImage, "board corners", True, BoardFinder.debugShowTime)
 
         # De-rotate the points computed
         points = np.array(
                     [mini[0], ur[0], ll[0], maxi[0],
                      mini[1], ur[1], ll[1], maxi[1],
-                     1,       1,     1,     1]
-                    ).reshape((3,4))
+                     1, 1, 1, 1]
+                    ).reshape((3, 4))
         deRotationMatrix = getRotationAndTranslationMatrix(rotation, (0, 0))
         mini, ur, ll, maxi = np.transpose(np.dot(deRotationMatrix, points))
 
@@ -214,12 +214,12 @@ class BoardFinder(object):
                    (ll[0], ll[1]), \
                    (maxi[0], maxi[1])
         if BoardFinder.debug:
-            rectImage=self.frame.copy()
-            minx,miny=mini[:2]
-            maxx,maxy=maxi[:2]
+            rectImage = self.frame.copy()
+            minx, miny = mini[:2]
+            maxx, maxy = maxi[:2]
             print (retValue)
-            cv2.rectangle(rectImage,(int(minx),int(miny)),(int(maxx),int(maxy)),color=(0, 255, 0), thickness=3)
-            self.video.showImage(rectImage,"board coordinates",True,BoardFinder.debugShowTime)
+            cv2.rectangle(rectImage, (int(minx), int(miny)), (int(maxx), int(maxy)), color=(0, 255, 0), thickness=3)
+            self.video.showImage(rectImage, "board coordinates", True, BoardFinder.debugShowTime)
         self.smoothCoordinates.appendleft(retValue)
         return retValue
 
@@ -227,12 +227,12 @@ class BoardFinder(object):
     @staticmethod
     def calibrateCornerMarker(dotImage):
         histSize = 256
-        histRange = (0, 256) # the upper boundary is exclusive
-        planes=cv2.split(dotImage)
-        indexRanges=[]
-        for channel in range(0,3):
-            hist=cv2.calcHist(planes,[channel],None,[histSize], histRange, accumulate=False)
-            indexRanges.append(getIndexRange(hist,1,255))
+        histRange = (0, 256)  # the upper boundary is exclusive
+        planes = cv2.split(dotImage)
+        indexRanges = []
+        for channel in range(0, 3):
+            hist = cv2.calcHist(planes, [channel], None, [histSize], histRange, accumulate=False)
+            indexRanges.append(getIndexRange(hist, 1, 255))
         if BoardFinder.debug:
             print(indexRanges)
         return indexRanges
@@ -278,18 +278,17 @@ class BoardFinder(object):
                                             H,
                                             (self.width, self.height))
 
-        cv2.circle(self.frame, (int(points[0][0]), int(points[0][1])), 1, color=(0, 255, 255),thickness=5)
+        cv2.circle(self.frame, (int(points[0][0]), int(points[0][1])), 1, color=(0, 255, 255), thickness=5)
         cv2.circle(self.frame, (int(points[1][0]), int(points[1][1])), 1, color=(0, 255, 0), thickness=5)
         cv2.circle(self.frame, (int(points[2][0]), int(points[2][1])), 1, color=(0, 0, 255), thickness=5)
         cv2.circle(self.frame, (int(points[3][0]), int(points[3][1])), 1, color=(255, 255, 255), thickness=5)
 
         self.debugimg = self.rotateImage(self.debugimg)
         if BoardFinder.debug:
-            self.video.showImage(self.debugimg,"debug",True,BoardFinder.debugShowTime)
-            self.video.showImage(self.frame,"frame",True,BoardFinder.debugShowTime)
+            self.video.showImage(self.debugimg, "debug", True, BoardFinder.debugShowTime)
+            self.video.showImage(self.frame, "frame", True, BoardFinder.debugShowTime)
 
         return [self.debugimg, self.frame]
-
 
     def getBlackMaxSide(self, colorImage):
         """This function returns the side of black's team, if game is at
@@ -300,12 +299,12 @@ class BoardFinder(object):
         # Convert BGR to HSV
         tmp = cv2.cvtColor(colorImage, cv2.COLOR_BGR2HSV)
 
-        H,W = tmp.shape[:2]
+        H, W = tmp.shape[:2]
 
-        top = Video.getSubRect(tmp, (0, 0, W, H//4))
-        left = Video.getSubRect(tmp, (0, 0, W//4, H))
-        bottom = Video.getSubRect(tmp, (0, H*3//4, W, H//4))
-        right = Video.getSubRect(tmp, (W*3//4, 0, W//4, H))
+        top = Video.getSubRect(tmp, (0, 0, W, H // 4))
+        left = Video.getSubRect(tmp, (0, 0, W // 4, H))
+        bottom = Video.getSubRect(tmp, (0, H * 3 // 4, W, H // 4))
+        right = Video.getSubRect(tmp, (W * 3 // 4, 0, W // 4, H))
 
         whitenesses = []
         whitenesses.append(self.video.sumIntensity(top))
@@ -323,15 +322,15 @@ class BoardFinder(object):
         src = image.copy()
 
         if self.initialRotation == -90:
-            #rotate left
+            # rotate left
             src = cv2.transpose(src);
             src = cv2.flip(src, 1);
         elif self.initialRotation == 90:
-            #rotate right
+            # rotate right
             src = cv2.flip(src, 1);
             src = cv2.transpose(src);
         elif self.initialRotation == 180:
-            #turn around
+            # turn around
             src = cv2.flip(src, -1);
 
         return src

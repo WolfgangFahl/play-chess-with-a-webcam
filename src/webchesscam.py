@@ -21,7 +21,7 @@ thisscriptFolder = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, static_url_path='',
             static_folder=thisscriptFolder + '/../web')
 api = Api(app)
-#app.logger.addHandler(logging.StreamHandler(STDOUT))
+# app.logger.addHandler(logging.StreamHandler(STDOUT))
 app.logger.setLevel(logging.INFO)
 if WebApp.debug:
     app.logger.setLevel(logging.DEBUG)
@@ -33,43 +33,52 @@ app.logger.info("Running on %s" % (platform.system()))
 if platform.system() == 'Linux' and os.path.exists('/sys/firmware/devicetree/base/model'):
     app.logger.info("Running on Raspberry PI")
 
+
 @app.route("/")
 def root():
     return webApp.home()
+
 
 @app.route('/video')
 def video_feed():
     return webApp.videoFeed()
 
+
 @app.route('/download/<path:filename>', methods=['GET', 'POST'])
 def download(filename):
-    return webApp.download(thisscriptFolder + '/../web/webcamchess/',filename)
+    return webApp.download(thisscriptFolder + '/../web/webcamchess/', filename)
+
 
 @app.route("/chess/debug", methods=['GET'])
 def chessDebug():
     return webApp.chessDebug()
 
+
 @app.route("/chess/rotatevideo90", methods=['GET'])
 def videoRotate90():
     return webApp.videoRotate90()
+
 
 @app.route("/chess/pausevideo", methods=['GET'])
 def video_pause():
     return webApp.videoPause()
 
+
 @app.route("/chess/takeback", methods=['GET'])
 def chessTakeback():
     return webApp.chessTakeback()
+
 
 @app.route("/chess/forward", methods=['GET'])
 def chessForward():
     return webApp.chessForward()
 
+
 @app.route("/chess/pgn", methods=['GET'])
 def chessPgn():
     """ set game status from the given pgn"""
-    updateGame=request.args.get('updateGame')
-    updateFEN=request.args.get('updateFEN')
+    updateGame = request.args.get('updateGame')
+    updateFEN = request.args.get('updateFEN')
     pgn = request.args.get('pgn')
     fen = request.args.get('fen')
     if updateFEN is not None:
@@ -79,24 +88,28 @@ def chessPgn():
     else:
         return webApp.index("expected updateGame or updateFEN but no such request found")
 
+
 @app.route("/chess/chesswebcamclick/<width>/<height>", methods=['GET'])
-def chessWebCamClick(width,height):
+def chessWebCamClick(width, height):
     # click info is in an unnamed query parameter
     args = request.args.to_dict()
-    click=next(iter(args)).split(',')
-    x,y=click
-    w=int(width)
-    h=int(height)
-    return webApp.chessWebCamClick(int(x),int(y),w,h)
+    click = next(iter(args)).split(',')
+    x, y = click
+    w = int(width)
+    h = int(height)
+    return webApp.chessWebCamClick(int(x), int(y), w, h)
+
 
 @app.route("/chess/move/<move>", methods=['GET'])
 def chessMove(move):
     return webApp.chessMove(move)
 
+
 # capture a single still image
 @app.route("/chess/photo", methods=['GET'])
 def photo():
     return webApp.photo(thisscriptFolder + '/../web/webcamchess/')
+
 
 # home
 @app.route("/chess/home", methods=['GET'])
@@ -127,7 +140,6 @@ class WebChessCamArgs:
         self.parser.add_argument('--game',
                                  default=None,
                                  help="game to initialize with")
-        
 
         self.parser.add_argument('--debug',
                                  action='store_true',
@@ -143,10 +155,10 @@ class WebChessCamArgs:
                                  help="warp points")
 
         self.args = self.parser.parse_args(argv)
-        self.args.warpPointList=ast.literal_eval(self.args.warp)
+        self.args.warpPointList = ast.literal_eval(self.args.warp)
 
 
 if __name__ == '__main__':
     args = WebChessCamArgs(sys.argv[1:]).args
-    webApp=WebApp(args,app.logger)
+    webApp = WebApp(args, app.logger)
     app.run(port='%d' % (args.port), host=args.host)

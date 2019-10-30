@@ -6,9 +6,11 @@
 import yaml
 import io
 import os
+
+
 class YamlAbleMixin(object):
     """ allow reading and writing derived objects from a yaml file"""
-    debug=False
+    debug = False
 
     # read me from a yaml file
     @staticmethod
@@ -27,9 +29,9 @@ class YamlAbleMixin(object):
            return None
 
     # write me to my yaml file
-    def writeYaml(self,name):
-        yamlFile=name+".yaml"
-        with io.open(yamlFile,'w',encoding='utf-8') as stream:
-            yaml.dump(self,stream)
+    def writeYaml(self, name):
+        yamlFile = name + ".yaml"
+        with io.open(yamlFile, 'w', encoding='utf-8') as stream:
+            yaml.dump(self, stream)
             if YamlAbleMixin.debug:
                 print (yaml.dump(self))
