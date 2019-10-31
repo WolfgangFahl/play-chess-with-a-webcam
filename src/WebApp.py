@@ -73,15 +73,18 @@ class WebApp:
         return self.index(msg)
 
     def chessTakeback(self):
-        msg = "take back"
-        self.board.takeback()
-        if self.game.moveIndex>0:
-            self.game.moveIndex=self.game.moveIndex-1
-        else:
-            msg="can not take back any more moves"    
-        if WebApp.debug:
-            self.game.showDebug()
-        return self.index(msg)
+        try:
+            msg = "take back"
+            self.board.takeback()
+            if self.game.moveIndex>0:
+                self.game.moveIndex=self.game.moveIndex-1
+            else:
+                msg="can not take back any more moves"    
+            if WebApp.debug:
+                self.game.showDebug()
+            return self.index(msg)
+        except BaseException as e:
+            return self.indexException(e)
     
     def chessSave(self): 
         # @TODO implement locking of a saved game to make it immutable
@@ -119,7 +122,7 @@ class WebApp:
     def chessGameState(self,gameid):
         fen=self.board.fen()
         pgn=self.board.getPgn()
-        return jsonify(fen=fen,pgn=pgn,gameid=gameid,timestamp=self.timeStamp())
+        return jsonify(fen=fen,pgn=pgn,gameid=gameid,debug=WebApp.debug,timestamp=self.timeStamp())
     
     def chessFEN(self, fen):
         msg = fen

@@ -13,7 +13,15 @@ var blackSquareGrey = '#696969'
 function handleQuery() {
 	var url = new URL(window.location.href)
 	var searchParams = new URLSearchParams(url.search);
+	// did we get a game id via the URL?
 	var gameid = searchParams.get('gameid')
+	// if not we use the one from the input field
+	if (gameid==null)
+		gameid=document.getElementById("gameid")
+	updateGame(gameid)
+}
+
+function updateGame(gameid) {
 	board = Chessboard('chessboard', config)
 	if (gameid != null) {
 		$.ajax({
@@ -27,7 +35,7 @@ function handleQuery() {
 				console.log(error);
 			}
 		});
-     }
+     }	
 }
 	
 function setChessGameState(state)	{
@@ -37,11 +45,15 @@ function setChessGameState(state)	{
    if (state.pgn!=null) {
       game.load_pgn(state.pgn)
    }
-   showState()
+   showState(state)
 }
 
 // show the pgn and fen notation of the game
-function showState() {
+function showState(state) {
+	if (state!=null) {
+	   document.getElementById("pgn").innerHTML = state.pgn;
+	   document.getElementById("fen").innerHTML = state.fen;		
+	}
 	var pgn = game.pgn();
 	// textarea
 	document.getElementById("clientpgn").innerHTML = pgn;
@@ -50,11 +62,15 @@ function showState() {
 	document.getElementById("boardfen").innerHTML = boardfen;
 	var gamefen = game.fen();
 	document.getElementById("gamefen").innerHTML = gamefen;
+	if (state.debug) {
+		document.getElementById("fendetails").open=state.debug
+		document.getElementById("pgndetails").open=state.debug		
+	}
 }
 
 function showMove(movefrom, moveto) {
 	document.getElementById("move").value = movefrom + "-" + moveto;
-	showState();
+	showState(null);
 	document.getElementById('updateMove').click();
 }
 

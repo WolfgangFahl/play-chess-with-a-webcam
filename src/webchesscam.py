@@ -76,7 +76,6 @@ def chessSave():
 def chessTakeback():
     return webApp.chessTakeback()
 
-
 @app.route("/chess/forward", methods=['GET'])
 def chessForward():
     return webApp.chessForward()
