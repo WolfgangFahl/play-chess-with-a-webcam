@@ -100,8 +100,8 @@ class Video:
     def readFrame(self, show=False, postProcess=None):
         # when pausing repeat previous frame
         if self.ispaused:
+            # simply return the current frame again
             ret = self.frame is not None
-            frame = self.frame
         else:
             ret, self.frame = self.cap.read()
         quitWanted = False
@@ -320,7 +320,6 @@ class Video:
             fontFactor = width / 960
             text_width, text_height = cv2.getTextSize(
                 now, font, fontScale * fontFactor, lineThickness)[0]
-            height, width = frame.shape[:2]
             # https://stackoverflow.com/a/34273603/1497139
             frame = frame.copy()
             cv2.putText(frame, now, (width - int(text_width * 1.1), int(text_height * 1.2)),

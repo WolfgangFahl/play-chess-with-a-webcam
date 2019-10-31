@@ -41,8 +41,8 @@ def root():
     return webApp.home()
 
 # https://stackoverflow.com/a/41527903/1497139
-@app.route('/games')
-@app.route('/games/<path:path>')
+@app.route('/chess/games/')
+@app.route('/chess/games/<path:path>')
 def autoindex(path='.'):
     return files_index.render_autoindex(path)
 
@@ -51,9 +51,9 @@ def video_feed():
     return webApp.videoFeed()
 
 
-@app.route('/download/<path:filename>', methods=['GET', 'POST'])
-def download(filename):
-    return webApp.download(thisscriptFolder + '/../web/webcamchess/', filename)
+@app.route('/photo/<path:filename>', methods=['GET', 'POST'])
+def photoDownload(filename):
+    return webApp.photoDownload(thisscriptFolder + '/../web/webcamchess/', filename)
 
 
 @app.route("/chess/debug", methods=['GET'])

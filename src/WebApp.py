@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from Video import Video, VideoStream
+from Video import Video
 from Board import Board
 from Game import WebCamGame, Warp
 from BoardDetector import BoardDetector
@@ -42,7 +42,7 @@ class WebApp:
         self.video = Video()
         return self.index("Home")
 
-    def download(self, path, filename):
+    def photoDownload(self, path, filename):
         #  https://stackoverflow.com/a/24578372/1497139
         return send_from_directory(directory=path, filename=filename)
 
@@ -67,7 +67,8 @@ class WebApp:
     def chessSave(self):
         self.webCamGame.warp=self.warp
         self.webCamGame.save()
-        msg=self.webCamGame
+        name=self.webCamGame.name
+        msg = "chess game <a href='/chess/games/%s'>%s</a> saved" % (name,name)
         return self.index(msg)
 
     def chessForward(self):
@@ -111,7 +112,7 @@ class WebApp:
         self.video.capture(self.args.input)
         filename = 'chessboard_%s.jpg' % (self.video.fileTimeStamp())
         self.video.still2File(path + filename, postProcess=self.warpAndRotate, close=False)
-        msg = "still image <a href='/download/%s'>%s</a> taken from input %s" % (filename, filename, self.args.input)
+        msg = "still image <a href='/photo/%s'>%s</a> taken from input %s" % (filename, filename, self.args.input)
         return self.index(msg)
 
     def videoRotate90(self):
@@ -136,20 +137,20 @@ class WebApp:
 
     # streamed video generator
     # @TODO fix this non working code
-    def genVideoStreamed(self, video):
-        if self.videoStream is None:
-            self.videoStream = VideoStream(self.video, show=True, postProcess=self.video.addTimeStamp)
-            self.videoStream.start()
-        while True:
-            frame = self.videoStream.read()
-            if frame is not None:
-                flag, encodedImage = self.video.imencode(frame)
-                # ensure we got a valid image
-                if not flag:
-                    continue
-                # yield the output frame in the byte format
-                yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                      bytearray(encodedImage) + b'\r\n')
+    #def genVideoStreamed(self, video):
+    #    if self.videoStream is None:
+    #        self.videoStream = VideoStream(self.video, show=True, postProcess=self.video.addTimeStamp)
+    #        self.videoStream.start()
+    #    while True:
+    #        frame = self.videoStream.read()
+    #        if frame is not None:
+    #            flag, encodedImage = self.video.imencode(frame)
+    #            # ensure we got a valid image
+    #            if not flag:
+    #                continue
+    #            # yield the output frame in the byte format
+    #            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+    #                  bytearray(encodedImage) + b'\r\n')
 
     def warpAndRotate(self, image):
         """ warp and rotate the image as necessary - add timestamp if in debug mode """
