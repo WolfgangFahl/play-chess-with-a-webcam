@@ -13,22 +13,23 @@ import platform
 import os.path
 import argparse
 from WebApp import WebApp
+from Environment import Environment
 
-thisscriptFolder = os.path.dirname(os.path.abspath(__file__))
+env=Environment()
 
 # prepare the RESTful application
 # prepare static webserver
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='',
-            static_folder=thisscriptFolder + '/../web')
-files_index=AutoIndex(app, browse_root=thisscriptFolder+'/../games',add_url_rules=False)
+            static_folder=str(env.projectPath) + '/web')
+files_index=AutoIndex(app, browse_root=env.games,add_url_rules=False)
 api = Api(app)
 # app.logger.addHandler(logging.StreamHandler(STDOUT))
 app.logger.setLevel(logging.INFO)
 if WebApp.debug:
     app.logger.setLevel(logging.DEBUG)
 
-app.logger.info("python src folder is %s" % (thisscriptFolder))
+app.logger.info("python src folder is %s" % (env.scriptPath))
 # check if we are running on a raspberry PI
 app.logger.info("Running on %s" % (platform.system()))
 # https://raspberrypi.stackexchange.com/questions/5100/detect-that-a-python-program-is-running-on-the-pi
@@ -50,11 +51,9 @@ def autoindex(path='.'):
 def video_feed():
     return webApp.videoFeed()
 
-
 @app.route('/photo/<path:filename>', methods=['GET', 'POST'])
 def photoDownload(filename):
-    return webApp.photoDownload(thisscriptFolder + '/../web/webcamchess/', filename)
-
+    return webApp.photoDownload(env.games + '/photos/', filename)
 
 @app.route("/chess/debug", methods=['GET'])
 def chessDebug():
@@ -85,19 +84,24 @@ def chessForward():
     return webApp.chessForward()
 
 
-@app.route("/chess/pgn", methods=['GET'])
-def chessPgn():
-    """ set game status from the given pgn"""
+@app.route("/chess/update", methods=['GET'])
+def chessUpdate():
+    """ set game status from the given pgn, fen or move"""
     updateGame = request.args.get('updateGame')
     updateFEN = request.args.get('updateFEN')
+    updateMove=request.args.get('updateMove')
     pgn = request.args.get('pgn')
     fen = request.args.get('fen')
+    movefrom = request.args.get('movefrom')
+    moveto = request.args.get('moveto')
     if updateFEN is not None:
         return webApp.chessFEN(fen)
     elif updateGame is not None:
         return webApp.chessPgn(pgn)
+    elif updateMove is not None:
+        return webApp.chessMove(movefrom+moveto)
     else:
-        return webApp.index("expected updateGame or updateFEN but no such request found")
+        return webApp.index("expected updateGame,updateFEN or updateMove but no such request found")
 
 
 @app.route("/chess/chesswebcamclick/<width>/<height>", methods=['GET'])
@@ -119,7 +123,7 @@ def chessMove(move):
 # capture a single still image
 @app.route("/chess/photo", methods=['GET'])
 def photo():
-    return webApp.photo(thisscriptFolder + '/../web/webcamchess/')
+    return webApp.photo(env.games + '/photos/')
 
 
 # home

@@ -23,13 +23,13 @@ class WebApp:
         self.video = Video()
         self.videoStream = None
         self.board = Board()
+        self.env=Environment()
         if args.game is None:
             self.webCamGame=self.createNewCame()
         else:
             gamepath=args.game
             if not gamepath.startswith("/"):
-                env=Environment()
-                gamepath=str(env.projectPath)+"/"+gamepath
+                gamepath=self.env.games+"/"+gamepath
             self.webCamGame = WebCamGame.readJson(gamepath)
             if self.webCamGame is None:
                 self.log("could not read %s " % (gamepath))
@@ -72,7 +72,10 @@ class WebApp:
     def chessTakeback(self):
         msg = "take back"
         self.board.takeback()
-        self.game.moveIndex=self.game.moveIndex-1
+        if self.game.moveIndex>0:
+            self.game.moveIndex=self.game.moveIndex-1
+        else:
+            msg="can not take back any more moves"    
         if WebApp.debug:
             self.game.showDebug()
         return self.index(msg)
@@ -87,16 +90,23 @@ class WebApp:
     def chessForward(self):
         msg = "forward"
         return self.index(msg)
+    
+    def indexException(self,e):
+        msg=("<span style='color:red'>%s</span>" % str(e))
+        return self.index(msg)
 
     def chessMove(self, move):
-        self.board.move(move)
-        self.game.moveIndex=self.game.moveIndex+1
-        self.game.fen=self.board.fen()
-        self.game.pgn=self.board.pgn()
-        msg = "move %s -> fen= %s" % (move, self.game.fen)
-        if WebApp.debug:
-            self.game.showDebug()
-        return self.index(msg, cmd="fen", value=self.game.fen)
+        try:
+            self.board.move(move)
+            self.game.moveIndex=self.game.moveIndex+1
+            self.game.fen=self.board.fen()
+            self.game.pgn=self.board.pgn()
+            msg = "move %s -> fen= %s" % (move, self.game.fen)
+            if WebApp.debug:
+                self.game.showDebug()
+            return self.index(msg)
+        except BaseException as e:
+            return self.indexException(e)
 
     def chessFEN(self, fen):
         msg = fen
@@ -104,14 +114,18 @@ class WebApp:
             self.board.setFEN(fen)
             msg = "game update from fen %s" % (fen)
             self.game.fen=fen
-        except ValueError as ve:
-            msg = str(ve)
-        return self.index(msg)
+            return self.index(msg)
+        except BaseException as e:
+            return self.indexException(e)
+        
 
     def chessPgn(self, pgn):
-        self.board.setPgn(pgn)
-        msg = "game updated from pgn"
-        return self.index(msg)
+        try:
+            self.board.setPgn(pgn)
+            msg = "game updated from pgn"
+            return self.index(msg)
+        except BaseException as e:
+            return self.indexException(e)
 
     def chessWebCamClick(self, x, y, w, h):
         px = x * self.video.width // w
@@ -121,19 +135,25 @@ class WebApp:
         return self.index(msg)
 
     def photo(self, path):
-        # todo select input device
-        self.video.capture(self.args.input)
-        filename = 'chessboard_%s.jpg' % (self.video.fileTimeStamp())
-        # make sure the path exists
-        self.webCamGame.checkDir(path)
-        self.video.still2File(path + filename, postProcess=self.warpAndRotate, close=False)
-        msg = "still image <a href='/photo/%s'>%s</a> taken from input %s" % (filename, filename, self.args.input)
-        return self.index(msg)
+        try:
+            # todo select input device
+            self.video.capture(self.args.input)
+            filename = 'chessboard_%s.jpg' % (self.video.fileTimeStamp())
+            # make sure the path exists
+            self.webCamGame.checkDir(path)
+            self.video.still2File(path + filename, postProcess=self.warpAndRotate, close=False)
+            msg = "still image <a href='/photo/%s'>%s</a> taken from input %s" % (filename, filename, self.args.input)
+            return self.index(msg)
+        except BaseException as e:
+            return self.indexException(e)
 
     def videoRotate90(self):
-        self.warp.rotate(90)
-        msg = "rotation: %d°" % (self.warp.rotation)
-        return self.index(msg)
+        try:
+            self.warp.rotate(90)
+            msg = "rotation: %d°" % (self.warp.rotation)
+            return self.index(msg)
+        except BaseException as e:
+            return self.indexException(e)
 
     def videoPause(self):
         ispaused = not self.video.paused()

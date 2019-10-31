@@ -87,6 +87,12 @@ function showPgn(doClick) {
      document.getElementById('updateGame').click();
 }
 
+function showMove(movefrom,moveto) {
+	document.getElementById("movefrom").value = movefrom;
+	document.getElementById("moveto").value = moveto;
+	document.getElementById('updateMove').click();
+}
+
 function onDrop (source, target) {
   removeGreySquares()
 
@@ -101,7 +107,7 @@ function onDrop (source, target) {
   if (move === null)
     return 'snapback'
   else {
-    showPgn(true);
+    showMove(move.from,move.to);
   }
 }
 

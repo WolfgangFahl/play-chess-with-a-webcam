@@ -14,6 +14,7 @@ class Environment:
         self.projectPath = self.scriptPath.parent
         self.testMediaPath = Path(self.projectPath, 'testMedia')
         self.testMedia = str(self.testMediaPath.absolute()) + "/"
+        self.games=str(self.projectPath)+"/games"
     
     # get image with the given number
     def getImage(self, num):

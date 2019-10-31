@@ -24,11 +24,19 @@
 		<!-- game notation -->
 		<div id='notation' class="col-md-3">
 			<br>
-			<form action='/chess/pgn' method='GET'>
+			<form action='/chess/update' method='GET'>
 				<fieldset>
 					<label>Game:<input type='text' id='gamename' size='30'
 						name='gamename' value='{{gamename}}'></input></label>
 				</fieldset>
+				<fieldset>
+					<label>Move:<input type='text' id='movefrom' size='2'
+						name='movefrom'></input>-<input type='text' id='moveto' size='2'
+						name='moveto'></input></label>
+				</fieldset>
+				
+				<button id="updateMove" type="submit" value="updateMove"
+					name="updateMove">Move</button><br>
 				<textarea id='fen' name='fen' cols='30' rows='3'></textarea>
 				<br>
 				<button id="updateFen" type="submit" value="updateFEN"
