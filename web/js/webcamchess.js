@@ -52,7 +52,11 @@ function setChessGameState(state)	{
 function showState(state) {
 	if (state!=null) {
 	   document.getElementById("pgn").innerHTML = state.pgn;
-	   document.getElementById("fen").innerHTML = state.fen;		
+	   document.getElementById("fen").innerHTML = state.fen;	
+	   if (state.debug) {
+			document.getElementById("fendetails").open=state.debug
+			document.getElementById("pgndetails").open=state.debug		
+	   }
 	}
 	var pgn = game.pgn();
 	// textarea
@@ -62,10 +66,6 @@ function showState(state) {
 	document.getElementById("boardfen").innerHTML = boardfen;
 	var gamefen = game.fen();
 	document.getElementById("gamefen").innerHTML = gamefen;
-	if (state.debug) {
-		document.getElementById("fendetails").open=state.debug
-		document.getElementById("pgndetails").open=state.debug		
-	}
 }
 
 function showMove(movefrom, moveto) {
