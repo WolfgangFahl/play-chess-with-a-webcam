@@ -66,9 +66,9 @@ class Board(object):
     def performMove(self, move):
         fromCell = move[0].lower()
         toCell = move[1].lower()
-        return self.move(fromCell +toCell)
+        return self.move(fromCell + toCell)
     
-    def move(self,ucimove):    
+    def move(self, ucimove):    
         move = Move.from_uci(ucimove)
         san = self.chessboard.san(move)
         self.chessboard.push(move)
@@ -84,14 +84,14 @@ class Board(object):
     def getPgn(self):
         try:
             game = chess.pgn.Game.from_board(self.chessboard)
-            self.pgn=str(game)
+            self.pgn = str(game)
         except BaseException as e:
-            print ("pgn error: %s",str(e))    
+            print ("pgn error: %s", str(e))    
         return self.pgn
 
     # set my board and game from the given pgn
     def setPgn(self, pgn):
-        self.pgn=pgn
+        self.pgn = pgn
         pgnIo = io.StringIO(pgn)
         game = chess.pgn.read_game(pgnIo)
         if game is None:

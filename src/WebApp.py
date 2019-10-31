@@ -9,10 +9,10 @@ from BoardDetector import BoardDetector
 from flask import render_template, send_from_directory, Response, jsonify
 from datetime import datetime
 
+
 class WebApp:
     """ actual Play Chess with a WebCam Application - Flask calls are routed here """
     debug = False
-    
 
     # construct me with the given settings
     def __init__(self, args, logger=None):
@@ -23,19 +23,19 @@ class WebApp:
         self.video = Video()
         self.videoStream = None
         self.board = Board()
-        self.env=Environment()
+        self.env = Environment()
         if args.game is None:
-            self.webCamGame=self.createNewCame()
+            self.webCamGame = self.createNewCame()
         else:
-            gamepath=args.game
+            gamepath = args.game
             if not gamepath.startswith("/"):
-                gamepath=self.env.games+"/"+gamepath
+                gamepath = self.env.games + "/" + gamepath
             self.webCamGame = WebCamGame.readJson(gamepath)
             if self.webCamGame is None:
                 self.log("could not read %s " % (gamepath))
-                self.webCamGame=self.createNewCame() 
+                self.webCamGame = self.createNewCame() 
         self.webCamGame.checkEnvironment(self.env)        
-        self.game=self.webCamGame.game    
+        self.game = self.webCamGame.game    
         self.log("Warp: %s" % (args.warpPointList))
         self.warp = Warp(args.warpPointList)
         self.warp.rotation = args.rotation
@@ -49,9 +49,9 @@ class WebApp:
 
     # return the index.html template content with the given message
     def index(self, msg):
-        self.webCamGame.warp=self.warp
+        self.webCamGame.warp = self.warp
         self.webCamGame.save()
-        gameid=self.webCamGame.gameid
+        gameid = self.webCamGame.gameid
         return render_template('index.html', message=msg, timeStamp=self.video.timeStamp(), gameid=gameid)
 
     def home(self):
@@ -76,10 +76,10 @@ class WebApp:
         try:
             msg = "take back"
             self.board.takeback()
-            if self.game.moveIndex>0:
-                self.game.moveIndex=self.game.moveIndex-1
+            if self.game.moveIndex > 0:
+                self.game.moveIndex = self.game.moveIndex - 1
             else:
-                msg="can not take back any more moves"    
+                msg = "can not take back any more moves"    
             if WebApp.debug:
                 self.game.showDebug()
             return self.index(msg)
@@ -88,27 +88,31 @@ class WebApp:
     
     def chessSave(self): 
         # @TODO implement locking of a saved game to make it immutable
-        gameid=self.webCamGame.gameid
-        self.game.locked=True
-        msg = "chess game <a href='/chess/games/%s'>%s</a> saved(locked)" % (gameid,gameid)
+        gameid = self.webCamGame.gameid
+        self.game.locked = True
+        msg = "chess game <a href='/chess/games/%s'>%s</a> saved(locked)" % (gameid, gameid)
+        return self.index(msg)
+    
+    def chessGameColors(self):
+        msg = "color update in progress"
         return self.index(msg)
 
     def chessForward(self):
         msg = "forward"
         return self.index(msg)
     
-    def indexException(self,e):
-        msg=("<span style='color:red'>%s</span>" % str(e))
+    def indexException(self, e):
+        msg = ("<span style='color:red'>%s</span>" % str(e))
         return self.index(msg)
 
     def chessMove(self, move):
         try:
             if "-" in move:
-                move=move.replace('-','')
+                move = move.replace('-', '')
             self.board.move(move)
-            self.game.moveIndex=self.game.moveIndex+1
-            self.game.fen=self.board.fen()
-            self.game.pgn=self.board.getPgn()
+            self.game.moveIndex = self.game.moveIndex + 1
+            self.game.fen = self.board.fen()
+            self.game.pgn = self.board.getPgn()
             msg = "move %s -> fen= %s" % (move, self.game.fen)
             if WebApp.debug:
                 self.game.showDebug()
@@ -119,21 +123,20 @@ class WebApp:
     def timeStamp(self):
         return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
                         
-    def chessGameState(self,gameid):
-        fen=self.board.fen()
-        pgn=self.board.getPgn()
-        return jsonify(fen=fen,pgn=pgn,gameid=gameid,debug=WebApp.debug,timestamp=self.timeStamp())
+    def chessGameState(self, gameid):
+        fen = self.board.fen()
+        pgn = self.board.getPgn()
+        return jsonify(fen=fen, pgn=pgn, gameid=gameid, debug=WebApp.debug, timestamp=self.timeStamp())
     
     def chessFEN(self, fen):
         msg = fen
         try:
             self.board.setFEN(fen)
             msg = "game update from fen %s" % (fen)
-            self.game.fen=fen
+            self.game.fen = fen
             return self.index(msg)
         except BaseException as e:
             return self.indexException(e)
-        
 
     def chessPgn(self, pgn):
         try:
@@ -188,7 +191,7 @@ class WebApp:
 
     # streamed video generator
     # @TODO fix this non working code
-    #def genVideoStreamed(self, video):
+    # def genVideoStreamed(self, video):
     #    if self.videoStream is None:
     #        self.videoStream = VideoStream(self.video, show=True, postProcess=self.video.addTimeStamp)
     #        self.videoStream.start()
@@ -238,5 +241,5 @@ class WebApp:
             if quitWanted:
                 break
             # yield the output frame in the byte format
-            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
                            bytearray(encodedImage) + b'\r\n')

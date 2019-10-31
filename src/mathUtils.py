@@ -1,5 +1,5 @@
 import math
-from math import sin, cos, pi
+from math import sin, cos
 import numpy as np
 
 

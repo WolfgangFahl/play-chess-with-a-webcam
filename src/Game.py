@@ -14,18 +14,19 @@ class Game(JsonAbleMixin):
     """ keeps track of a games state in a JavaScript compatible way to exchange game State information
     across platforms e.g. between Python backend and JavaScript frontend"""
     
-    def __init__(self,gameid):
+    def __init__(self, gameid):
         self.gameid = gameid
-        self.fen=chess.STARTING_BOARD_FEN
+        self.fen = chess.STARTING_BOARD_FEN
         # http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm
-        self.pgn='[Date "%s"]' % (strftime('%Y.%m.%d'))
-        self.locked=False
-        self.moveIndex=0 
+        self.pgn = '[Date "%s"]' % (strftime('%Y.%m.%d'))
+        self.locked = False
+        self.moveIndex = 0 
         
     def showDebug(self):
         print ("fen: %s" % (self.fen))  
         print ("pgn: %s" % (self.pgn))
         print ("moveIndex: %d" % (self.moveIndex))     
+
     
 class WebCamGame(JsonAbleMixin):
     """ keeps track of a webcam games state in a JavaScript compatible way to exchange game and webcam/board State information
@@ -36,10 +37,10 @@ class WebCamGame(JsonAbleMixin):
         self.game = Game(gameid)
         self.warp = Warp()
         
-    def checkEnvironment(self,env):
+    def checkEnvironment(self, env):
         self.checkDir(env.games)    
         
-    def checkDir(self,path):    
+    def checkDir(self, path):    
         print (path)
         if not os.path.isdir(path):
             try:
@@ -51,25 +52,24 @@ class WebCamGame(JsonAbleMixin):
  
     def save(self, path="games"):
         env = Environment()
-        savepath=str(env.projectPath) + "/" + path
+        savepath = str(env.projectPath) + "/" + path
         self.checkDir(savepath)
-        savedir = savepath+"/"+self.gameid
+        savedir = savepath + "/" + self.gameid
         self.checkDir(savedir)
-        jsonFile=savedir+"/"+self.gameid+"-webcamgame"
+        jsonFile = savedir + "/" + self.gameid + "-webcamgame"
         self.writeJson(jsonFile)
-        gameJsonFile=savedir+"/"+self.gameid
+        gameJsonFile = savedir + "/" + self.gameid
         self.game.writeJson(gameJsonFile)
         
         if self.game.locked is not None and not self.game.locked:
             if self.game.fen is not None:
-                fenFile=savedir+"/"+self.gameid+".fen"
-                print (self.game.fen,file=open(fenFile, 'w'))
+                fenFile = savedir + "/" + self.gameid + ".fen"
+                print (self.game.fen, file=open(fenFile, 'w'))
             if self.game.pgn is not None:
-                pgnFile=savedir+"/"+self.gameid+".pgn"
+                pgnFile = savedir + "/" + self.gameid + ".pgn"
                 # see https://python-chess.readthedocs.io/en/latest/pgn.html
-                print (self.game.pgn,file=open(pgnFile, 'w'), end="\n\n")
+                print (self.game.pgn, file=open(pgnFile, 'w'), end="\n\n")
         return savedir    
-       
             
     @staticmethod       
     def getWebCamGames(path):

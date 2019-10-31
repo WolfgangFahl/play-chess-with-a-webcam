@@ -14,7 +14,7 @@ class JsonAbleMixin(object):
     # read me from a yaml file
     @staticmethod
     def readJson(name, postfix=".json"):
-        jsonFileName=name
+        jsonFileName = name
         if not name.endswith(postfix):
             jsonFileName = name + postfix
         # is there a jsonFile for the given name

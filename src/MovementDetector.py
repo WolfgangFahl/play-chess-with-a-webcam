@@ -5,9 +5,8 @@
 import sys
 import cv2
 import numpy as np
+from Video import Video
 from StateDetector import StateDetector, CannotBuildStateException
-from collections import defaultdict
-
 
 class BadImage(Exception):
 
@@ -65,7 +64,7 @@ class MovementDetector(object):
 
         diff = cv2.absdiff(pastImage, currentImage)
         if MovementDetector.debug:
-            video.showImage(diff, "chessCamDebug")
+            self.video.showImage(diff, "chessCamDebug")
 
         for key in list(currentBoard.keys()):
             coords = currentBoard[key].GetCoords()

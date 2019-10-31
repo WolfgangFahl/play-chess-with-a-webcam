@@ -3,7 +3,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
 # Global imports
-from flask import Flask,request
+from flask import Flask, request
 from flask_autoindex import AutoIndex
 from flask_restful import Api
 import argparse
@@ -16,14 +16,14 @@ import sys
 from WebApp import WebApp
 from Environment import Environment
 
-env=Environment()
+env = Environment()
 
 # prepare the RESTful application
 # prepare static webserver
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='',
             static_folder=str(env.projectPath) + '/web')
-files_index=AutoIndex(app, browse_root=env.games,add_url_rules=False)
+files_index = AutoIndex(app, browse_root=env.games, add_url_rules=False)
 api = Api(app)
 # app.logger.addHandler(logging.StreamHandler(STDOUT))
 app.logger.setLevel(logging.INFO)
@@ -42,54 +42,70 @@ if platform.system() == 'Linux' and os.path.exists('/sys/firmware/devicetree/bas
 def root():
     return webApp.home()
 
+
 # https://stackoverflow.com/a/41527903/1497139
 @app.route('/chess/games/')
 @app.route('/chess/games/<path:path>')
 def autoindex(path='.'):
     return files_index.render_autoindex(path)
 
+
 @app.route('/video')
 def video_feed():
     return webApp.videoFeed()
+
 
 @app.route('/photo/<path:filename>', methods=['GET', 'POST'])
 def photoDownload(filename):
     return webApp.photoDownload(env.games + '/photos/', filename)
 
+
 @app.route("/chess/debug", methods=['GET'])
 def chessDebug():
     return webApp.chessDebug()
+
 
 @app.route("/chess/rotatevideo90", methods=['GET'])
 def videoRotate90():
     return webApp.videoRotate90()
 
+
 @app.route("/chess/pausevideo", methods=['GET'])
 def video_pause():
     return webApp.videoPause()
+
 
 @app.route("/chess/save", methods=['GET'])
 def chessSave():
     return webApp.chessSave()
 
+
 @app.route("/chess/takeback", methods=['GET'])
 def chessTakeback():
     return webApp.chessTakeback()
+
 
 @app.route("/chess/forward", methods=['GET'])
 def chessForward():
     return webApp.chessForward()
 
+
 @app.route("/chess/<gameid>/state", methods=['GET'])
 def chessGameState(gameid):
     return webApp.chessGameState(gameid)
 
+
+@app.route("/chess/gamecolors", methods=['GET'])
+def chessGameColors():
+    return webApp.chessGameColors()
+
+    
 @app.route("/chess/update", methods=['GET'])
 def chessUpdate():
     """ set game status from the given pgn, fen or move"""
     updateGame = request.args.get('updateGame')
     updateFEN = request.args.get('updateFEN')
-    updateMove=request.args.get('updateMove')
+    updateMove = request.args.get('updateMove')
     pgn = request.args.get('pgn')
     fen = request.args.get('fen')
     move = request.args.get('move')

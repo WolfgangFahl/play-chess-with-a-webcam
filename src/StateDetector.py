@@ -3,15 +3,11 @@
 
 # Global imports
 import sys
-import cv2
 import numpy as np
 from Cell import Cell
 from Board import Board
-from collections import defaultdict
 from mathUtils import intersectHoughLines, distance
-from math import pi
 from Video import Video
-
 
 class CannotBuildStateException(Exception):
 
@@ -56,10 +52,10 @@ class StateDetector(object):
         if StateDetector.debug:
             print ("found %d lines to intersect" % (lineCount))
         if lineCount > StateDetector.maxLines:
-           msg = 'Found %d lines which is more than StateDetector.maxLines=%d' % (lineCount, StateDetector.maxLines)
-           if StateDetector.debug:
-               print (msg)
-           raise CannotBuildStateException(msg)
+            msg = 'Found %d lines which is more than StateDetector.maxLines=%d' % (lineCount, StateDetector.maxLines)
+            if StateDetector.debug:
+                print (msg)
+            raise CannotBuildStateException(msg)
         if self.lines is not None:
             for lineIndex, line in enumerate(self.lines):
                 for crosslineIndex, crossline in enumerate(self.lines):
@@ -115,17 +111,17 @@ class StateDetector(object):
 
         # build an 8 points list to set the fulldiagonal.
         current = 0
-        next = 1
+        nextLen = 1
         fulldiag = []
         fulldiag.append(diagonal[0])
-        while next < len(diagonal):
+        while nextLen < len(diagonal):
             x = fulldiag[current][0]
             y = fulldiag[current][1]
-            if x + 1.8 * cellWidth < diagonal[next][0] and y + 1.8 * cellHeight < diagonal[next][1]:
+            if x + 1.8 * cellWidth < diagonal[nextLen][0] and y + 1.8 * cellHeight < diagonal[nextLen][1]:
                 fulldiag.append((x + cellWidth, y + cellHeight))
             else:
-                fulldiag.append(diagonal[next])
-                next += 1
+                fulldiag.append(diagonal[nextLen])
+                nextLen += 1
             current += 1
 
         # When had not enough intersections in the diagonal, so we add points to it at the end.
