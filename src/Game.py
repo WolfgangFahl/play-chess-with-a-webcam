@@ -4,35 +4,40 @@
 from Environment import Environment
 from JsonAbleMixin import JsonAbleMixin
 from YamlAbleMixin import YamlAbleMixin
+from time import strftime
 import numpy as  np
 import os
+import chess
 
 
 class Game(JsonAbleMixin):
     """ keeps track of a games state in a JavaScript compatible way to exchange game State information
     across platforms e.g. between Python backend and JavaScript frontend"""
     
-    def __init__(self, name):
-        self.name = name
-        self.fen=None
+    def __init__(self,gameid):
+        self.gameid = gameid
+        self.fen=chess.STARTING_BOARD_FEN
         # http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm
-        self.pgn=None
+        self.pgn='[Date "%s"]' % (strftime('%Y.%m.%d'))
+        self.locked=False
         self.moveIndex=0 
         
     def showDebug(self):
         print ("fen: %s" % (self.fen))  
         print ("pgn: %s" % (self.pgn))
-        print ("moveIndex: %d" % (self.moveIndex))         
-        
+        print ("moveIndex: %d" % (self.moveIndex))     
     
 class WebCamGame(JsonAbleMixin):
     """ keeps track of a webcam games state in a JavaScript compatible way to exchange game and webcam/board State information
     across platforms e.g. between Python backend and JavaScript frontend"""
     
-    def __init__(self, name):
-        self.name = name
-        self.game = Game(name)
+    def __init__(self, gameid):
+        self.gameid = gameid
+        self.game = Game(gameid)
         self.warp = Warp()
+        
+    def checkEnvironment(self,env):
+        self.checkDir(env.games)    
         
     def checkDir(self,path):    
         print (path)
@@ -48,16 +53,21 @@ class WebCamGame(JsonAbleMixin):
         env = Environment()
         savepath=str(env.projectPath) + "/" + path
         self.checkDir(savepath)
-        savedir = savepath+"/"+self.name
+        savedir = savepath+"/"+self.gameid
         self.checkDir(savedir)
-        jsonFile=savedir+"/"+self.name+"-webcamgame"
+        jsonFile=savedir+"/"+self.gameid+"-webcamgame"
         self.writeJson(jsonFile)
-        if self.game.fen is not None:
-            fenFile=savedir+"/"+self.name+".fen"
-            print (self.game.fen,file=open(fenFile, 'w'))
-        if self.game.pgn is not None:
-            pgnFile=savedir+"/"+self.name+".pgn"
-            print (self.game.fen,file=open(pgnFile, 'w'))
+        gameJsonFile=savedir+"/"+self.gameid
+        self.game.writeJson(gameJsonFile)
+        
+        if self.game.locked is not None and not self.game.locked:
+            if self.game.fen is not None:
+                fenFile=savedir+"/"+self.gameid+".fen"
+                print (self.game.fen,file=open(fenFile, 'w'))
+            if self.game.pgn is not None:
+                pgnFile=savedir+"/"+self.gameid+".pgn"
+                # see https://python-chess.readthedocs.io/en/latest/pgn.html
+                print (self.game.pgn,file=open(pgnFile, 'w'), end="\n\n")
         return savedir    
        
             
@@ -68,7 +78,7 @@ class WebCamGame(JsonAbleMixin):
             if file.endswith(".json"):
                 filePath = os.path.join(path, file)
                 webCamGame = WebCamGame.readJson(filePath, '')
-                webCamGames[webCamGame.name] = webCamGame
+                webCamGames[webCamGame.gameid] = webCamGame
         return webCamGames               
         
            

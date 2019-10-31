@@ -27,7 +27,7 @@ def checkEndPosition(board, expectedFen):
     print (fen)
     unicode = board.unicode()
     print (unicode)
-    pgn = board.pgn()
+    pgn = board.getPgn()
     print (pgn)
     assert expectedFen == fen
 

@@ -81,12 +81,17 @@ class Board(object):
         self.chessboard.pop()
 
     # get my pgn description
-    def pgn(self):
-        game = chess.pgn.Game.from_board(self.chessboard)
-        return game
+    def getPgn(self):
+        try:
+            game = chess.pgn.Game.from_board(self.chessboard)
+            self.pgn=str(game)
+        except BaseException as e:
+            print ("pgn error: %s",str(e))    
+        return self.pgn
 
     # set my board and game from the given pgn
     def setPgn(self, pgn):
+        self.pgn=pgn
         pgnIo = io.StringIO(pgn)
         game = chess.pgn.read_game(pgnIo)
         if game is None:

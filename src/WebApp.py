@@ -6,8 +6,8 @@ from Board import Board
 from Environment import Environment
 from Game import WebCamGame, Warp
 from BoardDetector import BoardDetector
-from flask import render_template, send_from_directory, Response
-
+from flask import render_template, send_from_directory, Response, jsonify
+from datetime import datetime
 
 class WebApp:
     """ actual Play Chess with a WebCam Application - Flask calls are routed here """
@@ -34,11 +34,11 @@ class WebApp:
             if self.webCamGame is None:
                 self.log("could not read %s " % (gamepath))
                 self.webCamGame=self.createNewCame() 
+        self.webCamGame.checkEnvironment(self.env)        
         self.game=self.webCamGame.game    
         self.log("Warp: %s" % (args.warpPointList))
         self.warp = Warp(args.warpPointList)
         self.warp.rotation = args.rotation
-        
 
     def createNewCame(self):
         return WebCamGame("game" + self.video.fileTimeStamp())
@@ -49,7 +49,10 @@ class WebApp:
 
     # return the index.html template content with the given message
     def index(self, msg):
-        return render_template('index.html', message=msg, timeStamp=self.video.timeStamp(), gamename=self.webCamGame.name)
+        self.webCamGame.warp=self.warp
+        self.webCamGame.save()
+        gameid=self.webCamGame.gameid
+        return render_template('index.html', message=msg, timeStamp=self.video.timeStamp(), gameid=gameid)
 
     def home(self):
         self.video = Video()
@@ -80,11 +83,11 @@ class WebApp:
             self.game.showDebug()
         return self.index(msg)
     
-    def chessSave(self):
-        self.webCamGame.warp=self.warp
-        self.webCamGame.save()
-        name=self.webCamGame.name
-        msg = "chess game <a href='/chess/games/%s'>%s</a> saved" % (name,name)
+    def chessSave(self): 
+        # @TODO implement locking of a saved game to make it immutable
+        gameid=self.webCamGame.gameid
+        self.game.locked=True
+        msg = "chess game <a href='/chess/games/%s'>%s</a> saved(locked)" % (gameid,gameid)
         return self.index(msg)
 
     def chessForward(self):
@@ -97,10 +100,12 @@ class WebApp:
 
     def chessMove(self, move):
         try:
+            if "-" in move:
+                move=move.replace('-','')
             self.board.move(move)
             self.game.moveIndex=self.game.moveIndex+1
             self.game.fen=self.board.fen()
-            self.game.pgn=self.board.pgn()
+            self.game.pgn=self.board.getPgn()
             msg = "move %s -> fen= %s" % (move, self.game.fen)
             if WebApp.debug:
                 self.game.showDebug()
@@ -108,6 +113,14 @@ class WebApp:
         except BaseException as e:
             return self.indexException(e)
 
+    def timeStamp(self):
+        return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
+                        
+    def chessGameState(self,gameid):
+        fen=self.board.fen()
+        pgn=self.board.getPgn()
+        return jsonify(fen=fen,pgn=pgn,gameid=gameid,timestamp=self.timeStamp())
+    
     def chessFEN(self, fen):
         msg = fen
         try:

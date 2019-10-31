@@ -7,8 +7,7 @@
 			<br>
 			<!-- center the ChessBoard Frame -->
 			<div id='chessboardframe' style='margin-left: 20px'>
-				<div id='chessboard' style="width: 512px">{% include 'js.html'
-					%}</div>
+				<div id='chessboard' style="width: 512px"></div>
 			</div>
 		</div>
 		<div id='chesswebcamdiv' class="col-md-5">
@@ -25,32 +24,44 @@
 		<div id='notation' class="col-md-3">
 			<br>
 			<form action='/chess/update' method='GET'>
-				<fieldset>
-					<label>Game:<input type='text' id='gamename' size='30'
-						name='gamename' value='{{gamename}}'></input></label>
-				</fieldset>
-				<fieldset>
-					<label>Move:<input type='text' id='movefrom' size='2'
-						name='movefrom'></input>-<input type='text' id='moveto' size='2'
-						name='moveto'></input></label>
-				</fieldset>
-				
-				<button id="updateMove" type="submit" value="updateMove"
-					name="updateMove">Move</button><br>
-				<textarea id='fen' name='fen' cols='30' rows='3'></textarea>
-				<br>
-				<button id="updateFen" type="submit" value="updateFEN"
-					name="updateFEN">Update FEN</button>
-				<br>
-				<textarea id='pgn' name="pgn" cols='30' rows='20'></textarea>
-				<br>
-				<button id="updateGame" type="submit" value="updateGame"
-					name="updateGame">Update Game</button>
+			    <div class="form-group">
+					<label for='gameid' id='gameidlabel' class="col-lg-2 control-label"><a href='/chess/games/{{gameid}}'>Game:</a></label>
+					<input type='text' id='gameid' size='30' name='gameid' value='{{gameid}}'/>
+				</div>	
+				<div class="form-group">
+					<label for='move' class="col-lg-2 control-label">Move:</label>
+					<input type='text' id='move' size='5' name='move'></input>
+		   		    <button id="updateMove" type="submit" value="updateMove" name="updateMove">Move</button><br>
+				</div>
+				<div class="form-group">
+					<label for='fen' class="col-lg-2 control-label">server FEN:</label>
+				    <textarea id='fen' name='fen' cols='30' rows='2'></textarea>
+				    <button id="updateFen" type="submit" value="updateFEN"
+					   name="updateFEN">Update FEN</button>
+				</div>
+				<div class="form-group">    
+					<label for='boardfen' class="col-lg-2 control-label">board FEN:</label>
+				    <textarea id='boardfen' name='boardfen' cols='30' rows='2'></textarea>
+				</div>
+				<div class="form-group">    
+					<label for='gamefen' class="col-lg-2 control-label">game FEN:</label>
+				    <textarea id='gamefen' name='gamefen' cols='30' rows='2'></textarea>
+				</div>
+				<div class="form-group">
+					<label for='pgn' class="col-lg-2 control-label" >
+					    <a href='/chess/games/{{gameid}}/{{gameid}}.pgn'>server pgn:</a>
+					</label>
+				    <textarea id='pgn' name="pgn" cols='30' rows='10'></textarea>
+				</div>    
+				<div class="form-group">
+					<label for='pgn' class="col-lg-2 control-label" >client pgn:</label>
+				    <textarea id='clientpgn' name="clientpgn" cols='30' rows='10'></textarea>
+					
+		   		    <button id="updateGame" type="submit" value="updateGame" name="updateGame">Update Game</button>
+				</div>	
 			</form>
 		</div>
 	</div>
-	<!-- web cam chess -->
-	<script src='/js/webcamchess.js'></script>
 	<script>
 		// handle the url query Parameters
 		handleQuery();

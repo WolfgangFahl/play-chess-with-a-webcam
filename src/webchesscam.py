@@ -3,15 +3,16 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
 # Global imports
-from flask import Flask, request
+from flask import Flask,request
 from flask_autoindex import AutoIndex
 from flask_restful import Api
+import argparse
 import ast
 import logging
-import sys
 import platform
 import os.path
-import argparse
+import sys
+
 from WebApp import WebApp
 from Environment import Environment
 
@@ -59,16 +60,13 @@ def photoDownload(filename):
 def chessDebug():
     return webApp.chessDebug()
 
-
 @app.route("/chess/rotatevideo90", methods=['GET'])
 def videoRotate90():
     return webApp.videoRotate90()
 
-
 @app.route("/chess/pausevideo", methods=['GET'])
 def video_pause():
     return webApp.videoPause()
-
 
 @app.route("/chess/save", methods=['GET'])
 def chessSave():
@@ -83,6 +81,9 @@ def chessTakeback():
 def chessForward():
     return webApp.chessForward()
 
+@app.route("/chess/<gameid>/state", methods=['GET'])
+def chessGameState(gameid):
+    return webApp.chessGameState(gameid)
 
 @app.route("/chess/update", methods=['GET'])
 def chessUpdate():
@@ -92,14 +93,13 @@ def chessUpdate():
     updateMove=request.args.get('updateMove')
     pgn = request.args.get('pgn')
     fen = request.args.get('fen')
-    movefrom = request.args.get('movefrom')
-    moveto = request.args.get('moveto')
+    move = request.args.get('move')
     if updateFEN is not None:
         return webApp.chessFEN(fen)
     elif updateGame is not None:
         return webApp.chessPgn(pgn)
     elif updateMove is not None:
-        return webApp.chessMove(movefrom+moveto)
+        return webApp.chessMove(move)
     else:
         return webApp.index("expected updateGame,updateFEN or updateMove but no such request found")
 

@@ -12,16 +12,16 @@ def test_Game001():
     json = game.asJson()
     if debug:
         print (json)
-    assert json == '{"fen": "8/8/8/8/8/8/8/8 w - -", "moveIndex": 0, "name": "test001", "pgn": null, "py/object": "Game.Game"}'
+    assert  '"fen": "8/8/8/8/8/8/8/8 w - -"' in json  
     
-
 def test_WebCamGame():
     webCamGame = WebCamGame("chessBoard001")    
     webCamGame.game.fen = "8/8/8/8/8/8/8/8 w - -"
     json = webCamGame.asJson()
     if debug:
         print (json)
-    assert json=='{"game": {"fen": "8/8/8/8/8/8/8/8 w - -", "moveIndex": 0, "name": "chessBoard001", "pgn": null, "py/object": "Game.Game"}, "name": "chessBoard001", "py/object": "Game.WebCamGame", "warp": {"bgrColor": {"py/tuple": [0, 255, 0]}, "pointList": [], "points": null, "py/object": "Game.Warp", "rotation": 0, "warping": false}}'
+    assert '"fen": "8/8/8/8/8/8/8/8 w - -"' in json      
+    assert "chessBoard001" in json
     
 def test_WebCamGames():
     # get the testEnvironment    
