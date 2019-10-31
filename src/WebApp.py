@@ -3,6 +3,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Video import Video
 from Board import Board
+from Environment import Environment
 from Game import WebCamGame, Warp
 from BoardDetector import BoardDetector
 from flask import render_template, send_from_directory, Response
@@ -11,6 +12,7 @@ from flask import render_template, send_from_directory, Response
 class WebApp:
     """ actual Play Chess with a WebCam Application - Flask calls are routed here """
     debug = False
+    
 
     # construct me with the given settings
     def __init__(self, args, logger=None):
@@ -22,14 +24,25 @@ class WebApp:
         self.videoStream = None
         self.board = Board()
         if args.game is None:
-            self.webCamGame = WebCamGame("game" + self.video.fileTimeStamp())
+            self.webCamGame=self.createNewCame()
         else:
-            self.webCamGame = WebCamGame.readJson(args.game)
+            gamepath=args.game
+            if not gamepath.startswith("/"):
+                env=Environment()
+                gamepath=str(env.projectPath)+"/"+gamepath
+            self.webCamGame = WebCamGame.readJson(gamepath)
+            if self.webCamGame is None:
+                self.log("could not read %s " % (gamepath))
+                self.webCamGame=self.createNewCame() 
         self.game=self.webCamGame.game    
         self.log("Warp: %s" % (args.warpPointList))
         self.warp = Warp(args.warpPointList)
         self.warp.rotation = args.rotation
+        
 
+    def createNewCame(self):
+        return WebCamGame("game" + self.video.fileTimeStamp())
+        
     def log(self, msg):
         if WebApp.debug and self.logger is not None:
             self.logger.info(msg)
@@ -111,6 +124,8 @@ class WebApp:
         # todo select input device
         self.video.capture(self.args.input)
         filename = 'chessboard_%s.jpg' % (self.video.fileTimeStamp())
+        # make sure the path exists
+        self.webCamGame.checkDir(path)
         self.video.still2File(path + filename, postProcess=self.warpAndRotate, close=False)
         msg = "still image <a href='/photo/%s'>%s</a> taken from input %s" % (filename, filename, self.args.input)
         return self.index(msg)
