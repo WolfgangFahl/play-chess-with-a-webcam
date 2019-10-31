@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Video import Video
 from BoardFinder import BoardFinder
@@ -42,7 +44,7 @@ def test_houghTransform():
 
 def test_Dot():
     video = Video()
-    dotImage = video.readImage("testMedia/greendot.jpg")
+    dotImage = video.readImage(testEnv.testMedia+"greendot.jpg")
     image = testEnv.getImage(7)
     finder = BoardFinder(image)
     dotHSVRanges = finder.calibrateCornerMarker(dotImage)

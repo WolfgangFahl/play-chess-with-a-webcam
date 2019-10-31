@@ -10,7 +10,7 @@ from imutils import perspective
 import argparse
 from threading import Thread
 import os
-
+import sys
 
 class Video:
     """ Video handling e.g. recording/writing """
@@ -22,6 +22,10 @@ class Video:
         self.ispaused = False
         # current Frame
         self.frame = None
+        self.processedFrame=None
+        self.maxFrames=sys.maxsize
+        # still image ass video feature for jpg
+        self.autoPause=False
         self.fpsCheck = None
         pass
 
@@ -48,6 +52,9 @@ class Video:
         else:
             self.device = device
             self.open(device)
+            if device.endswith(".jpg"):
+                self.maxFrames=1
+                self.autoPause=True
         self.setup(cv2.VideoCapture(self.device))
 
     def setup(self, cap):
@@ -107,13 +114,17 @@ class Video:
         quitWanted = False
         if ret == True:
             if not self.ispaused:
-                if not postProcess is None:
-                    self.frame = postProcess(self.frame)
                 self.frames = self.frames + 1
+                if self.frames>=self.maxFrames and self.autoPause:
+                    self.ispaused=True
                 self.fpsCheck.update()
+            if not postProcess is None:
+                self.processedFrame= postProcess(self.frame)
+            else:
+                self.processedFrame=self.frame    
             if show:
                 quitWanted = not self.showImage(self.frame, "frame")
-        return ret, self.frame, quitWanted
+        return ret, self.processedFrame, quitWanted
 
     # play the given capture
     def play(self):
@@ -315,7 +326,7 @@ class Video:
             now = self.timeStamp()
             if withFrames:
                 now = now + " %d" % (self.frames)
-            if withFPS:
+            if withFPS and self.fpsCheck is not None:
                 now = now + "@%.0f fps" % (self.fpsCheck.fps())
             fontFactor = width / 960
             text_width, text_height = cv2.getTextSize(

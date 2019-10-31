@@ -9,7 +9,6 @@ from BoardDetector import BoardDetector
 from flask import render_template, send_from_directory, Response, jsonify
 from datetime import datetime
 
-
 class WebApp:
     """ actual Play Chess with a WebCam Application - Flask calls are routed here """
     debug = False
@@ -146,11 +145,16 @@ class WebApp:
         except BaseException as e:
             return self.indexException(e)
 
+    # picture has been clicked
     def chessWebCamClick(self, x, y, w, h):
         px = x * self.video.width // w
         py = y * self.video.height // h
+        colorInfo=""
+        if self.video.frame is not None:
+            b, g, r = self.video.frame[py, px]
+            colorInfo="r:%x g:%x b:%x" % (r,g,b)
         self.warp.addPoint(px, py)
-        msg = "clicked warppoint %d pixel %d,%d mouseclick %d,%d in image %d x %d" % (len(self.warp.pointList), px, py, x, y, w, h)
+        msg = "clicked warppoint %d pixel %d,%d %s mouseclick %d,%d in image %d x %d" % (len(self.warp.pointList), px, py, colorInfo, x, y, w, h)
         return self.index(msg)
 
     def photo(self, path):

@@ -18,9 +18,14 @@ class Environment:
     
     # get image with the given number
     def getImage(self, num):
+        image,video=self.getImageWithVideo(num)
+        return image
+        
+    # get image with the given number
+    def getImageWithVideo(self, num):   
         video = Video()
         filename = self.testMedia + "chessBoard%03d.jpg" % (num)
         image = video.readImage(filename)
         height, width = image.shape[:2]
         print ("read image %s: %dx%d" % (filename, width, height))
-        return image
+        return image,video

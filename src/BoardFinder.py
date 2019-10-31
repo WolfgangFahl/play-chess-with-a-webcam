@@ -4,14 +4,13 @@
 
 # Global imports
 from Video import Video
-from math import sin, cos, sqrt, pi, atan2, degrees
+from math import sqrt, pi,  degrees
 import cv2
 import numpy as np
 from collections import deque
 import bisect
 
 # Local imports
-from MovementDetector import MovementDetector
 from mathUtils import (median, getRotationAndTranslationMatrix, getIndexRange)
 
 CHESSCAM_PARZEN_THRESHOLD = 5
@@ -312,7 +311,7 @@ class BoardFinder(object):
         whitenesses.append(self.video.sumIntensity(bottom))
         whitenesses.append(self.video.sumIntensity(right))
         if BoardFinder.debug:
-           print (whitenesses)
+            print (whitenesses)
 
         return whitenesses.index(min(whitenesses))
 

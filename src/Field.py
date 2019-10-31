@@ -6,22 +6,21 @@ import colorsys
 # from colormath.color_conversions import convert_color
 # from colormath.color_diff import delta_e_cie2000
 from RunningStats import ColorStats
-from Video import Video
 import chess
 from enum import IntEnum
 
 
 class FieldState(IntEnum):
-   WHITE_EMPTY = 0
-   WHITE_WHITE = 1
-   WHITE_BLACK = 2
-   BLACK_EMPTY = 3
-   BLACK_WHITE = 4
-   BLACK_BLACK = 5
+    WHITE_EMPTY = 0
+    WHITE_WHITE = 1
+    WHITE_BLACK = 2
+    BLACK_EMPTY = 3
+    BLACK_WHITE = 4
+    BLACK_BLACK = 5
 
 
 class Field:
-    """ a single Field of a chessboard as observed from a WebCam"""
+    """ a single Field of a chess board as observed from a WebCam"""
     rows = 8
     cols = 8
     # bgr colors
