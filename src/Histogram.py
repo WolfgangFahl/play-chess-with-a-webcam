@@ -51,19 +51,25 @@ class Histogram(object):
         ax.axis("off")
         pass
     
-    def plotChannel(self,img, ax,channel):
+    def plotChannel(self,img, ax,channel,prevAx=None):
         cImg = img[:, :, channel]
         ax.hist(np.ndarray.flatten(cImg), bins=256)
+        if prevAx is not None:
+            prevAx.get_shared_x_axes().join(prevAx,ax)
+            prevAx.set_xticklabels([])    
+
+        ax.set_yticklabels([])    
+        return ax
           
     def plotHistogramm(self,image,axarr,rowIndex):  
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV) 
         rgb=image
-        self.plotChannel(hsv,axarr[rowIndex+0,1], 0) # hue
-        self.plotChannel(hsv,axarr[rowIndex+0,2], 1) # saturation
-        self.plotChannel(hsv,axarr[rowIndex+0,3], 2) # value
-        self.plotChannel(rgb,axarr[rowIndex+1,1], 0) # red
-        self.plotChannel(rgb,axarr[rowIndex+1,2], 1) # green
-        self.plotChannel(rgb,axarr[rowIndex+1,3], 2) # blue
+        prevAx1=self.plotChannel(hsv,axarr[rowIndex+0,1], 0) # hue
+        prevAx2=self.plotChannel(hsv,axarr[rowIndex+0,2], 1) # saturation
+        prevAx3=self.plotChannel(hsv,axarr[rowIndex+0,3], 2) # value
+        self.plotChannel(rgb,axarr[rowIndex+1,1], 0,prevAx1) # red
+        self.plotChannel(rgb,axarr[rowIndex+1,2], 1,prevAx2) # green
+        self.plotChannel(rgb,axarr[rowIndex+1,3], 2,prevAx3) # blue
         
           
     def pixel(self,fig,inch):
@@ -76,9 +82,12 @@ class Histogram(object):
         with PdfPages(path) as pdf:
             self.pages=len(self.images)//self.imagesPerPage
             for page in range(self.pages+1):
-                cols=4
+                colTitles=['image','hue/blue','saturation/green','value/red']
+                cols=len(colTitles)
                 fig, axarr = plt.subplots(self.imagesPerPage*2,cols, figsize=self.pagesize)
-                thumbNailSize=self.pixel(fig,self.pageheight)
+                for ax, colTitle in zip(axarr[0], colTitles):
+                    ax.set_title(colTitle)
+                thumbNailSize=256 #self.pixel(fig,self.pageheight)
                 for pageImageIndex in range(0,self.imagesPerPage):
                     if imageIndex<len(self.images):
                         image,imageTitle=self.images[imageIndex]
@@ -92,6 +101,7 @@ class Histogram(object):
                             axarr[pageImageIndex*2  ,col].remove()
                             axarr[pageImageIndex*2+1,col].remove()  
                     imageIndex=imageIndex+1
+                plt.tight_layout()    
                 pdf.savefig()
                 plt.close()
             pdfinfo=pdf.infodict()
