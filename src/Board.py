@@ -23,7 +23,9 @@ class Board(object):
     debug = True
 
     C = {'w': 0, 'b': 1}
-
+    EMPTY_FEN='8/8/8/8/8/8/8/8 w - -'
+    START_FEN = chess.STARTING_BOARD_FEN
+    
     # initialize the board with a default dominator next cell to the right
     def __init__(self, dominatorOffset=(0, -1)):
         self.chessboard = chess.Board()

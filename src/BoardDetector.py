@@ -18,6 +18,7 @@ class BoardDetector:
         self.speedup=speedup
         self.hsv = None
         self.previous=None
+           
 
     def analyzeColors(self, image, distance=3, step=1):
         # guess where the centers of the fields are

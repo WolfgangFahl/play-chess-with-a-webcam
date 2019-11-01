@@ -4,6 +4,7 @@
 from webchesscam import  WebChessCamArgs
 from BoardDetector import BoardDetector
 from Board import Board
+from Field import FieldState
 from Video import Video
 from timeit import default_timer as timer
 from WebApp import WebApp
@@ -103,15 +104,24 @@ def test_FieldStates():
         assert counts[fieldState]==len(fields)
 
 def test_MaskFieldStates():
+    video=Video()
     webApp = WebApp(WebChessCamArgs([]).args)
+    boardDetector=webApp.boardDetector
     for imageInfo in testEnv.imageInfos:
         bgr=testEnv.loadFromImageInfo(webApp,imageInfo)
         rgba=cv2.cvtColor(bgr,cv2.COLOR_BGR2RGBA)
-        print (rgba.shape)
+        waitTime=1000
+        sortedFields=boardDetector.sortByFieldState();
+        whiteFields=sortedFields[FieldState.WHITE_EMPTY]
+        print ("%d white fields"  % len(whiteFields))
+        for field in whiteFields:
+            print("%s: %3d,%3d" % (field.an,field.pcx,field.pcy))
+        video.showImage(rgba, imageInfo['title'],keyWait=waitTime)
+        video.close()
 
 
-test_ColorDistance()
-test_FieldStates()
+#test_ColorDistance()
+#test_FieldStates()
 test_MaskFieldStates()
-test_BoardFieldColorDetector()
-test_FieldDetector()
+#test_BoardFieldColorDetector()
+#test_FieldDetector()

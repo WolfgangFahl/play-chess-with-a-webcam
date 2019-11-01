@@ -6,6 +6,7 @@ from Video import Video
 from WebApp import Warp
 from timeit import default_timer as timer
 import os
+from Board import Board
 class Environment4Test(Environment):
     """ Test Environment """
 
@@ -22,15 +23,32 @@ class Environment4Test(Environment):
         ([483,132],[1338,124],[1541, 936],[255, 953]),
         ([  8,  1],[ 813,  1],[ 817, 812],[  3, 809])
         ]
+    
     rotations=[0,0,0,0,270,270,270,0,0,0,0]
-
+    
+    fens=[
+        Board.EMPTY_FEN,
+        Board.EMPTY_FEN,
+        Board.START_FEN,
+        Board.EMPTY_FEN,
+        Board.START_FEN,
+        Board.START_FEN,
+        Board.START_FEN,
+        Board.EMPTY_FEN,
+        Board.EMPTY_FEN,
+        Board.EMPTY_FEN,
+        Board.EMPTY_FEN
+    ]
 
     def __init__(self):
         super().__init__()
         rlen=len(Environment4Test.rotations)
         wlen=len(Environment4Test.warpPointList)
+        fenlen=len(Environment4Test.fens)
         if rlen != wlen:
             raise Exception("%d rotations for %d warpPoints" %(rlen,wlen))
+        if fenlen != wlen:
+            raise Exception("%d FENs for %d images" %(fenlen,wlen))
         self.imageInfos=[]
         for num in range(1,1000):
             filename = self.testMedia + "chessBoard%03d.jpg" % (num)
@@ -41,6 +59,7 @@ class Environment4Test(Environment):
             imageInfo={'index': num,
                        'title': "image%03d" % (num),
                        'filename': filename,
+                       'fen':  Environment4Test.fens[num-1],
                        'rotation': Environment4Test.rotations[num-1],
                        'warpPoints': Environment4Test.warpPointList[num-1]}
             self.imageInfos.append(imageInfo)
@@ -68,6 +87,7 @@ class Environment4Test(Environment):
         image,video = self.getImageWithVideo(imageInfo['index'])
         webApp.video=video
         start = timer()
+        webApp.board.setFEN(imageInfo['fen'])
         bgr = webApp.warpAndRotate(image)
         height, width = bgr.shape[:2]
         end = timer()

@@ -58,7 +58,7 @@ class Field:
         self.an = chess.SQUARE_NAMES[self.squareIndex]
         # center pixel position of field
         self.pcx = None
-        self.pcx = None
+        self.pcy = None
         self.distance = None
         self.step = None
         self.hsvStats = None
