@@ -11,6 +11,7 @@ def main(argv):
     default_file = '../../testMedia/chessBoard011.jpg'
     filename = argv[0] if len(argv) > 0 else default_file
     image = cv2.imread(filename)
+    image=cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     
     # resize it to fit at the default 100 dpi
     w=320

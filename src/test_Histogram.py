@@ -6,6 +6,7 @@ from Environment import Environment
 from timeit import default_timer as timer
 from WebApp import WebApp,Warp
 from webchesscam import  WebChessCamArgs
+import cv2
 testEnv = Environment()
 
 def test_Histogram():
@@ -28,8 +29,7 @@ def test_Histogram():
     wlen=len(warpPointList)
     if rlen != wlen:
         raise Exception("%d rotations for %d warpPoints" %(rlen,wlen))
-    rlen=4
-    histogram=Histogram("Chessboard Colors",rlen,turned=True,pages=2)
+    histogram=Histogram("Chessboard Colors",Histogram.A4(turned=True))
     for index in range(1,rlen+1):
         start = timer()
         warpPoints=warpPointList[index-1]
@@ -42,8 +42,21 @@ def test_Histogram():
         end = timer()
         print("%.3fs for loading image %d: %4d x %4d" % ((end-start),index,width,height))
         title="image%03d" % (index)
-        histogram.addPlot(bgr,title)
-    histogram.save('/tmp/chessboardColors')
+        rgb=cv2.cvtColor(bgr,cv2.COLOR_BGR2RGB)
+        histogram.addPlot(rgb,title)  
+    histogram.save('/tmp/chessboardColors',{'Title': 'Chessboard Histogram'})
+    
+def test_A4():
+    a4=Histogram.A4()
+    a4w,a4h=a4
+    assert round(a4w,2)==8.27
+    assert round(a4h,2)==11.69
+    a4t=Histogram.A4(turned=True)
+    a4wt,a4ht=a4t
+    assert round(a4ht,2)==8.27
+    assert round(a4wt,2)==11.69
+    
 
+test_A4()
 test_Histogram()
     
