@@ -119,7 +119,12 @@ class Video:
                     self.ispaused=True
                 self.fpsCheck.update()
             if not postProcess is None:
-                self.processedFrame= postProcess(self.frame)
+                try:
+                    self.processedFrame= postProcess(self.frame)
+                except BaseException as e:
+                    # @TODO log exception
+                    print ("processing error "+str(e))
+                    self.processedFrame=self.frame 
             else:
                 self.processedFrame=self.frame    
             if show:
