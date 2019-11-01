@@ -70,7 +70,7 @@ def do_cluster(hsv_image, K, channels):
 
 
 def main(argv):
-    default_file = '../testMedia/chessBoard001.jpg'
+    default_file = '../../testMedia/chessBoard011.jpg'
     filename = argv[0] if len(argv) > 0 else default_file
     image = cv2.imread(filename)
     thumbNail = cv2.resize(image, (200, 200))

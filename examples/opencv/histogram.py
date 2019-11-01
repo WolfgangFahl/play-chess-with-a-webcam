@@ -16,7 +16,7 @@ def plotChannel(hsv, channel, col, rows, plotNum, title):
 
 
 def main(argv):
-    default_file = '../testMedia/chessBoard001.jpg'
+    default_file = '../../testMedia/chessBoard001.jpg'
     filename = argv[0] if len(argv) > 0 else default_file
     image = cv2.imread(filename)
     cv2.imshow('chessboard', image)

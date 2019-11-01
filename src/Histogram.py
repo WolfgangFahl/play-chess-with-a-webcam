@@ -8,71 +8,88 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.gridspec as gridspec
 
 class Histogram:
     debug=True
     
     # construct me 
-    def __init__(self,image,title):
-        
-        self.image=image
+    def __init__(self,title,rows=1,turned=False,pages=1): 
         self.title=title
-        self.thumbNail = cv2.resize(image, (512, 512))
-        self.rows=8
-        self.cols=1
-        self.plt=None
+        self.rows=rows*2
+        self.row=0
+        self.cols=5
+        self.plt=plt
+        self.setUpSubPlots(turned,pages)
+     
+    def setUpSubPlots(self,turned,pages):
+        self.fig,self.axes=plt.subplots(nrows=self.rows,ncols=self.cols,figsize=self.A4(turned,pages))
+        cols=['image','','h/b','s/g','v/r']
+        rowdict={}
+        for row in range(self.rows):
+            if row%2==0:             
+                rowdict[row]=str(row//2)
+            else:
+                rowdict[row]='' 
+        rows=list(rowdict)        
+        for ax, col in zip(self.axes[0], cols):
+            ax.set_title(col)
+        for ax, row in zip(self.axes[:,0], rows):
+            ax.set_ylabel(row, rotation=0, size='large')    
+        plt.subplots_adjust(hspace=0.5)
+        self.gs = gridspec.GridSpec(self.rows,self.cols)    
         
-    def A4(self):
+    def A4(self,turned=False,pages=1):
         # A4 canvas
-        fig_width_cm = 21                                # A4 page
+        fig_width_cm =21                                 # A4 page
         fig_height_cm = 29.7
-        inches_per_cm = 1 / 2.54                         # Convert cm to inches
-        fig_width = fig_width_cm * inches_per_cm         # width in inches
-        fig_height = fig_height_cm * inches_per_cm       # height in inches
+        if turned:
+            fw=fig_height_cm
+            fh=fig_width_cm
+            fig_height_cm=fh
+            fig_width_cm=fw
+            
+        inches_per_cm = 1 / 2.54                          # Convert cm to inches
+        fig_width = fig_width_cm * inches_per_cm          # width in inches
+        fig_height = fig_height_cm * inches_per_cm*pages  # height in inches
         fig_size = [fig_width, fig_height]   
         return fig_size
             
-    def plotChannel(self,img, channel, plotNum, title):
+    def plotChannel(self,img, channel, row,col):
         cImg = img[:, :, channel]
-        plt.subplot(self.rows, self.cols, plotNum)
+        plt.subplot(self.gs[row,col])
         plt.hist(np.ndarray.flatten(cImg), bins=256)
-        plt.title(title)
         
-    def plot3Channels(self,img,plotNum,c1title,c2title,c3title):        
-        self.plotChannel(img, 0, plotNum+1, c1title)
-        plt.subplots_adjust(hspace=0.5)
-        self.plotChannel(img, 1, plotNum+2, c2title)
-        self.plotChannel(img, 2, plotNum+3, c3title)
+    def plot3Channels(self,img,row,startCol):        
+        self.plotChannel(img, 0, row,startCol+0)
+        self.plotChannel(img, 1, row,startCol+1)
+        self.plotChannel(img, 2, row,startCol+2)
                 
-    def createPlot(self):
-        # only create once
-        if self.plt is not None:
-            return
-        hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
-        plt.figure(figsize=self.A4())
-        localTitle='Histogram for %s' % (self.title)
+    def addPlot(self,image,localTitle):
+        thumbNail = cv2.resize(image, (512, 512))
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         plt.suptitle(localTitle, fontsize=16)
         # in the first cell draws the target image
-        plt.subplot(self.rows, self.cols, 1)
-        plt.imshow(self.thumbNail)
+        plt.subplot(self.gs[self.row:self.row+1,0:1])
+        plt.imshow(thumbNail)
         plt.title('image')
-        self.plot3Channels(hsv,1,'Hue','Saturation','Luminosity Value')
-        self.plot3Channels(self.image,4,'Blue','Green','Red')
-        self.fig = plt.figure(1)
-        self.fig.canvas.set_window_title(localTitle)
-        self.plt=plt
+       
+        self.plot3Channels(hsv  ,self.row  ,2)
+        self.plot3Channels(image,self.row+1,2)
+        self.row=self.row+2
         
     def close(self):    
-        self.plt.close(self.fig)
+        if self.plt is not None and self.fig is not None:
+            plt.close(self.fig)
      
     def show(self,block=False):  
-        self.createPlot() 
-        self.plt.show(block=block)
+        canvasfig = plt.figure(1)
+        canvasfig.canvas.set_window_title(self.title)
+        plt.show(block=block)
      
-    def save(self,path,withShow=False,block=False,keyWait=500):
-        self.createPlot()
+    def save(self,path,block=False,keyWait=5):
+        self.fig.tight_layout()
         self.show(block=block)    
         self.plt.savefig(path)
+        cv2.waitKey(keyWait)
         self.close()
-        
-            

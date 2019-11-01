@@ -23,12 +23,18 @@ def test_Histogram():
         ([483,132],[1338,124],[1541, 936],[255, 953]),
         ([  8,  1],[ 813,  1],[ 817, 812],[  3, 809])
         ]
-    rotations=[0,0,0,0,270,270,270,0,0,0,0,0]
-    for index in range(1,11):
+    rotations=[0,0,0,0,270,270,270,0,0,0,0]
+    rlen=len(rotations)
+    wlen=len(warpPointList)
+    if rlen != wlen:
+        raise Exception("%d rotations for %d warpPoints" %(rlen,wlen))
+    rlen=4
+    histogram=Histogram("Chessboard Colors",rlen,turned=True,pages=2)
+    for index in range(1,rlen+1):
         start = timer()
         warpPoints=warpPointList[index-1]
         webApp.warp = Warp(list(warpPoints))
-        webApp.warp.rotation=rotations[index]
+        webApp.warp.rotation=rotations[index-1]
         image,video = testEnv.getImageWithVideo(index)
         webApp.video=video
         bgr = webApp.warpAndRotate(image)
@@ -36,8 +42,8 @@ def test_Histogram():
         end = timer()
         print("%.3fs for loading image %d: %4d x %4d" % ((end-start),index,width,height))
         title="image%03d" % (index)
-        histogram=Histogram(bgr,title)
-        histogram.save('/tmp/'+title)
+        histogram.addPlot(bgr,title)
+    histogram.save('/tmp/chessboardColors')
 
 test_Histogram()
     

@@ -79,7 +79,7 @@ def four_point_transform(image, pts):
 
 
 def main(argv):
-    default_file = '../testMedia/chessBoard010.jpg'
+    default_file = '../../testMedia/chessBoard010.jpg'
     filename = argv[0] if len(argv) > 0 else default_file
     image = cv2.imread(filename)
     # load the image, clone it, and initialize the 4 points
