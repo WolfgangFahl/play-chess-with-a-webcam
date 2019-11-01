@@ -92,6 +92,7 @@ class Histogram(object):
                 for pageImageIndex in range(0,self.imagesPerPage):
                     if imageIndex<len(self.images):
                         image,imageTitle=self.images[imageIndex]
+                        # see https://matplotlib.org/3.1.1/tutorials/intermediate/tight_layout_guide.html#sphx-glr-tutorials-intermediate-tight-layout-guide-py 
                         axImage=plt.subplot2grid((rows,cols),(pageImageIndex*2,0),colspan=2,rowspan=2)
                         self.plotImage(axImage,image,imageTitle ,thumbNailSize)
                         self.plotHistogramm(image, axarr,pageImageIndex*2,2)

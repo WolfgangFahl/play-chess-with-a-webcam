@@ -3,9 +3,9 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from StateDetector import StateDetector
 from StateDetector import  CannotBuildStateException
-from Environment import Environment
+from Environment import TestEnvironment
 
-testEnv = Environment()
+testEnv = TestEnvironment()
 
 
 # test the StateDetector

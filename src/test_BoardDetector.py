@@ -8,10 +8,10 @@ from Video import Video
 from timeit import default_timer as timer
 from WebApp import WebApp
 from RunningStats import ColorStats
-from Environment import Environment
+from Environment import TestEnvironment
 import cv2
 
-testEnv = Environment()
+testEnv = TestEnvironment()
 frameDebug = True
 
 
@@ -101,9 +101,13 @@ def test_FieldStates():
     for fieldState,fields in sortedFields.items():
         print ("%s: %2d" % (fieldState,len(fields)))
         assert counts[fieldState]==len(fields)
+
+def test_MaskFieldStates():
+    pass    
     
 
 test_ColorDistance()
 test_FieldStates()
+test_MaskFieldStates()
 test_BoardFieldColorDetector()
 test_FieldDetector()
