@@ -61,15 +61,15 @@ class Histogram(object):
         ax.set_yticklabels([])    
         return ax
           
-    def plotHistogramm(self,image,axarr,rowIndex):  
+    def plotHistogramm(self,image,axarr,rowIndex,colIndex):  
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV) 
         rgb=image
-        prevAx1=self.plotChannel(hsv,axarr[rowIndex+0,1], 0) # hue
-        prevAx2=self.plotChannel(hsv,axarr[rowIndex+0,2], 1) # saturation
-        prevAx3=self.plotChannel(hsv,axarr[rowIndex+0,3], 2) # value
-        self.plotChannel(rgb,axarr[rowIndex+1,1], 0,prevAx1) # red
-        self.plotChannel(rgb,axarr[rowIndex+1,2], 1,prevAx2) # green
-        self.plotChannel(rgb,axarr[rowIndex+1,3], 2,prevAx3) # blue
+        prevAx1=self.plotChannel(hsv,axarr[rowIndex+0,colIndex+0], 0) # hue
+        prevAx2=self.plotChannel(hsv,axarr[rowIndex+0,colIndex+1], 1) # saturation
+        prevAx3=self.plotChannel(hsv,axarr[rowIndex+0,colIndex+2], 2) # value
+        self.plotChannel(rgb,axarr[rowIndex+1,colIndex+0], 0,prevAx1) # red
+        self.plotChannel(rgb,axarr[rowIndex+1,colIndex+1], 1,prevAx2) # green
+        self.plotChannel(rgb,axarr[rowIndex+1,colIndex+2], 2,prevAx3) # blue
         
           
     def pixel(self,fig,inch):
@@ -82,20 +82,19 @@ class Histogram(object):
         with PdfPages(path) as pdf:
             self.pages=len(self.images)//self.imagesPerPage
             for page in range(self.pages+1):
-                colTitles=['image','hue/blue','saturation/green','value/red']
+                colTitles=['image','','hue/blue','saturation/green','value/red']
                 cols=len(colTitles)
-                fig, axarr = plt.subplots(self.imagesPerPage*2,cols, figsize=self.pagesize)
+                rows=self.imagesPerPage*2
+                fig, axarr = plt.subplots(rows,cols, figsize=self.pagesize)
                 for ax, colTitle in zip(axarr[0], colTitles):
                     ax.set_title(colTitle)
-                thumbNailSize=256 #self.pixel(fig,self.pageheight)
+                thumbNailSize=512 #self.pixel(fig,self.pageheight)
                 for pageImageIndex in range(0,self.imagesPerPage):
                     if imageIndex<len(self.images):
                         image,imageTitle=self.images[imageIndex]
-                        ax0=axarr[pageImageIndex*2  ,0]
-                        ax1=axarr[pageImageIndex*2+1,0]
-                        self.plotImage(ax0,image,imageTitle ,thumbNailSize)
-                        self.plotHistogramm(image, axarr,pageImageIndex*2)
-                        ax1.remove()
+                        axImage=plt.subplot2grid((rows,cols),(pageImageIndex*2,0),colspan=2,rowspan=2)
+                        self.plotImage(axImage,image,imageTitle ,thumbNailSize)
+                        self.plotHistogramm(image, axarr,pageImageIndex*2,2)
                     else:
                         for col in range(cols):
                             axarr[pageImageIndex*2  ,col].remove()
