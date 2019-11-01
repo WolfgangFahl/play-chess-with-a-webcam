@@ -179,6 +179,22 @@ class WebChessCamArgs:
                                  type=int,
                                  default=0,
                                  help="rotation of chessboard")
+        
+        self.parser.add_argument('--speedup',
+                                 type=int,
+                                 default=1,
+                                 help="detection speedup - higher speedup means less precision")
+        
+        self.parser.add_argument('--distance',
+                                 type=int,
+                                 default=5,
+                                 help="detection pixel distance - number of pixels analyzed i square of this")
+        
+        self.parser.add_argument('--step',
+                                 type=int,
+                                 default=3,
+                                 help="detection pixel steps - distance*step is the grid size being analyzed")
+        
 
         self.parser.add_argument('--warp',
                                  default="[]",

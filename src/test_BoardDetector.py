@@ -47,23 +47,19 @@ def test_BoardFieldColorDetector():
 
 def test_FieldDetector():
     video = Video()
-    webApp = WebApp(WebChessCamArgs(["--debug"]).args)
+    webApp = WebApp(WebChessCamArgs(["--debug","--speedup=4"]).args)
     frames = None
     for boardIndex in range(2):
-        board = Board()
         BoardDetector.debug = True
-        boardDetector = BoardDetector(board, video)
-        distance = 5
-        step = 3
         # setup webApp params to reuse warp method
         webApp.video = video
         if boardIndex == 1:
             video.open(testEnv.testMedia + 'emptyBoard001.avi')
-            board.chessboard.clear_board()
-            frames = 52
+            webApp.board.chessboard.clear_board()
+            frames = 16
         if boardIndex == 0:
             video.open(testEnv.testMedia + 'scholarsmate.avi')
-            frames = 30
+            frames = 20
             # @TODO speed up and test all frames again
             # frames=334
         webApp.warp.rotation = 270
@@ -80,9 +76,8 @@ def test_FieldDetector():
             # bgr = cv2.cvtColor(jpgImage, cv2.COLOR_RGB2BGR)
             height, width = bgr.shape[:2]
             # print ("%d: %d x %d" % (frame,width,height))
-            bgr = webApp.warpAndRotate(bgr)
             start = timer()
-            bgr = boardDetector.analyze(bgr, frame, distance, step)
+            bgr = webApp.warpAndRotate(bgr)
             image = cv2.resize(bgr, (int(width * 1.5), int(height * 1.5)))
             video.showImage(image, "BoardDetector", keyWait=200)
             end = timer()
@@ -95,8 +90,20 @@ def test_ColorDistance():
     cStats.push(128, 128, 128)
     colorKey = cStats.colorKey()
     assert 49152 == colorKey
-
+    
+def test_FieldStates():    
+    video=Video()
+    board = Board()
+    BoardDetector.debug = True
+    boardDetector = BoardDetector(board, video)
+    sortedFields=boardDetector.sortByFieldState();
+    counts = board.fieldStateCounts()    
+    for fieldState,fields in sortedFields.items():
+        print ("%s: %2d" % (fieldState,len(fields)))
+        assert counts[fieldState]==len(fields)
+    
 
 test_ColorDistance()
+test_FieldStates()
 test_BoardFieldColorDetector()
 test_FieldDetector()

@@ -122,7 +122,7 @@ class Field:
         distance = self.distance
         step = self.step
         fieldState = self.getFieldState()
-        detectColor = Field.green if fieldState == detectedFieldState else Field.red
+        detectColor = Field.black #Field.green if fieldState == detectedFieldState else Field.red
         fieldColor = self.getColor()
         x1, y1, x2, y2 = pcx - distance * step, pcy - distance * step, pcx + distance * step, pcy + distance * step
         # outer thickness for displaying detect state: green ok red - there is an issue
@@ -135,3 +135,7 @@ class Field:
         if piece is None:
             emptyFieldColor = Field.white if fieldState == FieldState.WHITE_EMPTY else Field.black
             video.drawRectangle(image, (x1 + it, y1 + it), (x2 - it, y2 - it), thickness=-1, color=emptyFieldColor)
+        else:
+            symbol=piece.symbol()#piece.unicode_symbol()
+            video.drawCenteredText(image,symbol,pcx,pcy)
+                

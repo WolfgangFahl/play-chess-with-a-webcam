@@ -12,10 +12,12 @@ class BoardDetector:
     frameDebug = False
 
     # construct me from a board and video
-    def __init__(self, board, video):
+    def __init__(self, board, video,speedup=1):
         self.board = board
         self.video = video
+        self.speedup=speedup
         self.hsv = None
+        self.previous=None
 
     def analyzeColors(self, image, distance=3, step=1):
         # guess where the centers of the fields are
@@ -32,42 +34,41 @@ class BoardDetector:
                 field.pcx = pcx
                 field.pcy = pcy
                 field.analyzeColor(image, self.hsv, distance, step)
-
+                
+    def sortByFieldState(self):            
+        # get a dict of fields sorted by field state
+        sortedByFieldState = sorted(self.board.fieldsByAn.values(), key=lambda field:field.getFieldState())
+        counts = self.board.fieldStateCounts()
+        sortedFields={}
+        fromIndex=0
+        for fieldState in FieldState:
+            toIndex=fromIndex+counts[fieldState]
+            sortedFields[fieldState]=sortedByFieldState[fromIndex:toIndex]
+            fromIndex=toIndex
+        return sortedFields
+        
     # analyze the given image
     def analyze(self, image, frameIndex, distance=3, step=1):
-        self.analyzeColors(image, distance, step)
-        # sort by color colorKey,luminance or rgbColorKey
-        sortedFields = sorted(self.board.fieldsByAn.values(), key=lambda field:field.rgbColorKey)
+        if (frameIndex % self.speedup==0):
+            self.analyzeColors(image, distance, step)
+            sortedFields=self.sortByFieldState()
 
-        if BoardDetector.debug:
-            overlay = image.copy()
-            counts = self.board.fieldStateCounts()
-
-            for index, field in enumerate(sortedFields):
-                l = field.luminance
-                if BoardDetector.frameDebug:
-                    print ("frame %5d %2d: %s luminance: %3.0f ± %3.0f (%d) rgbColorKey: %3.0f colorKey: %.0f" % (frameIndex, index, field.an, l.mean(), l.standard_deviation(), l.n, field.rgbColorKey, field.colorKey))
-                limit1 = counts[FieldState.BLACK_BLACK]
-                limit2 = limit1 + counts[FieldState.BLACK_WHITE]
-                limit3 = limit2 + counts[FieldState.BLACK_EMPTY]
-                limit4 = limit3 + counts[FieldState.WHITE_BLACK]
-                limit5 = limit4 + counts[FieldState.WHITE_BLACK]
-                fieldState = None
-                if index < limit1:
-                    fieldState = FieldState.BLACK_BLACK
-                elif index < limit2:
-                    fieldState = FieldState.BLACK_WHITE
-                elif index < limit3:
-                    fieldState = FieldState.BLACK_EMPTY
-                elif index < limit4:
-                    fieldState = FieldState.WHITE_BLACK
-                elif index < limit5:
-                    fieldState = FieldState.WHITE_WHITE
-                else:
-                    fieldState = FieldState.WHITE_EMPTY
-                field.drawDebug(self.video, overlay, fieldState)
-            alpha = 0.6  # Transparency factor.
-            # Following line overlays transparent rectangle over the image
-            image_new = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
-            image = image_new
+            if BoardDetector.debug:
+                overlay = image.copy()
+    
+                for fieldState,fields in sortedFields.items():
+                    for field in fields:
+                        l = field.luminance
+                        if BoardDetector.frameDebug:
+                            print ("frame %5d: %s luminance: %3.0f ± %3.0f (%d) rgbColorKey: %3.0f colorKey: %.0f" % (frameIndex, field.an, l.mean(), l.standard_deviation(), l.n, field.rgbColorKey, field.colorKey))
+                        field.drawDebug(self.video, overlay, fieldState)
+                alpha = 0.6  # Transparency factor.
+                # Following line overlays transparent rectangle over the image
+                image_new = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
+                image = image_new
+                self.previous=image
+        else:
+            if self.previous is not None:
+                image=self.previous
+                
         return image

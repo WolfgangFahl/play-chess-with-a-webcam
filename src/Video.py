@@ -11,6 +11,7 @@ import argparse
 from threading import Thread
 import os
 import sys
+from cv2 import line
 
 class Video:
     """ Video handling e.g. recording/writing """
@@ -338,9 +339,19 @@ class Video:
                 now, font, fontScale * fontFactor, lineThickness)[0]
             # https://stackoverflow.com/a/34273603/1497139
             frame = frame.copy()
-            cv2.putText(frame, now, (width - int(text_width * 1.1), int(text_height * 1.2)),
+            self.drawText(frame, now, (width - int(text_width * 1.1), int(text_height * 1.2)),
                         font, fontScale * fontFactor, fontBGRColor, lineThickness)
         return frame
+    
+    def drawCenteredText(self,frame,text,x,y,fontBGRColor=(0, 255, 0), fontScale=1.0, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=1):
+        height, width = frame.shape[:2]
+        fontFactor=width/960
+        text_width, text_height = cv2.getTextSize(
+                text, font, fontScale * fontFactor, lineThickness)[0]
+        self.drawText(frame,text,(x-text_width//2,y+text_height//2),font,fontScale*fontFactor,fontBGRColor,lineThickness)       
+    
+    def drawText(self,frame,text,bottomLeftCornerOfText, font, fontScale,fontBGRColor,lineThickness):
+        cv2.putText(frame,text, bottomLeftCornerOfText, font, fontScale,fontBGRColor,lineThickness)
 
 
 # see https://www.pyimagesearch.com/2017/02/06/faster-video-file-fps-with-cv2-videocapture-and-opencv/

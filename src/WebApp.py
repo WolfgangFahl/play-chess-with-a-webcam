@@ -22,6 +22,7 @@ class WebApp:
         self.video = Video()
         self.videoStream = None
         self.board = Board()
+        self.boardDetector = BoardDetector(self.board, self.video,args.speedup)
         self.env = Environment()
         if args.game is None:
             self.webCamGame = self.createNewCame()
@@ -224,11 +225,7 @@ class WebApp:
             warped = self.video.rotate(warped, self.warp.rotation)
         # analyze the board if warping is active
         if self.warp.warping:
-            boardDetector = BoardDetector(self.board, self.video)
-            # @TODO make configurable via settings
-            distance = 5
-            step = 3
-            warped = boardDetector.analyze(warped, self.video.frames, distance, step)
+            warped = self.boardDetector.analyze(warped, self.video.frames, self.args.distance, self.args.step)
         if WebApp.debug:
             warped = self.video.addTimeStamp(warped)
         return warped
