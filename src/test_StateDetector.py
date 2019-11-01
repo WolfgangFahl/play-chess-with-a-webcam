@@ -3,9 +3,9 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from StateDetector import StateDetector
 from StateDetector import  CannotBuildStateException
-from Environment import TestEnvironment
+from Environment4Test import Environment4Test
 
-testEnv = TestEnvironment()
+testEnv = Environment4Test()
 
 
 # test the StateDetector
@@ -19,5 +19,5 @@ def test_StateDetector():
             print(cbse)
             pass
 
-        
+
 test_StateDetector()

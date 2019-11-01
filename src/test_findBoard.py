@@ -4,10 +4,9 @@
 from Video import Video
 from BoardFinder import BoardFinder
 from mathUtils import getIndexRange
-from Environment import TestEnvironment
+from Environment4Test import Environment4Test
 
-testEnv = TestEnvironment()
-
+testEnv = Environment4Test()
 
 # test finding a chess board
 def test_findBoard():

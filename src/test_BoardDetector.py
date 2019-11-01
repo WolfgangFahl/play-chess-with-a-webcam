@@ -8,10 +8,10 @@ from Video import Video
 from timeit import default_timer as timer
 from WebApp import WebApp
 from RunningStats import ColorStats
-from Environment import TestEnvironment
+from Environment4Test import Environment4Test
 import cv2
 
-testEnv = TestEnvironment()
+testEnv = Environment4Test()
 frameDebug = True
 
 
@@ -90,21 +90,25 @@ def test_ColorDistance():
     cStats.push(128, 128, 128)
     colorKey = cStats.colorKey()
     assert 49152 == colorKey
-    
-def test_FieldStates():    
+
+def test_FieldStates():
     video=Video()
     board = Board()
     BoardDetector.debug = True
     boardDetector = BoardDetector(board, video)
     sortedFields=boardDetector.sortByFieldState();
-    counts = board.fieldStateCounts()    
+    counts = board.fieldStateCounts()
     for fieldState,fields in sortedFields.items():
         print ("%s: %2d" % (fieldState,len(fields)))
         assert counts[fieldState]==len(fields)
 
 def test_MaskFieldStates():
-    pass    
-    
+    webApp = WebApp(WebChessCamArgs([]).args)
+    for imageInfo in testEnv.imageInfos:
+        bgr=testEnv.loadFromImageInfo(webApp,imageInfo)
+        rgba=cv2.cvtColor(bgr,cv2.COLOR_BGR2RGBA)
+        print (rgba.shape)
+
 
 test_ColorDistance()
 test_FieldStates()

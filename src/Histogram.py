@@ -7,7 +7,6 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
-import matplotlib.gridspec as gridspec
 from matplotlib.backends.backend_pdf import PdfPages
 
 class Histogram(object):
@@ -45,7 +44,6 @@ class Histogram(object):
         
     def plotImage(self,ax,image,imageTitle,thumbNailSize):
         thumbNail = cv2.resize(image, (thumbNailSize,thumbNailSize))
-        th,tw=thumbNail.shape[:2]
         ax.imshow(thumbNail)
         ax.title.set_text(imageTitle)
         ax.axis("off")
@@ -86,6 +84,7 @@ class Histogram(object):
                 cols=len(colTitles)
                 rows=self.imagesPerPage*2
                 fig, axarr = plt.subplots(rows,cols, figsize=self.pagesize)
+                if fig is None: pass
                 for ax, colTitle in zip(axarr[0], colTitles):
                     ax.set_title(colTitle)
                 thumbNailSize=512 #self.pixel(fig,self.pageheight)
@@ -101,6 +100,7 @@ class Histogram(object):
                             axarr[pageImageIndex*2  ,col].remove()
                             axarr[pageImageIndex*2+1,col].remove()  
                     imageIndex=imageIndex+1
+                plt.title("page %d" %(page))    
                 plt.tight_layout()    
                 pdf.savefig()
                 plt.close()
