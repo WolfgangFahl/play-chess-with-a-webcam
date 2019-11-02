@@ -19,21 +19,24 @@ class BoardDetector:
         self.hsv = None
         self.previous=None
            
-
-    def analyzeColors(self, image, distance=3, step=1):
-        # guess where the centers of the fields are
-        # height
+    def devideInFields(self,image):
+        # interpolate the centers of the 8x8 fields from a squared image
         height, width = image.shape[:2]
         fieldHeight = height / Field.rows
-        fieldWidth = width / Field.cols
-        self.hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        fieldWidth = width / Field.cols         
         for row in range(Field.rows):
             for col in range (Field.cols):
+                field = self.board.fieldAt(row, col)
                 pcx = int(fieldWidth * (2 * col + 1) // 2)
                 pcy = int(fieldHeight * (2 * row + 1) // 2)
-                field = self.board.fieldAt(row, col)
                 field.pcx = pcx
                 field.pcy = pcy
+                        
+    def analyzeColors(self, image, distance=3, step=1):
+        self.hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        for row in range(Field.rows):
+            for col in range (Field.cols):     
+                field = self.board.fieldAt(row, col)
                 field.analyzeColor(image, self.hsv, distance, step)
                 
     def sortByFieldState(self):            
@@ -51,6 +54,7 @@ class BoardDetector:
     # analyze the given image
     def analyze(self, image, frameIndex, distance=3, step=1):
         if (frameIndex % self.speedup==0):
+            self.devideInFields(image)
             self.analyzeColors(image, distance, step)
             sortedFields=self.sortByFieldState()
 
