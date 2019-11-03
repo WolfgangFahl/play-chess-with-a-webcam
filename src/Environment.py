@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from Video import Video
 from pathlib import Path
 
 class Environment:

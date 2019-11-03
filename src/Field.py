@@ -43,7 +43,6 @@ class Field:
     # construct me
     def __init__(self, board, row, col):
         self.board = board
-        self.chessboard = board.chessboard
         # row and column indices from 0-7
         self.row = row
         self.col = col
@@ -68,7 +67,11 @@ class Field:
         self.colorKey = None
 
     def getPiece(self):
-        piece = self.chessboard.piece_at(self.square)
+        if self.board  is None:
+            raise Exception("Board not set for %s" % (self.an))
+        if self.board.chessboard  is None:
+            raise Exception("board.chessboard not set for %s" % (self.an))
+        piece = self.board.chessboard.piece_at(self.square)
         return piece
 
     def getFieldState(self):

@@ -91,17 +91,21 @@ def test_ColorDistance():
     cStats.push(128, 128, 128)
     colorKey = cStats.colorKey()
     assert 49152 == colorKey
+    
+def checkFieldStates(boardDetector,board):
+    sortedFields=boardDetector.sortByFieldState();
+    counts = board.fieldStateCounts()
+    for fieldState,fields in sortedFields.items():
+        print ("%s: %2d" % (fieldState,len(fields)))
+        assert counts[fieldState]==len(fields)
+    return sortedFields    
 
 def test_FieldStates():
     video=Video()
     board = Board()
     BoardDetector.debug = True
     boardDetector = BoardDetector(board, video)
-    sortedFields=boardDetector.sortByFieldState();
-    counts = board.fieldStateCounts()
-    for fieldState,fields in sortedFields.items():
-        print ("%s: %2d" % (fieldState,len(fields)))
-        assert counts[fieldState]==len(fields)
+    checkFieldStates(boardDetector, board)
 
 def test_MaskFieldStates():
     video=Video()
@@ -109,19 +113,20 @@ def test_MaskFieldStates():
     boardDetector=webApp.boardDetector
     for imageInfo in testEnv.imageInfos:
         bgr=testEnv.loadFromImageInfo(webApp,imageInfo)
-        rgba=cv2.cvtColor(bgr,cv2.COLOR_BGR2RGBA)
+        rgba=cv2.cvtColor(bgr,cv2.COLOR_RGB2RGBA)
         waitTime=1000
-        sortedFields=boardDetector.sortByFieldState();
+        board=webApp.board
+        sortedFields=checkFieldStates(boardDetector, board)
         whiteFields=sortedFields[FieldState.WHITE_EMPTY]
-        print ("%d white fields"  % len(whiteFields))
+        print ("%d white fields for %s"  % (len(whiteFields),board.fen()))
         for field in whiteFields:
             print("%s: %3d,%3d" % (field.an,field.pcx,field.pcy))
         video.showImage(rgba, imageInfo['title'],keyWait=waitTime)
         video.close()
 
 
-#test_ColorDistance()
-#test_FieldStates()
+test_ColorDistance()
+test_FieldStates()
 test_MaskFieldStates()
-#test_BoardFieldColorDetector()
-#test_FieldDetector()
+test_BoardFieldColorDetector()
+test_FieldDetector()
