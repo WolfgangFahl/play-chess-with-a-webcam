@@ -38,7 +38,15 @@ openUrl() {
     status=$(curl -Is $l_url | head -1)
     echo "waiting $l_count/$l_loops for $l_url: $status"
     case $status in
-      *200*OK*) open $l_url
+      *200*OK*) 
+	l_open="open"
+	os=$(uname)
+	case $os in
+	  Linux*)
+            l_open="xdg-open"  
+	    ;;
+	esac
+	$l_open $l_url
         l_done="1" ;;
     esac
   done
