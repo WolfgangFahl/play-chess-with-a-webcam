@@ -76,7 +76,7 @@ download() {
   local l_url="$1"
   local l_output="$2"
   local l_status=$(curl -Is "$l_url" | head -n 1 | tr -d '\r')
-  echo $l_status | grep "200 OK" > /dev/null
+  echo $l_status | grep "200" > /dev/null
   if [ $? -ne 0 ]
   then
     color_msg $red "$l_status: $l_url"
