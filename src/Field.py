@@ -17,15 +17,39 @@ class FieldState(IntEnum):
     WHITE_BLACK = 2
     BLACK_EMPTY = 3
     BLACK_WHITE = 4
-    BLACK_BLACK = 5
+    BLACK_BLACK = 5    
     
+class Grid:
+    """ Grid Info in the region of interest """
+    def __init__(self,roiIndex,rois,xsteps,ysteps):
+        self.roiIndex=roiIndex
+        self.rois=rois
+        self.xsteps=xsteps
+        self.ysteps=ysteps  
+        
+    @staticmethod
+    def split(pStep,parts):
+        return (pStep+1)/(parts+1)    
+    
+    def xstep(self,pXStep):
+        return Grid.split(pXStep,self.xsteps)
+    
+    def ystep(self,pYStep):
+        return Grid.split(pYStep,self.ysteps)     
+    
+    def d(self):
+        return 1/self.rois     
+    
+    def dofs(self):
+        return self.d()*self.roiIndex
 
 class FieldROI:
     """ a region of interest within the square image area of pixels represented by some pixels"""
-    # construct me from a field and a horizontal and vertical generator
-    def __init__(self, field, hgen,vgen):
-        self.hgen=hgen
-        self.vgen=vgen
+    # construct me from a field, a generator for relative pixels and the number of x and y steps to generate from
+    def __init__(self, field, grid,relPixelLambda):  
+        self.relPixelLambda=relPixelLambda
+        self.grid=grid
+        self.pixels=grid.xsteps*grid.ysteps
         self.field=field
         self.colorStats = ColorStats()
         
@@ -33,24 +57,21 @@ class FieldROI:
     def analyze(self,image):
         for pixel in self.pixelList:
             self.colorStats.push(image[pixel[0],pixel[1]])
-    
-    @staticmethod
-    def split(parts):
-        partsLen=parts+1
-        for i in range(1,partsLen):
-            yield(1/partsLen*i)  
      
     def pixelList(self):
-        """ create a pixel list by using the relative positions from the horizontal and vertical generators"""
-        f=self.field
-        hxlist=list(self.hgen)
-        vxlist=list(self.vgen)
-        self.pixels=len(hxlist)*len(vxlist)
-        for h in hxlist:
-            for v in vxlist:
-                # interpolate the pixel
-                pixel=(int(f.pcx+f.width*(h-0.5)+0.5),int(f.pcy+f.height*(v-0.5)+0.5))  
-                yield pixel      
+        """ generate a pixel list by using the generated relative position from """
+        for xstep in range(self.grid.xsteps):
+            for ystep in range(self.grid.ysteps):
+                rx,ry=self.relPixelLambda(self.grid,xstep,ystep)
+                pixel=self.interPolate(rx, ry)
+                yield pixel
+                
+    def interPolate(self,rx,ry):
+        """ interpolate the given relative coordinate """         
+        f=self.field   
+        # interpolate the pixel
+        pixel=(int(f.pcx+f.width*(rx-0.5)+0.5),int(f.pcy+f.height*(ry-0.5)+0.5))  
+        return pixel      
             
 
 class Field:
