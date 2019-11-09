@@ -19,7 +19,7 @@ class BoardDetector:
         self.hsv = None
         self.previous=None
            
-    def devideInFields(self,image):
+    def divideInFields(self,image):
         # interpolate the centers of the 8x8 fields from a squared image
         height, width = image.shape[:2]
         fieldHeight = height / Field.rows
@@ -54,7 +54,7 @@ class BoardDetector:
     # analyze the given image
     def analyze(self, image, frameIndex, distance=3, step=1):
         if (frameIndex % self.speedup==0):
-            self.devideInFields(image)
+            self.divideInFields(image)
             self.analyzeColors(image, distance, step)
             sortedFields=self.sortByFieldState()
 

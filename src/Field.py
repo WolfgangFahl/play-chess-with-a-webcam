@@ -94,7 +94,7 @@ class Field:
         # this can't happen
         return None
 
-    # analyze the color arround my center pixel to the given
+    # analyze the color around my center pixel to the given
     # distance
     def analyzeColor(self, image, hsv, distance=1, step=1):
         self.distance = distance

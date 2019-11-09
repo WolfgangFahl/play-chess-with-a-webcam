@@ -11,7 +11,6 @@ import argparse
 from threading import Thread
 import os
 import sys
-from cv2 import line
 
 class Video:
     """ Video handling e.g. recording/writing """
