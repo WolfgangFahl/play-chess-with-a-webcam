@@ -21,11 +21,12 @@ class FieldState(IntEnum):
     
 class Grid:
     """ Grid Info in the region of interest """
-    def __init__(self,roiIndex,rois,xsteps,ysteps):
+    def __init__(self,roiIndex,rois,xsteps,ysteps,safety=0):
         self.roiIndex=roiIndex
         self.rois=rois
         self.xsteps=xsteps
         self.ysteps=ysteps  
+        self.safety=safety
         
     @staticmethod
     def split(pStep,parts):
@@ -38,10 +39,10 @@ class Grid:
         return Grid.split(pYStep,self.ysteps)     
     
     def d(self):
-        return 1/self.rois     
+        return 1/(self.rois+self.safety*2)     
     
     def dofs(self):
-        return self.d()*self.roiIndex
+        return self.d()*(self.roiIndex+self.safety)
 
 class FieldROI:
     """ a region of interest within the square image area of pixels represented by some pixels"""

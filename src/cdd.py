@@ -15,13 +15,14 @@ class CDDA:
     """ Color Distribution Analysis """
     windowName='Color Distribution'
     
-    def __init__(self,video,image, roiLambda,xsteps=3, ysteps=10,rois=7):
+    def __init__(self,video,image, roiLambda,xsteps=3, ysteps=10,rois=7,safety=0):
         self.video=video
         self.image=image       
         self.board=Board()
         self.roiLambda=roiLambda
         self.xsteps=xsteps
         self.ysteps=ysteps
+        self.safety=safety
         self.rois=rois
         self.boardDetector=BoardDetector(self.board,video)
         self.boardDetector.divideInFields(image)
@@ -45,7 +46,7 @@ class CDDA:
         
     def showField(self,field,image):
         for roiIndex in range(self.rois):
-            grid=Grid(roiIndex,self.rois,self.xsteps,self.ysteps)
+            grid=Grid(roiIndex,self.rois,self.xsteps,self.ysteps,safety=self.safety)
             hroi=FieldROI(field,grid,self.roiLambda)
             self.showROI(hroi,image)
             
@@ -63,7 +64,8 @@ class CDDA:
         
 lambdas=[
     lambda grid,xstep,ystep:(grid.dofs()+grid.d()*grid.xstep(xstep),grid.ystep(ystep)),
-    lambda grid,xstep,ystep:(grid.xstep(xstep),grid.dofs()+grid.d()*grid.ystep(ystep))
+    lambda grid,xstep,ystep:(grid.xstep(xstep),grid.dofs()+grid.d()*grid.ystep(ystep)),
+    lambda grid,xstep,ystep:(grid.xstep(xstep),grid.ystep(ystep))
 ]        
 
 env=Environment()
@@ -92,7 +94,12 @@ def showLambda(roiLambdaIndex):
     cdda.roiLambda=lambdas[roiLambdaIndex]
     cdda.show()    
     
- 
+def showSafety(safety):
+    cdda.safety=safety
+    cdda.show()    
+
+safety=0
+cdda=CDDA(video,src,lambdas[0],safety=safety)    
 source_window=args.input
 # Showing the result
 cv.namedWindow(CDDA.windowName)
@@ -105,14 +112,11 @@ rois=7
 maxRois=20
 lambdaIndex=0
 
-
-cdda=CDDA(video,src,lambdas[0])
 cv.createTrackbar('xsteps: ', source_window, xSteps, maxXSteps, showXSteps)
 cv.createTrackbar('ysteps: ', source_window, ySteps, maxYSteps, showYSteps)
 cv.createTrackbar('rois: '  , source_window, rois,   maxRois, showROIs)
+cv.createTrackbar('safety'  , source_window, safety, 3,showSafety)
 cv.createTrackbar('lambda'  , source_window, lambdaIndex, len(lambdas)-1,showLambda)
 cv.imshow(source_window, src)
 showROIs(rois)
-cv.waitKey()    
-    
-    
+cv.waitKey()
