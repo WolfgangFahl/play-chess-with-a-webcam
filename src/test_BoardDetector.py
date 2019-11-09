@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from webchesscam import  WebChessCamArgs
+from webchesscam import WebChessCamArgs
 from BoardDetector import BoardDetector
 from Board import Board
 from Field import FieldState
@@ -14,7 +14,6 @@ import cv2
 
 testEnv = Environment4Test()
 frameDebug = True
-
 
 def test_BoardFieldColorDetector():
     video = Video()
@@ -123,7 +122,7 @@ def test_MaskFieldStates():
             print("%s: %3d,%3d" % (field.an,field.pcx,field.pcy))
         video.showImage(rgba, imageInfo['title'],keyWait=waitTime)
         video.close()
-
+        
 
 test_ColorDistance()
 test_FieldStates()

@@ -6,7 +6,7 @@
 from Video import Video
 from Environment import Environment
 from Board import Board
-from Field import Field
+from Field import Field, FieldROI
 from BoardDetector import BoardDetector
 import argparse
 import cv2 as cv
@@ -15,12 +15,13 @@ class CDDA:
     """ Color Distribution Analysis """
     windowName='Color Distribution'
     
-    def __init__(self,video,image, distance=3, steps=3):
+    def __init__(self,video,image, distance=3, steps=3,roisPerField=7):
         self.video=video
         self.image=image       
         self.board=Board()
-        self.distance=3
-        self.step=3
+        self.distance=distance
+        self.step=steps
+        self.roisPerField=roisPerField
         self.boardDetector=BoardDetector(self.board,video)
         self.boardDetector.divideInFields(image)
         
@@ -32,17 +33,26 @@ class CDDA:
                 field.step=self.step
                 self.showField(field,image)
               
-    def showField(self,field,image):
+    def showField1(self,field,image):
         pcx = field.pcx
         pcy = field.pcy       
         distance=self.distance
         step=self.step         
         x1, y1, x2, y2 = pcx - distance * step, pcy - distance * step, pcx + distance * step, pcy + distance * step
         # outer thickness for displaying detect state: green ok red - there is an issue
-        ot = 2
+        ot = 1
         # inner thickness for displaying the field color
         video.drawRectangle(image, (x1 - ot, y1 - ot), (x2 + ot, y2 + ot), thickness=ot, color=Field.green)
-      
+        
+    def showField(self,field,image):
+        hsplit=FieldROI.split(self.roisPerField) 
+        vsplit=FieldROI.split(self.roisPerField)
+        roi=FieldROI(field,hsplit,vsplit)
+        for pixel in roi.pixelList():
+            x,y=pixel
+            image[x,y]=Field.green
+            
+          
     def show(self):    
         cdImage=self.image.copy()
         self.showFields(cdImage)
@@ -64,6 +74,14 @@ cdda=CDDA(video,src)
 def showDistance(distance):
     cdda.distance=distance
     cdda.show()  
+  
+def showROIs(roisPerField):
+    cdda.roisPerField=roisPerField
+    cdda.show()      
+    
+def showSteps(steps):
+    cdda.step=steps
+    cdda.show()     
 
  
 source_window=args.input
@@ -72,7 +90,13 @@ cv.namedWindow(CDDA.windowName)
 cv.namedWindow(source_window)
 distance=3
 maxDistance=50
+steps=3
+maxSteps=5
+roisPerField=7
+maxRoisPerField=28
 cv.createTrackbar('distance: ', source_window, distance, maxDistance, showDistance)
+cv.createTrackbar('steps: ', source_window, steps, maxSteps, showSteps)
+cv.createTrackbar('roisPerField: ', source_window, roisPerField, maxRoisPerField, showROIs)
 cv.imshow(source_window, src)
 showDistance(distance)
 cv.waitKey()    

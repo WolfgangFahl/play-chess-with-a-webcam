@@ -29,6 +29,8 @@ class BoardDetector:
                 field = self.board.fieldAt(row, col)
                 pcx = int(fieldWidth * (2 * col + 1) // 2)
                 pcy = int(fieldHeight * (2 * row + 1) // 2)
+                field.width=fieldWidth
+                field.height=fieldHeight
                 field.pcx = pcx
                 field.pcy = pcy
                         

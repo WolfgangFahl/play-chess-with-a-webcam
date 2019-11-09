@@ -21,10 +21,11 @@ class Environment4Test(Environment):
         ([278, 88],[ 999, 88],[1072, 808],[124, 786]),
         ([360,238],[2380,224],[2385,2251],[407,2256]),
         ([483,132],[1338,124],[1541, 936],[255, 953]),
-        ([  8,  1],[ 813,  1],[ 817, 812],[  3, 809])
+        ([  8,  1],[ 813,  1],[ 817, 812],[  3, 809]),
+        ([  0,  0],[ 522,  0],[ 523, 523],[  0, 523])
         ]
     
-    rotations=[0,0,0,0,270,270,270,0,0,0,0]
+    rotations=[0,0,0,0,270,270,270,0,0,0,0,270]
     
     fens=[
         Board.EMPTY_FEN,
@@ -37,7 +38,8 @@ class Environment4Test(Environment):
         Board.EMPTY_FEN,
         Board.EMPTY_FEN,
         Board.EMPTY_FEN,
-        Board.EMPTY_FEN
+        Board.EMPTY_FEN,
+        Board.START_FEN
     ]
 
     def __init__(self):

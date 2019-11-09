@@ -11,13 +11,47 @@ from enum import IntEnum
 
 
 class FieldState(IntEnum):
+    """ the state of a field is a combination of the field color with a piece color + two empty field color options"""
     WHITE_EMPTY = 0
     WHITE_WHITE = 1
     WHITE_BLACK = 2
     BLACK_EMPTY = 3
     BLACK_WHITE = 4
     BLACK_BLACK = 5
+    
 
+class FieldROI:
+    """ a region of interest within the square image area of pixels represented by some pixels"""
+    # construct me from a field and a horizontal and vertical generator
+    def __init__(self, field, hgen,vgen):
+        self.hgen=hgen
+        self.vgen=vgen
+        self.field=field
+        self.colorStats = ColorStats()
+        
+    # analyze the given region of interest for the given image    
+    def analyze(self,image):
+        for pixel in self.pixelList:
+            self.colorStats.push(image[pixel[0],pixel[1]])
+    
+    @staticmethod
+    def split(parts):
+        partsLen=parts+1
+        for i in range(1,partsLen):
+            yield(1/partsLen*i)  
+     
+    def pixelList(self):
+        """ create a pixel list by using the relative positions from the horizontal and vertical generators"""
+        f=self.field
+        hxlist=list(self.hgen)
+        vxlist=list(self.vgen)
+        self.pixels=len(hxlist)*len(vxlist)
+        for h in hxlist:
+            for v in vxlist:
+                # interpolate the pixel
+                pixel=(int(f.pcx+f.width*(h-0.5)+0.5),int(f.pcy+f.height*(v-0.5)+0.5))  
+                yield pixel      
+            
 
 class Field:
     """ a single Field of a chess board as observed from a WebCam"""
