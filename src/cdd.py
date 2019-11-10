@@ -78,55 +78,50 @@ src=video.readImage(args.input)
 if src is None:
     print('Could not open or find the image:', args.input)
     exit(0)
-
-def showXSteps(xsteps):
-    cdda.xsteps=xsteps
-    cdda.show() 
     
-def showYSteps(ysteps):
-    cdda.ysteps=ysteps
-    cdda.show()      
-  
-def showROIs(rois):
-    cdda.rois=rois
-    cdda.show()      
-  
-def showLambda(roiLambdaIndex):
-    cdda.roiLambda=lambdas[roiLambdaIndex]
-    cdda.show()    
+class Tracker:
+    trackers={}
     
-def showSafetyX(safety):
-    cdda.safetyX=safety
-    cdda.show()    
- 
-def showSafetyY(safety):
-    cdda.safetyY=safety
-    cdda.show()    
+    def __init__(self,name,window,value,maxValue,onChange=None):
+        self.name=name
+        self.window=window
+        self.value=value
+        self.maxValue=maxValue
+        self.onChange=onChange
+        cv.createTrackbar(self.name, self.window, self.value, self.maxValue, Tracker.onChangeTrackbar)
+        Tracker.trackers[name]=self
     
-
-safetyX=5
-maxSafetyX=25
-safetyY=5
-maxSafetyY=25
-cdda=CDDA(video,src,lambdas[0],safetyX=safetyX,safetyY=safetyY)    
+    @staticmethod
+    def onChangeTrackbar(value):
+        for name,tracker in Tracker.trackers.items():
+            value=cv.getTrackbarPos(name,tracker.window)
+            tracker.value=value
+        if tracker.onChange is not None:
+            tracker.onChange()
+              
+cdda=CDDA(video,src,lambdas[0])    
 source_window=args.input
 # Showing the result
 cv.namedWindow(CDDA.windowName)
 cv.namedWindow(source_window)
-xSteps=3
-maxXSteps=20
-ySteps=10
-maxYSteps=20
-rois=7
-maxRois=20
 lambdaIndex=0
 
-cv.createTrackbar('xsteps: ' , source_window, xSteps, maxXSteps, showXSteps)
-cv.createTrackbar('ysteps: ' , source_window, ySteps, maxYSteps, showYSteps)
-cv.createTrackbar('rois: '   , source_window, rois,   maxRois, showROIs)
-cv.createTrackbar('safetyX %', source_window, safetyX, maxSafetyX,showSafetyX)
-cv.createTrackbar('safetyY %', source_window, safetyY, maxSafetyY,showSafetyY)
-cv.createTrackbar('lambda'  , source_window, lambdaIndex, len(lambdas)-1,showLambda)
+def onChange(): 
+    cdda.xsteps =Tracker.trackers['xsteps'].value
+    cdda.ysteps =Tracker.trackers['ysteps'].value
+    cdda.rois   =Tracker.trackers['rois'].value
+    cdda.safetyX=Tracker.trackers['safetyX %'].value
+    cdda.safetyY=Tracker.trackers['safetyY %'].value
+    cdda.roiLambda=lambdas[Tracker.trackers['mode'].value]
+    cdda.show()
+    
+xsteps=Tracker('xsteps'    ,source_window, cdda.xsteps ,20, onChange)
+ysteps=Tracker('ysteps'    ,source_window, cdda.ysteps ,20, onChange)
+rois  =Tracker('rois'      ,source_window, cdda.rois   ,20, onChange)
+sx    =Tracker('safetyX %' ,source_window, cdda.safetyX,20, onChange)
+sy    =Tracker('safetyY %' ,source_window, cdda.safetyY,20, onChange)
+mode  =Tracker('mode'      ,source_window, lambdaIndex, len(lambdas)-1, onChange)
+
 cv.imshow(source_window, src)
-showROIs(rois)
+cdda.show()
 cv.waitKey()
