@@ -15,14 +15,15 @@ class CDDA:
     """ Color Distribution Analysis """
     windowName='Color Distribution'
     
-    def __init__(self,video,image, roiLambda,xsteps=3, ysteps=10,rois=7,safety=0):
+    def __init__(self,video,image, roiLambda,xsteps=3, ysteps=10,rois=7,safetyX=5,safetyY=5):
         self.video=video
         self.image=image       
         self.board=Board()
         self.roiLambda=roiLambda
         self.xsteps=xsteps
         self.ysteps=ysteps
-        self.safety=safety
+        self.safetyX=safetyX
+        self.safetyY=safetyY
         self.rois=rois
         self.boardDetector=BoardDetector(self.board,video)
         self.boardDetector.divideInFields(image)
@@ -46,7 +47,7 @@ class CDDA:
         
     def showField(self,field,image):
         for roiIndex in range(self.rois):
-            grid=Grid(roiIndex,self.rois,self.xsteps,self.ysteps,safety=self.safety)
+            grid=Grid(roiIndex,self.rois,self.xsteps,self.ysteps,safetyX=self.safetyX,safetyY=self.safetyY)
             hroi=FieldROI(field,grid,self.roiLambda)
             self.showROI(hroi,image)
             
@@ -94,12 +95,20 @@ def showLambda(roiLambdaIndex):
     cdda.roiLambda=lambdas[roiLambdaIndex]
     cdda.show()    
     
-def showSafety(safety):
-    cdda.safety=safety
+def showSafetyX(safety):
+    cdda.safetyX=safety
     cdda.show()    
+ 
+def showSafetyY(safety):
+    cdda.safetyY=safety
+    cdda.show()    
+    
 
-safety=0
-cdda=CDDA(video,src,lambdas[0],safety=safety)    
+safetyX=5
+maxSafetyX=25
+safetyY=5
+maxSafetyY=25
+cdda=CDDA(video,src,lambdas[0],safetyX=safetyX,safetyY=safetyY)    
 source_window=args.input
 # Showing the result
 cv.namedWindow(CDDA.windowName)
@@ -112,10 +121,11 @@ rois=7
 maxRois=20
 lambdaIndex=0
 
-cv.createTrackbar('xsteps: ', source_window, xSteps, maxXSteps, showXSteps)
-cv.createTrackbar('ysteps: ', source_window, ySteps, maxYSteps, showYSteps)
-cv.createTrackbar('rois: '  , source_window, rois,   maxRois, showROIs)
-cv.createTrackbar('safety'  , source_window, safety, 3,showSafety)
+cv.createTrackbar('xsteps: ' , source_window, xSteps, maxXSteps, showXSteps)
+cv.createTrackbar('ysteps: ' , source_window, ySteps, maxYSteps, showYSteps)
+cv.createTrackbar('rois: '   , source_window, rois,   maxRois, showROIs)
+cv.createTrackbar('safetyX %', source_window, safetyX, maxSafetyX,showSafetyX)
+cv.createTrackbar('safetyY %', source_window, safetyY, maxSafetyY,showSafetyY)
 cv.createTrackbar('lambda'  , source_window, lambdaIndex, len(lambdas)-1,showLambda)
 cv.imshow(source_window, src)
 showROIs(rois)

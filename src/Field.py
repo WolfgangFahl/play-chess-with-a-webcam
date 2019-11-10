@@ -21,12 +21,14 @@ class FieldState(IntEnum):
     
 class Grid:
     """ Grid Info in the region of interest """
-    def __init__(self,roiIndex,rois,xsteps,ysteps,safety=0):
+    def __init__(self,roiIndex,rois,xsteps,ysteps,safetyX=0,safetyY=0):
         self.roiIndex=roiIndex
         self.rois=rois
         self.xsteps=xsteps
         self.ysteps=ysteps  
-        self.safety=safety
+        # safety Margin in percent
+        self.safetyX=safetyX/100
+        self.safetyY=safetyY/100
         
     @staticmethod
     def split(pStep,parts):
@@ -39,10 +41,20 @@ class Grid:
         return Grid.split(pYStep,self.ysteps)     
     
     def d(self):
-        return 1/(self.rois+self.safety*2)     
+        return 1/(self.rois)     
     
     def dofs(self):
-        return self.d()*(self.roiIndex+self.safety)
+        return self.d()*(self.roiIndex)
+    
+    def safeShift(self,value,safetyMargin):
+        if safetyMargin==0:
+            return value
+        else:
+            return value*(1-2*safetyMargin)+safetyMargin
+    
+    def shiftSafety(self,rx,ry):
+        return self.safeShift(rx,self.safetyX),self.safeShift(ry,self.safetyY)
+  
 
 class FieldROI:
     """ a region of interest within the square image area of pixels represented by some pixels"""
@@ -64,9 +76,10 @@ class FieldROI:
         for xstep in range(self.grid.xsteps):
             for ystep in range(self.grid.ysteps):
                 rx,ry=self.relPixelLambda(self.grid,xstep,ystep)
+                rx,ry=self.grid.shiftSafety(rx,ry)
                 pixel=self.interPolate(rx, ry)
                 yield pixel
-                
+                              
     def interPolate(self,rx,ry):
         """ interpolate the given relative coordinate """         
         f=self.field   
