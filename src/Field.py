@@ -20,7 +20,7 @@ class FieldState(IntEnum):
     BLACK_BLACK = 5    
     
     @staticmethod
-    def title(fieldState,titles=["white on empty", "white on white", "white on black","black on empty","black on white","black on black"]):
+    def title(fieldState,titles=["white empty", "white on white", "black on white","black empty","white on black","black on black"]):
         return titles[fieldState]
     
 class Grid:
