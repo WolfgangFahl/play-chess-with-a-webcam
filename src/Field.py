@@ -21,8 +21,7 @@ class FieldState(IntEnum):
     
 class Grid:
     """ Grid Info in the region of interest """
-    def __init__(self,roiIndex,rois,xsteps,ysteps,safetyX=0,safetyY=0):
-        self.roiIndex=roiIndex
+    def __init__(self,rois,xsteps,ysteps,safetyX=0,safetyY=0):
         self.rois=rois
         self.xsteps=xsteps
         self.ysteps=ysteps  
@@ -43,8 +42,8 @@ class Grid:
     def d(self):
         return 1/(self.rois)     
     
-    def dofs(self):
-        return self.d()*(self.roiIndex)
+    def dofs(self,roiIndex):
+        return self.d()*(roiIndex)
     
     def safeShift(self,value,safetyMargin):
         if safetyMargin==0:
@@ -59,9 +58,10 @@ class Grid:
 class FieldROI:
     """ a region of interest within the square image area of pixels represented by some pixels"""
     # construct me from a field, a generator for relative pixels and the number of x and y steps to generate from
-    def __init__(self, field, grid,relPixelLambda):  
+    def __init__(self, field, grid,roiIndex,relPixelLambda):  
         self.relPixelLambda=relPixelLambda
         self.grid=grid
+        self.roiIndex=roiIndex
         self.pixels=grid.xsteps*grid.ysteps
         self.field=field
         self.colorStats = ColorStats()
@@ -75,7 +75,7 @@ class FieldROI:
         """ generate a pixel list by using the generated relative position from """
         for xstep in range(self.grid.xsteps):
             for ystep in range(self.grid.ysteps):
-                rx,ry=self.relPixelLambda(self.grid,xstep,ystep)
+                rx,ry=self.relPixelLambda(self.grid,self.roiIndex,xstep,ystep)
                 rx,ry=self.grid.shiftSafety(rx,ry)
                 pixel=self.interPolate(rx, ry)
                 yield pixel
@@ -134,7 +134,12 @@ class Field:
         self.luminance = None
         self.rgbColorKey = None
         self.colorKey = None
-
+        
+    def divideInROIs(self,grid,roiLambda):
+        self.rois=[]
+        for roiIndex in range(grid.rois):
+            self.rois.append(FieldROI(self,grid,roiIndex,roiLambda)) 
+ 
     def getPiece(self):
         if self.board  is None:
             raise Exception("Board not set for %s" % (self.an))

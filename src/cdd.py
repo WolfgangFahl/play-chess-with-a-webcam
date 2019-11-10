@@ -27,12 +27,6 @@ class CDDA:
         self.rois=rois
         self.boardDetector=BoardDetector(self.board,video)
         self.boardDetector.divideInFields(image)
-        
-    def showFields(self,image):
-        for row in range(Field.rows):
-            for col in range (Field.cols):
-                field = self.board.fieldAt(row, col)
-                self.showField(field,image)
               
     def showField1(self,field,image):
         pcx = field.pcx
@@ -45,11 +39,6 @@ class CDDA:
         # inner thickness for displaying the field color
         video.drawRectangle(image, (x1 - ot, y1 - ot), (x2 + ot, y2 + ot), thickness=ot, color=Field.green)
         
-    def showField(self,field,image):
-        for roiIndex in range(self.rois):
-            grid=Grid(roiIndex,self.rois,self.xsteps,self.ysteps,safetyX=self.safetyX,safetyY=self.safetyY)
-            hroi=FieldROI(field,grid,self.roiLambda)
-            self.showROI(hroi,image)
             
     def showROI(self,roi,image):         
         for pixel in roi.pixelList():
@@ -57,16 +46,36 @@ class CDDA:
             h, w = image.shape[:2]
             if (x>=0 and x<w) and (y>=0 and y<h):
                 image[y,x]=Field.green
+                
+    def showField(self,field,image):
+        for roi in field.rois:
+            self.showROI(roi,image)            
+    
+    def analyzeFields(self,image):
+        grid=Grid(self.rois,self.xsteps,self.ysteps,safetyX=self.safetyX,safetyY=self.safetyY)
+        for field in self.genFields():
+            field.divideInROIs(grid,self.roiLambda)
+   
+    def genFields(self):
+        for row in range(Field.rows):
+            for col in range (Field.cols):
+                field = self.board.fieldAt(row, col)
+                yield field
+                        
+    def showFields(self,image):
+        for field in self.genFields():
+            self.showField(field,image)            
           
     def show(self):    
         cdImage=self.image.copy()
+        self.analyzeFields(self.image)
         self.showFields(cdImage)
         cv.imshow(CDDA.windowName, cdImage)
         
 lambdas=[
-    lambda grid,xstep,ystep:(grid.dofs()+grid.d()*grid.xstep(xstep),grid.ystep(ystep)),
-    lambda grid,xstep,ystep:(grid.xstep(xstep),grid.dofs()+grid.d()*grid.ystep(ystep)),
-    lambda grid,xstep,ystep:(grid.xstep(xstep),grid.ystep(ystep))
+    lambda grid,roiIndex,xstep,ystep:(grid.dofs(roiIndex)+grid.d()*grid.xstep(xstep),grid.ystep(ystep)),
+    lambda grid,roiIndex,xstep,ystep:(grid.xstep(xstep),grid.dofs(roiIndex)+grid.d()*grid.ystep(ystep)),
+    lambda grid,roiIndex,xstep,ystep:(grid.xstep(xstep),grid.ystep(ystep))
 ]        
 
 env=Environment()
