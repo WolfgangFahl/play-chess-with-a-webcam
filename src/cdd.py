@@ -6,8 +6,9 @@
 from Video import Video
 from Environment import Environment
 from Board import Board
-from Field import Field, FieldROI, Grid
+from Field import Field, Grid
 from BoardDetector import BoardDetector
+from timeit import default_timer as timer
 import argparse
 import cv2 as cv
  
@@ -52,18 +53,17 @@ class CDDA:
             self.showROI(roi,image)            
     
     def analyzeFields(self,image):
+        start=timer()
         grid=Grid(self.rois,self.xsteps,self.ysteps,safetyX=self.safetyX,safetyY=self.safetyY)
-        for field in self.genFields():
+        for field in self.boardDetector.genFields():
             field.divideInROIs(grid,self.roiLambda)
-   
-    def genFields(self):
-        for row in range(Field.rows):
-            for col in range (Field.cols):
-                field = self.board.fieldAt(row, col)
-                yield field
+            for roi in field.rois:
+                roi.analyze(image)
+        end=timer()    
+        print ("%.3fs" % (end-start))
                         
     def showFields(self,image):
-        for field in self.genFields():
+        for field in self.boardDetector.genFields():
             self.showField(field,image)            
           
     def show(self):    

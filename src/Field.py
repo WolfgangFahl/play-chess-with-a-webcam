@@ -68,8 +68,9 @@ class FieldROI:
         
     # analyze the given region of interest for the given image    
     def analyze(self,image):
-        for pixel in self.pixelList:
-            self.colorStats.push(image[pixel[0],pixel[1]])
+        for pixel in self.pixelList():
+            c1,c2,c3=image[pixel[0],pixel[1]]
+            self.colorStats.push(c1,c2,c3)
      
     def pixelList(self):
         """ generate a pixel list by using the generated relative position from """

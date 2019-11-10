@@ -18,6 +18,12 @@ class BoardDetector:
         self.speedup=speedup
         self.hsv = None
         self.previous=None
+     
+    def genFields(self):
+        for row in range(Field.rows):
+            for col in range (Field.cols):
+                field = self.board.fieldAt(row, col)
+                yield field    
            
     def divideInFields(self,image):
         # interpolate the centers of the 8x8 fields from a squared image
@@ -36,10 +42,8 @@ class BoardDetector:
                         
     def analyzeColors(self, image, distance=3, step=1):
         self.hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        for row in range(Field.rows):
-            for col in range (Field.cols):     
-                field = self.board.fieldAt(row, col)
-                field.analyzeColor(image, self.hsv, distance, step)
+        for field in self.genFields():
+            field.analyzeColor(image, self.hsv, distance, step)
                 
     def sortByFieldState(self):            
         # get a dict of fields sorted by field state
