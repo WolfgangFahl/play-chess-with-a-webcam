@@ -19,6 +19,10 @@ class FieldState(IntEnum):
     BLACK_WHITE = 4
     BLACK_BLACK = 5    
     
+    @staticmethod
+    def title(fieldState,titles=["white on empty", "white on white", "white on black","black on empty","black on white","black on black"]):
+        return titles[fieldState]
+    
 class Grid:
     """ Grid Info in the region of interest """
     def __init__(self,rois,xsteps,ysteps,safetyX=0,safetyY=0):
@@ -116,18 +120,20 @@ class Field:
         # row and column indices from 0-7
         self.row = row
         self.col = col
-        self.squareIndex = row * 8 + col;
+        self.squareIndex = (7-row) * 8 + col;
         self.square = chess.SQUARES[self.squareIndex]
         # https://python-chess.readthedocs.io/en/latest/core.html - chess.WHITE=True, chess.BLACK=False
         # https://gamedev.stackexchange.com/a/44998/133453
-        # A1 at 0,0 is black moving an odd number of steps horizontally and vertically will end up on a white
-        self.fieldColor = (self.col + self.row) % 2 == 1
+        # A8 at 0,0 is white moving an odd number of steps horizontally and vertically will end up on a black
+        self.fieldColor = (self.col + self.row) % 2 == 0
         # algebraic notation of field
         # A1 to H8
         self.an = chess.SQUARE_NAMES[self.squareIndex]
         # center pixel position of field
         self.pcx = None
         self.pcy = None
+        self.width=None
+        self.height=None
         self.distance = None
         self.step = None
         self.hsvStats = None
@@ -135,6 +141,11 @@ class Field:
         self.luminance = None
         self.rgbColorKey = None
         self.colorKey = None
+    
+    def getRect(self):
+        x1=int(self.pcx-self.width/2)
+        y1=int (self.pcy-self.height/2)    
+        return x1,y1,int(self.width),int(self.height)
         
     def divideInROIs(self,grid,roiLambda):
         self.rois=[]

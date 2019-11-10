@@ -3,10 +3,11 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 #
 # Color Distribution detector
+from Histogram import Histogram
 from Video import Video
 from Environment import Environment
 from Board import Board
-from Field import Field, Grid
+from Field import Field, FieldState, Grid
 from BoardDetector import BoardDetector
 from timeit import default_timer as timer
 import argparse
@@ -38,7 +39,7 @@ class CDDA:
         # outer thickness for displaying detect state: green ok red - there is an issue
         ot = 1
         # inner thickness for displaying the field color
-        video.drawRectangle(image, (x1 - ot, y1 - ot), (x2 + ot, y2 + ot), thickness=ot, color=Field.green)
+        self.video.drawRectangle(image, (x1 - ot, y1 - ot), (x2 + ot, y2 + ot), thickness=ot, color=Field.green)
         
             
     def showROI(self,roi,image):         
@@ -79,7 +80,7 @@ lambdas=[
 ]        
 
 env=Environment()
-parser = argparse.ArgumentParser(description='Code for Harris corner detector tutorial.')
+parser = argparse.ArgumentParser(description='Color Distribution Detection')
 parser.add_argument('--input', help='Path to input image.', default=env.testMedia+'chessboard012.jpg')
 args = parser.parse_args()
 video=Video()
@@ -115,6 +116,23 @@ cv.namedWindow(CDDA.windowName)
 cv.namedWindow(source_window)
 lambdaIndex=0
 
+def histogram():
+    start=timer()
+    histogram=Histogram("Chessboard Colors",Histogram.A4(turned=True))
+    rgb=cv.cvtColor(src,cv.COLOR_BGR2RGB)
+    histogram.addPlot(rgb,'chessboard012')
+    video=cdda.video
+    sortedFields= cdda.boardDetector.sortByFieldState()
+    for fieldState,fields in sortedFields.items():
+        for field in fields:
+            fieldImg=video.getSubRect(rgb, field.getRect())
+            title="%s %s" % (field.an,FieldState.title(fieldState))
+            print (title)
+            histogram.addPlot(fieldImg,title)
+    histogram.save('/tmp/chessboard012',{'Title': 'Chessboard Histogram for Chessboard 012'})
+    end=timer()
+    print('histogram created in %.3fs' % (end-start))
+
 def onChange(): 
     cdda.xsteps =Tracker.trackers['xsteps'].value
     cdda.ysteps =Tracker.trackers['ysteps'].value
@@ -122,6 +140,9 @@ def onChange():
     cdda.safetyX=Tracker.trackers['safetyX %'].value
     cdda.safetyY=Tracker.trackers['safetyY %'].value
     cdda.roiLambda=lambdas[Tracker.trackers['mode'].value]
+    doHistogram=Tracker.trackers['histogram'].value
+    if doHistogram==1:
+        histogram()
     cdda.show()
     
 xsteps=Tracker('xsteps'    ,source_window, cdda.xsteps ,20, onChange)
@@ -130,6 +151,7 @@ rois  =Tracker('rois'      ,source_window, cdda.rois   ,20, onChange)
 sx    =Tracker('safetyX %' ,source_window, cdda.safetyX,20, onChange)
 sy    =Tracker('safetyY %' ,source_window, cdda.safetyY,20, onChange)
 mode  =Tracker('mode'      ,source_window, lambdaIndex, len(lambdas)-1, onChange)
+hist  =Tracker('histogram' ,source_window, 0,1,onChange)
 
 cv.imshow(source_window, src)
 cdda.show()

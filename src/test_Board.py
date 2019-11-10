@@ -71,7 +71,7 @@ def test_cellNames():
             assert field.an.upper() == fieldName
             astr = astr + fieldName
     print (astr)
-    assert astr == "A1B1C1D1E1F1G1H1A2B2C2D2E2F2G2H2A3B3C3D3E3F3G3H3A4B4C4D4E4F4G4H4A5B5C5D5E5F5G5H5A6B6C6D6E6F6G6H6A7B7C7D7E7F7G7H7A8B8C8D8E8F8G8H8"
+    assert astr == "A8B8C8D8E8F8G8H8A7B7C7D7E7F7G7H7A6B6C6D6E6F6G6H6A5B5C5D5E5F5G5H5A4B4C4D4E4F4G4H4A3B3C3D3E3F3G3H3A2B2C2D2E2F2G2H2A1B1C1D1E1F1G1H1"
 
 
 def test_Pieces():
@@ -100,8 +100,8 @@ def test_Pieces():
                 bstr += piece.symbol()
                 if piece.symbol().upper == "Q":
                     assert piece.color == field.fieldColor
-    # print(bstr)
-    assert bstr == "a1Rb1Nc1Bd1Qe1Kf1Bg1Nh1Ra2Pb2Pc2Pd2Pe2Pf2Pg2Ph2Pa3b3c3d3e3f3g3h3a4b4c4d4e4f4g4h4a5b5c5d5e5f5g5h5a6b6c6d6e6f6g6h6a7pb7pc7pd7pe7pf7pg7ph7pa8rb8nc8bd8qe8kf8bg8nh8r"
+    #print(bstr)
+    assert bstr == "a8rb8nc8bd8qe8kf8bg8nh8ra7pb7pc7pd7pe7pf7pg7ph7pa6b6c6d6e6f6g6h6a5b5c5d5e5f5g5h5a4b4c4d4e4f4g4h4a3b3c3d3e3f3g3h3a2Pb2Pc2Pd2Pe2Pf2Pg2Ph2Pa1Rb1Nc1Bd1Qe1Kf1Bg1Nh1R"
     board.chessboard.clear()
     assert board.piecesOfColor(chess.WHITE) == 0
     assert board.piecesOfColor(chess.BLACK) == 0

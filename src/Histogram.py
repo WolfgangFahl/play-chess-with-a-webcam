@@ -100,7 +100,7 @@ class Histogram(object):
                             axarr[pageImageIndex*2  ,col].remove()
                             axarr[pageImageIndex*2+1,col].remove()  
                     imageIndex=imageIndex+1
-                plt.title("page %d" %(page))    
+                #plt.title("page %d" %(page))    
                 plt.tight_layout()    
                 pdf.savefig()
                 plt.close()
