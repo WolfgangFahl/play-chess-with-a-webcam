@@ -19,9 +19,8 @@ class FieldState(IntEnum):
     BLACK_WHITE = 4
     BLACK_BLACK = 5    
     
-    @staticmethod
-    def title(fieldState,titles=["white empty", "white on white", "black on white","black empty","white on black","black on black"]):
-        return titles[fieldState]
+    def title(self,titles=["white empty", "white on white", "black on white","black empty","white on black","black on black"]):
+        return titles[self]
     
 class Grid:
     """ Grid Info in the region of interest """
@@ -100,6 +99,7 @@ class Field:
     # bgr colors
     white = (255, 255, 255)
     lightGrey = (64, 64, 64)
+    grey=(128,128,128)
     darkGrey = (192, 192, 192)
     green = (0, 255, 0)
     red = (0, 0, 255)
