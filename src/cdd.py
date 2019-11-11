@@ -17,7 +17,7 @@ class CDDA:
     """ Color Distribution Analysis """
     windowName='Color Distribution'
     
-    def __init__(self,video,image, roiLambda,xsteps=3, ysteps=10,rois=7,safetyX=5,safetyY=5):
+    def __init__(self,video,image, roiLambda,xsteps=3, ysteps=10,rois=7,safetyX=12,safetyY=5):
         self.video=video
         self.image=image       
         self.board=Board()
@@ -51,28 +51,38 @@ class CDDA:
                 
     def showField(self,field,image):
         for roi in field.rois:
-            self.showROI(roi,image)            
+            self.showROI(roi,image)
+        title=field.an
+        piece = field.getPiece()
+        if piece is not None:
+            symbol=piece.symbol()#piece.unicode_symbol()
+            title=title+":"+symbol
+        self.video.drawCenteredText(image,title,field.pcx,field.pcy,fontBGRColor=Field.white)    
     
-    def analyzeFields(self,image):
-        start=timer()
-        grid=Grid(self.rois,self.xsteps,self.ysteps,safetyX=self.safetyX,safetyY=self.safetyY)
-        for field in self.boardDetector.genFields():
-            field.divideInROIs(grid,self.roiLambda)
-            for roi in field.rois:
-                roi.analyze(image)
-        end=timer()    
-        print ("%.3fs" % (end-start))
-                        
     def showFields(self,image):
         for field in self.boardDetector.genFields():
             self.showField(field,image)            
           
     def show(self):    
         cdImage=self.image.copy()
-        self.analyzeFields(self.image)
+        start=timer()
+        grid=Grid(self.rois,self.xsteps,self.ysteps,safetyX=self.safetyX,safetyY=self.safetyY)
+        self.boardDetector.analyzeFields(self.image,grid,self.roiLambda)
+        end=timer()    
+        print ("analysis took %.3fs" % (end-start))
         self.showFields(cdImage)
+        self.showColorStats()
         cv.imshow(CDDA.windowName, cdImage)
         
+    def showColorStats(self):
+        sortedFields= cdda.boardDetector.sortByFieldState()
+        for fieldState,fields in sortedFields.items():
+            for field in fields:
+                for roi in field.rois:
+                    mean=roi.colorStats.mean()
+                    r,g,b=mean
+                    print ("%s-%d (%15s): %3.0f %3.0f %3.0f" % (field.an,roi.roiIndex,fieldState.title(),r,g,b))    
+            
 lambdas=[
     lambda grid,roiIndex,xstep,ystep:(grid.dofs(roiIndex)+grid.d()*grid.xstep(xstep),grid.ystep(ystep)),
     lambda grid,roiIndex,xstep,ystep:(grid.xstep(xstep),grid.dofs(roiIndex)+grid.d()*grid.ystep(ystep)),
@@ -126,7 +136,7 @@ def histogram():
     for fieldState,fields in sortedFields.items():
         for field in fields:
             fieldImg=video.getSubRect(rgb, field.getRect())
-            title="%s %s" % (field.an,FieldState.title(fieldState))
+            title="%s %s" % (field.an,fieldState.title())
             print (title)
             histogram.addPlot(fieldImg,title)
     histogram.save('/tmp/chessboard012',{'Title': 'Chessboard Histogram for Chessboard 012'})

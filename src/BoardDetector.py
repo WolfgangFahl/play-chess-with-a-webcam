@@ -29,22 +29,15 @@ class BoardDetector:
         # interpolate the centers of the 8x8 fields from a squared image
         height, width = image.shape[:2]
         fieldHeight = height / Field.rows
-        fieldWidth = width / Field.cols         
-        for row in range(Field.rows):
-            for col in range (Field.cols):
-                field = self.board.fieldAt(row, col)
-                pcx = int(fieldWidth * (2 * col + 1) // 2)
-                pcy = int(fieldHeight * (2 * row + 1) // 2)
-                field.width=fieldWidth
-                field.height=fieldHeight
-                field.pcx = pcx
-                field.pcy = pcy
-                        
-    def analyzeColors(self, image, distance=3, step=1):
-        self.hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        for field in self.genFields():
-            field.analyzeColor(image, self.hsv, distance, step)
-                
+        fieldWidth = width / Field.cols
+        for field in self.genFields():   
+            pcx = int(fieldWidth * (2 * field.col + 1) // 2)
+            pcy = int(fieldHeight * (2 * field.row + 1) // 2)
+            field.width=fieldWidth
+            field.height=fieldHeight
+            field.pcx = pcx
+            field.pcy = pcy
+    
     def sortByFieldState(self):            
         # get a dict of fields sorted by field state
         sortedByFieldState = sorted(self.board.fieldsByAn.values(), key=lambda field:field.getFieldState())
@@ -56,6 +49,17 @@ class BoardDetector:
             sortedFields[fieldState]=sortedByFieldState[fromIndex:toIndex]
             fromIndex=toIndex
         return sortedFields
+    
+    def analyzeFields(self,image,grid,roiLambda):    
+        for field in self.genFields():
+            field.divideInROIs(grid,roiLambda)
+            for roi in field.rois:
+                roi.analyze(image)
+                    
+    def analyzeColors(self, image, distance=3, step=1):
+        self.hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        for field in self.genFields():
+            field.analyzeColor(image, self.hsv, distance, step)
         
     # analyze the given image
     def analyze(self, image, frameIndex, distance=3, step=1):
