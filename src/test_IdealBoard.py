@@ -40,7 +40,7 @@ def test_ChessBoard12():
         plots.addPlot(rgb, minBoard.debugInfo,minBoard.values,minBoard.diffSums)
         IdealBoard.showImage(minBoard.image, minBoard.debugInfo, waitTime=1)
     IdealBoard.showImage(image=optimized.image,title="optimized",waitTime=shortTime)
-    IdealBoard.showImage(image=optimized.diff(chessboard12),title="optimizedDiff") #,waitTime=shortTime)
+    IdealBoard.showImage(image=optimized.diff(chessboard12),title="optimizedDiff", waitTime=shortTime)
     board.save("/tmp/idealchessboard.jpg")
     plots.createPDF('/tmp/idealcoloredboard',plotType=PlotType.PLOT,infos={'Title': 'Ideal colored board'})
 
