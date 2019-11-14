@@ -45,8 +45,11 @@ class PlotLib(object):
             fig_size=fig_size[::-1]
         return fig_size    
         
-    def addPlot(self,image,imageTitle,xvalues=[],yvalues=[]):
-        self.images.append((image,imageTitle,xvalues,yvalues))
+    def addPlot(self,image,imageTitle,xvalues=[],yvalues=[],isBGR=False):
+        rgb=image
+        if isBGR:
+            rgb=cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+        self.images.append((rgb,imageTitle,xvalues,yvalues))
         
     def plotImage(self,ax,image,imageTitle,thumbNailSize):
         thumbNail = cv2.resize(image, (thumbNailSize,thumbNailSize))

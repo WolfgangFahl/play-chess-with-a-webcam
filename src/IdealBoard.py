@@ -149,18 +149,5 @@ class IdealBoard:
                 minBoard=minBoard.optimize(chessboardImage,channel,squareKind)
                 minBoards.append(minBoard)         
         return minBoard
-
-    def save(self,filepath):
-        cv2.imwrite(filepath, self.image)
-          
-    @staticmethod
-    def showImage(image=None,title="idealboard",waitTime=86400*1000):     
-        if image is not None:
-            cv2.imshow(title,image)   
-            cv2.imwrite("/tmp/"+title+".jpg",image)     
-        cv2.waitKey(waitTime)
-        
-    def show(self,title="idealboard",waitTime=86400*1000):
-        IdealBoard.showImage(self.image,title,waitTime) 
       
 

@@ -84,6 +84,13 @@ class Video:
             return not cv2.waitKey(keyWait) & 0xFF == ord('q')
         else:
             return True
+        
+    def showAndWriteImage(self,image,title,path="/tmp/",imageFormat=".jpg",keyCheck=True,keyWait=5):
+        result=self.showImage(image, title, keyCheck, keyWait)
+        if image is not None:
+            cv2.imshow(title,image)   
+            cv2.imwrite(path+title+imageFormat,image)   
+        return result
 
     # encode the image
     def imencode(self, frame, imgformat=".jpg"):
@@ -176,7 +183,7 @@ class Video:
                 if printHints:
                     print("capture %s with %dx%d" % (
                         filename, self.width, self.height))
-                cv2.imwrite(filename, frame)
+                self.writeImage(frame,filename)    
             if close:
                 self.close()
         return ret, frame
@@ -186,6 +193,9 @@ class Video:
         self.checkFilePath(filePath)
         image = cv2.imread(filePath, 1)
         return image
+    
+    def writeImage(self,image,filepath):
+        cv2.imwrite(filepath, image)
 
     # record the capture to a file with the given prefix using a timestamp
     def record(self, prefix, printHints=True):
