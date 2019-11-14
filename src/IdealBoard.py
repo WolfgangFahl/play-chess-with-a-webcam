@@ -83,6 +83,15 @@ class IdealBoard:
         cv2.rectangle(self.image, pt1, pt2, color,thickness=filled)
         
     def diff(self,other):
+        if self.image is None :
+            raise Exception("self.image is None for diff")
+        if other is None:
+            raise Exception("other is None for diff")
+        h, w = self.image.shape[:2]
+        ho, wo = other.shape[:2]
+        if not h==ho or not w==wo:
+            raise Exception("self.image %d x %d has to have same size as other %d x %d for diff" % (w,h,wo,ho))
+        #return np.subtract(self.image,other)
         return cv2.absdiff(self.image,other)   
         
     def diffSum(self,other):
