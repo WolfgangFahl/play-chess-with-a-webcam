@@ -17,7 +17,8 @@ def test_ChessBoard12():
     shortTime=500      
     #IdealBoard.debug=False
     env=Environment()
-    chessboard12Path=env.testMedia+'chessboard012.jpg'
+    chessboard12Path=env.testMedia+'chessBoard012.jpg'
+    print (chessboard12Path)
     chessboard12=cv2.imread(chessboard12Path)
     assert chessboard12 is not None
     IdealBoard.showImage(chessboard12,title="original",waitTime=shortTime)
