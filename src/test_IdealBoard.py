@@ -50,5 +50,5 @@ def test_IdealBoard():
         bgr=testEnv.loadFromImageInfo(webApp,imageInfo)
         
         
-test_ChessBoard12()
+#test_ChessBoard12()
 #test_IdealBoard()
