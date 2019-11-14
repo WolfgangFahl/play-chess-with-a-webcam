@@ -25,7 +25,7 @@ class Environment4Test(Environment):
         ([  0,  0],[ 522,  0],[ 523, 523],[  0, 523])
         ]
     
-    rotations=[0,0,0,0,270,270,270,0,0,0,0,270]
+    rotations=[0,0,0,0,270,270,270,0,0,0,0,0]
     
     fens=[
         Board.EMPTY_FEN,
