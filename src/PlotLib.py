@@ -8,10 +8,16 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from enum import IntEnum
 
-class Histogram(object):
+class PlotType(IntEnum):
+    """ kind of Plot """
+    HISTOGRAMM = 0
+    PLOT = 1
+  
+class PlotLib(object):
     '''
-    show color channel histograms of images
+    create matplotlib based multipage diagrams e.g. color channel histograms of images
     '''
 
 
@@ -39,8 +45,8 @@ class Histogram(object):
             fig_size=fig_size[::-1]
         return fig_size    
         
-    def addPlot(self,image,imageTitle):
-        self.images.append((image,imageTitle))
+    def addPlot(self,image,imageTitle,xvalues=[],yvalues=[]):
+        self.images.append((image,imageTitle,xvalues,yvalues))
         
     def plotImage(self,ax,image,imageTitle,thumbNailSize):
         thumbNail = cv2.resize(image, (thumbNailSize,thumbNailSize))
@@ -68,19 +74,30 @@ class Histogram(object):
         self.plotChannel(rgb,axarr[rowIndex+1,colIndex+0], 0,prevAx1) # red
         self.plotChannel(rgb,axarr[rowIndex+1,colIndex+1], 1,prevAx2) # green
         self.plotChannel(rgb,axarr[rowIndex+1,colIndex+2], 2,prevAx3) # blue
-        
-          
-    def pixel(self,fig,inch):
-        return int(inch*fig.dpi)
-        
-    def save(self,path,infos={}):
+    
+    def fixPath(self,path):
         if not path.endswith(".pdf"):
             path=path+".pdf"
+        return path
+    
+    def addInfos(self,pdf,infos):
+        pdfinfo=pdf.infodict()
+        for key,info in infos.items():
+            pdfinfo[key]=info
+            
+    def pixel(self,fig,inch):
+        return int(inch*fig.dpi)
+    
+        
+    def createPDF(self,path,plotType=PlotType.HISTOGRAMM,infos={}):
+        path=self.fixPath(path)
         imageIndex=0    
         with PdfPages(path) as pdf:
             self.pages=len(self.images)//self.imagesPerPage
             for page in range(self.pages+1):
                 colTitles=['image','','hue/blue','saturation/green','value/red']
+                if (plotType==PlotType.PLOT):
+                    colTitles=['image','','diffSum','']
                 cols=len(colTitles)
                 rows=self.imagesPerPage*2
                 fig, axarr = plt.subplots(rows,cols, figsize=self.pagesize)
@@ -90,11 +107,16 @@ class Histogram(object):
                 thumbNailSize=512 #self.pixel(fig,self.pageheight)
                 for pageImageIndex in range(0,self.imagesPerPage):
                     if imageIndex<len(self.images):
-                        image,imageTitle=self.images[imageIndex]
+                        image,imageTitle,xvalues,yvalues=self.images[imageIndex]
                         # see https://matplotlib.org/3.1.1/tutorials/intermediate/tight_layout_guide.html#sphx-glr-tutorials-intermediate-tight-layout-guide-py 
                         axImage=plt.subplot2grid((rows,cols),(pageImageIndex*2,0),colspan=2,rowspan=2)
                         self.plotImage(axImage,image,imageTitle ,thumbNailSize)
-                        self.plotHistogramm(image, axarr,pageImageIndex*2,2)
+                        if (plotType==PlotType.HISTOGRAMM):
+                            self.plotHistogramm(image, axarr,pageImageIndex*2,2)
+                        else:
+                            axPlot=plt.subplot2grid((rows,cols),(pageImageIndex*2,2),colspan=2,rowspan=2)
+                            axPlot.plot(xvalues,yvalues)
+         
                     else:
                         for col in range(cols):
                             axarr[pageImageIndex*2  ,col].remove()
@@ -104,7 +126,5 @@ class Histogram(object):
                 plt.tight_layout()    
                 pdf.savefig()
                 plt.close()
-            pdfinfo=pdf.infodict()
-            for key,info in infos.items():
-                pdfinfo[key]=info
+            self.addInfos(pdf,infos)    
                     

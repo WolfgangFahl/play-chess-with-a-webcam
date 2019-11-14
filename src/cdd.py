@@ -3,11 +3,11 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 #
 # Color Distribution detector
-from Histogram import Histogram
+from PlotLib import PlotLib
 from Video import Video
 from Environment import Environment
 from Board import Board
-from Field import Field, FieldState, Grid
+from Field import Field, Grid
 from BoardDetector import BoardDetector
 from timeit import default_timer as timer
 import argparse
@@ -128,7 +128,7 @@ lambdaIndex=0
 
 def histogram():
     start=timer()
-    histogram=Histogram("Chessboard Colors",Histogram.A4(turned=True))
+    histogram=PlotLib("Chessboard Colors",PlotLib.A4(turned=True))
     rgb=cv.cvtColor(src,cv.COLOR_BGR2RGB)
     histogram.addPlot(rgb,'chessboard012')
     video=cdda.video

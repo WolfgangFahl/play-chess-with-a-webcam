@@ -5,11 +5,7 @@
 # Ideal Board
 import cv2  # Not actually necessary if you just want to create an image.
 import numpy as np
-from timeit import default_timer as timer
-from Environment import Environment
-import matplotlib.pyplot as plt
 from enum import IntEnum
-from chess import square
 
 class SquareKind(IntEnum):
     """ kind of Square """
@@ -31,6 +27,7 @@ class Channel(IntEnum):
         
  
 class IdealBoard:
+    """ an 'ideal' chessboard """
     windowName='Ideal Chessboard'
     rows=8
     cols=8
@@ -54,6 +51,8 @@ class IdealBoard:
         self.fieldBlack=fieldBlack
         self.image = np.zeros((height,width,3), np.uint8)
         self.diffSumValue=1000*1000*1000
+        self.values=np.array([])
+        self.diffSums=np.array([])
         for col in range(IdealBoard.cols):
             for row in range(IdealBoard.rows):
                 self.colorField(col,row,white=fieldWhite,black=fieldBlack)
@@ -108,14 +107,14 @@ class IdealBoard:
     
     def optimize(self,chessboardImage,channel,squareKind,fromValue=255,toValue=0,step=-1):
         h, w = chessboardImage.shape[:2]
-        values=np.array([])
-        diffSums=np.array([])
         # assume we are the best ideal board so far
         minBoard=self
         minSum=self.diffSumValue
         minValue=-1
+        self.values=np.array([])
+        self.diffSums=np.array([])
         for value in range(fromValue,toValue,step):
-            values=np.append(values,value)
+            self.values=np.append(self.values,value)
             fieldWhite=self.adjust(channel,squareKind,SquareKind.FIELD_WHITE,self.fieldWhite,value)
             fieldBlack=self.adjust(channel,squareKind,SquareKind.FIELD_BLACK,self.fieldBlack,value)
             pieceWhite=self.adjust(channel,squareKind,SquareKind.PIECE_WHITE,self.pieceWhite,value)
@@ -125,26 +124,21 @@ class IdealBoard:
             if diffSum<minBoard.diffSumValue:
                 minBoard=idealBoard
                 minValue=value
-            diffSums=np.append(diffSums,diffSum)
+            self.diffSums=np.append(self.diffSums,diffSum)
             print ("%s %s  value: %3d -> %d / %d" % (squareKind.title(),channel.title(),value,diffSum, minBoard.diffSumValue))
-        if IdealBoard.debug:
-            title="%s %s %d" % (squareKind.title(),channel.title(),minValue)
-            IdealBoard.showImage(minBoard.image, title, waitTime=1)
-            plt.title(title)
-            plt.plot(values,diffSums)
-            # https://stackoverflow.com/questions/30364770/how-to-set-timeout-to-pyplot-show-in-matplotlib
-            plt.show()
+        minBoard.debugInfo="%s %s %d" % (squareKind.title(),channel.title(),minValue)    
         return minBoard    
         
     @staticmethod   
-    def optimizeIdeal(chessboardImage):
+    def optimizeIdeal(chessboardImage,minBoards):
         h, w = chessboardImage.shape[:2]
         minBoard=IdealBoard.createIdeal(w,h)
         # loop over fieldwhite, fieldblack, piecewhite, pieceblack
         for squareKind in SquareKind:
             # loop over b,g,r
             for channel in Channel:
-                minBoard=minBoard.optimize(chessboardImage,channel,squareKind)               
+                minBoard=minBoard.optimize(chessboardImage,channel,squareKind)
+                minBoards.append(minBoard)         
         return minBoard
 
     def save(self,filepath):
@@ -160,26 +154,4 @@ class IdealBoard:
     def show(self,title="idealboard",waitTime=86400*1000):
         IdealBoard.showImage(self.image,title,waitTime) 
       
-shortTime=500      
-IdealBoard.debug=False
-env=Environment()
-chessboard12Path=env.testMedia+'chessboard012.jpg'
-chessboard12=cv2.imread(chessboard12Path)
-IdealBoard.showImage(chessboard12,title="original",waitTime=shortTime)
-start=timer()      
-board=IdealBoard.createIdeal(527,527)
-end=timer()
-print('ideal board created in %.3fs' % (end-start))
-board.show(waitTime=shortTime)
-start=timer()  
-diffImage=board.diff(chessboard12)
-end=timer()
-print('diff created in %.3fs' % (end-start))
-IdealBoard.showImage(diffImage,title="diff",waitTime=shortTime)   
-start=timer()
-optimized=IdealBoard.optimizeIdeal(chessboard12)
-end=timer()
-print('optimized in %.3fs' % (end-start))
-IdealBoard.showImage(image=optimized.image,title="optimized",waitTime=shortTime)
-IdealBoard.showImage(image=optimized.diff(chessboard12),title="optimizedDiff")
-board.save("/tmp/idealchessboard.jpg")
+
