@@ -19,6 +19,7 @@ def test_ChessBoard12():
     env=Environment()
     chessboard12Path=env.testMedia+'chessboard012.jpg'
     chessboard12=cv2.imread(chessboard12Path)
+    assert chessboard12 is not None
     IdealBoard.showImage(chessboard12,title="original",waitTime=shortTime)
     start=timer()      
     board=IdealBoard.createIdeal(527,527)
