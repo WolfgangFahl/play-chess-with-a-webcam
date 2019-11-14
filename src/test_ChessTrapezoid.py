@@ -9,7 +9,31 @@ from timeit import default_timer as timer
 testEnv = Environment4Test()
 
 speedup=4
-waitAtEnd=True
+waitAtEnd=False
+
+
+def test_Rotation():
+    csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
+    rotations=[0,90,180,270]
+    indices=[(0,0),(7,0),(7,7),(0,7)]
+    expected=[(0,0),(7,0),(7,7),(0,7),
+              (7,0),(7,7),(0,7),(0,0),
+              (7,7),(0,7),(0,0),(7,0),
+              (0,7),(0,0),(7,0),(7,7)]
+    index=0
+    for rotation in rotations:
+        csquare.rotation=rotation
+        for row in range(ChessTrapezoid.rows):
+            for col in range(ChessTrapezoid.cols):
+                tsquare=csquare.tSquareAt(row, col)
+                print(tsquare['an'],end='')
+            print()   
+        for rowcol in indices:
+            row,col=rowcol
+            rotated=csquare.rotateIndices(row,col)
+            print (rotation,rowcol,rotated,expected[index])
+            assert rotated==expected[index]
+            index=index+1
 
 def test_ChessTrapezoid():
     video=Video()
@@ -33,4 +57,5 @@ def test_ChessTrapezoid():
     end=timer()
     print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))    
         
-test_ChessTrapezoid()
+test_Rotation()        
+#test_ChessTrapezoid()
