@@ -9,6 +9,23 @@ from RunningStats import ColorStats
 import chess
 from enum import IntEnum
 
+class SquareKind(IntEnum):
+    """ kind of Square """
+    FIELD_WHITE = 0
+    FIELD_BLACK = 1
+    PIECE_WHITE = 2
+    PIECE_BLACK = 3
+    
+    def title(self,titles=["white field", "black field", "white piece","black piece"]):
+        return titles[self]
+    
+class Channel(IntEnum):
+    GREEN=0
+    BLUE=1
+    RED=2
+    
+    def title(self,titles=["green", "blue", "red"]):
+        return titles[self]
 
 class FieldState(IntEnum):
     """ the state of a field is a combination of the field color with a piece color + two empty field color options"""

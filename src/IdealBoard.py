@@ -5,25 +5,7 @@
 # Ideal Board
 import cv2  # Not actually necessary if you just want to create an image.
 import numpy as np
-from enum import IntEnum
-
-class SquareKind(IntEnum):
-    """ kind of Square """
-    FIELD_WHITE = 0
-    FIELD_BLACK = 1
-    PIECE_WHITE = 2
-    PIECE_BLACK = 3
-    
-    def title(self,titles=["white field", "black field", "white piece","black piece"]):
-        return titles[self]
-    
-class Channel(IntEnum):
-    GREEN=0
-    BLUE=1
-    RED=2
-    
-    def title(self,titles=["green", "blue", "red"]):
-        return titles[self]
+from Field import SquareKind,Channel
         
  
 class IdealBoard:
