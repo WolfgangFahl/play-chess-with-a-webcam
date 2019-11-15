@@ -12,9 +12,9 @@ import pytest
 import chess
 
 testEnv = Environment4Test()
-speedup=10
-waitAtEnd=False
-debug=True
+speedup=3
+waitAtEnd=True
+debug=False
 
 def test_Rotation():
     csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
@@ -100,6 +100,8 @@ def test_ChessTrapezoid():
         ret, bgr, quitWanted = video.readFrame(show=False)
         if frame==0:
             trapezoid.prepareMask(bgr)
+            trapezoid.updatePieces(chess.STARTING_BOARD_FEN)
+            trapezoid.maskWithPieces()
         masked=trapezoid.maskImage(bgr)
         if frame % speedup==0:
             keyWait=5

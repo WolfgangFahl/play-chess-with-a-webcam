@@ -69,9 +69,12 @@ class ChessTrapezoid:
     def prepareMask(self,image):    
         """ prepare a trapezoid/polygon mask to focus on the square chess field seen as a trapezoid"""
         h, w = image.shape[:2]    
-        self.mask = np.zeros((h,w,1), np.uint8)  
+        self.mask = np.zeros((h,w,1), np.uint8)
+        self.maskPolygon(self.polygon)  
+        
+    def maskPolygon(self,polygon):    
         color=(128)
-        cv2.fillConvexPoly(self.mask,self.polygon,color)
+        cv2.fillConvexPoly(self.mask,polygon,color)
         
     def maskImage(self,image):
         """ return the masked image that filters the trapezoid view"""
@@ -86,8 +89,14 @@ class ChessTrapezoid:
             tsquare=self.tsquares[square]
             tsquare.piece=piece
     
-    def maskWithPieces(self,image):
+    def maskWithPieces(self):
         """ set the mask image that will filter the trapezoid view according to piece positions when using maskImage"""
+        if self.board is not None:
+            for square in chess.SQUARES:
+                tsquare=self.tsquares[square]
+                if tsquare.piece is not None:
+                    self.maskPolygon(tsquare.ipolygon)
+            
        
 class ChessTSquare:
     """ a chess square in it's trapezoidal perspective """
@@ -113,3 +122,4 @@ class ChessTSquare:
         """ set my relative and warped polygons from the given relative corner coordinates from top left via top right, bottom right to bottom left """
         self.rpolygon=np.array([(rtl_x,rtl_y),(rtr_x,rtr_y),(rbr_x,rbr_y),(rbl_x,rbl_y)])
         self.polygon=np.array([trapez.relativeXY(rtl_x,rtl_y),trapez.relativeXY(rtr_x,rtr_y),trapez.relativeXY(rbr_x,rbr_y),trapez.relativeXY(rbl_x,rbl_y)])
+        self.ipolygon=self.polygon.astype(np.int32)
