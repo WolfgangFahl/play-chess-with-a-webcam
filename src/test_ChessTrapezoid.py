@@ -2,8 +2,8 @@
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Environment4Test import Environment4Test
-from Video import Video
-from ChessTrapezoid import ChessTrapezoid
+from Video import Video, VideoStream
+from ChessTrapezoid import ChessTrapezoid, FieldState
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -12,7 +12,7 @@ import pytest
 import chess
 
 testEnv = Environment4Test()
-speedup=3
+speedup=1
 waitAtEnd=True
 debug=False
 
@@ -99,10 +99,14 @@ def test_ChessTrapezoid():
     for frame in range(frames):
         ret, bgr, quitWanted = video.readFrame(show=False)
         if frame==0:
-            trapezoid.prepareMask(bgr)
+            #trapezoid.prepareMask(bgr)
+            #trapezoid.maskPolygon(trapezoid.polygon)  
             trapezoid.updatePieces(chess.STARTING_BOARD_FEN)
-            trapezoid.maskWithPieces()
-        masked=trapezoid.maskImage(bgr)
+            trapezoid.analyzeColors(bgr)
+        
+        mask=trapezoid.getEmptyMask(bgr)
+        trapezoid.maskWithFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
+        masked=trapezoid.maskImage(bgr,mask)
         if frame % speedup==0:
             keyWait=5
             if frame>=frames-speedup and waitAtEnd:

@@ -2,6 +2,7 @@
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import numpy as np
+from enum import IntEnum
 import cv2
 import chess
             
@@ -66,19 +67,19 @@ class ChessTrapezoid:
         else:
             raise Exception("invalid rotation %d for rotateIndices" % self.rotation)
             
-    def prepareMask(self,image):    
+    def getEmptyMask(self,image):    
         """ prepare a trapezoid/polygon mask to focus on the square chess field seen as a trapezoid"""
         h, w = image.shape[:2]    
-        self.mask = np.zeros((h,w,1), np.uint8)
-        self.maskPolygon(self.polygon)  
+        mask = np.zeros((h,w,1), np.uint8)
+        return mask
         
-    def maskPolygon(self,polygon):    
-        color=(128)
-        cv2.fillConvexPoly(self.mask,polygon,color)
+    def maskPolygon(self,mask,polygon):    
+        color=(64)
+        cv2.fillConvexPoly(mask,polygon,color)
         
-    def maskImage(self,image):
+    def maskImage(self,image,mask):
         """ return the masked image that filters the trapezoid view"""
-        masked=cv2.bitwise_and(image,image,mask=self.mask)
+        masked=cv2.bitwise_and(image,image,mask=mask)
         return masked
     
     def updatePieces(self,fen):
@@ -88,14 +89,38 @@ class ChessTrapezoid:
             piece = self.board.piece_at(square)
             tsquare=self.tsquares[square]
             tsquare.piece=piece
+            tsquare.fieldState=tsquare.getFieldState()
     
-    def maskWithPieces(self):
+    def maskWithFieldStates(self,mask,fieldStates):
         """ set the mask image that will filter the trapezoid view according to piece positions when using maskImage"""
         if self.board is not None:
             for square in chess.SQUARES:
                 tsquare=self.tsquares[square]
-                if tsquare.piece is not None:
-                    self.maskPolygon(tsquare.ipolygon)
+                if tsquare.fieldState in fieldStates:
+                    self.maskPolygon(mask,tsquare.ipolygon)
+                    
+    def analyzeColors(self,image):
+        for fieldState in FieldState:
+            mask=self.getEmptyMask(image)
+            self.maskWithFieldStates(mask,[fieldState])
+            masked=self.maskImage(image,mask)
+            #https://stackoverflow.com/a/43112217/1497139
+            avg_color_per_row = np.average(masked, axis=0)
+            avg_color = np.average(avg_color_per_row, axis=0)
+            print("%s: %s" % (fieldState.title(),avg_color))
+                            
+
+class FieldState(IntEnum):
+    """ the state of a field is a combination of the field color with a piece color + two empty field color options"""
+    WHITE_EMPTY = 0
+    WHITE_WHITE = 1
+    WHITE_BLACK = 2
+    BLACK_EMPTY = 3
+    BLACK_WHITE = 4
+    BLACK_BLACK = 5    
+    
+    def title(self,titles=["white empty", "white on white", "black on white","black empty","white on black","black on black"]):
+        return titles[self]                    
             
        
 class ChessTSquare:
@@ -112,6 +137,7 @@ class ChessTSquare:
         self.col=chess.square_file(square)
         # https://gamedev.stackexchange.com/a/44998/133453
         self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 0 else chess.BLACK   
+        self.fieldState=None
         self.piece=None
        
         self.rx,self.ry=self.row*ChessTSquare.rw,self.col*ChessTSquare.rh
@@ -123,3 +149,23 @@ class ChessTSquare:
         self.rpolygon=np.array([(rtl_x,rtl_y),(rtr_x,rtr_y),(rbr_x,rbr_y),(rbl_x,rbl_y)])
         self.polygon=np.array([trapez.relativeXY(rtl_x,rtl_y),trapez.relativeXY(rtr_x,rtr_y),trapez.relativeXY(rbr_x,rbr_y),trapez.relativeXY(rbl_x,rbl_y)])
         self.ipolygon=self.polygon.astype(np.int32)
+        
+    def getFieldState(self):
+        piece = self.piece
+        if piece is None:
+            if self.fieldColor == chess.BLACK:
+                return FieldState.WHITE_EMPTY
+            else:
+                return FieldState.BLACK_EMPTY
+        elif piece.color == chess.WHITE:
+            if self.fieldColor == chess.WHITE:
+                return FieldState.WHITE_WHITE
+            else:
+                return FieldState.BLACK_WHITE
+        else:
+            if self.fieldColor == chess.WHITE:
+                return FieldState.WHITE_BLACK
+            else:
+                return FieldState.BLACK_BLACK
+        # this can't happen
+        return None
