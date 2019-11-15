@@ -9,7 +9,7 @@ import chess
 class ChessTrapezoid:
     """ Chess board Trapezoid (UK) / Trapezium (US) / Trapez (DE)  as seen via a webcam image """
     
-    debug=False
+    debug=True
     rows=8
     cols=8
     
@@ -31,7 +31,7 @@ class ChessTrapezoid:
         for square in chess.SQUARES:
             tsquare=ChessTSquare(self,square)
             if ChessTrapezoid.debug:
-                print(tsquare)
+                print(vars(tsquare))
             self.tsquares[square]=tsquare
             
     def relativeXY(self,rx,ry):
@@ -67,15 +67,14 @@ class ChessTrapezoid:
         else:
             raise Exception("invalid rotation %d for rotateIndices" % self.rotation)
             
-    def getEmptyMask(self,image):    
+    def getEmptyImage(self,image,channels=1):    
         """ prepare a trapezoid/polygon mask to focus on the square chess field seen as a trapezoid"""
         h, w = image.shape[:2]    
-        mask = np.zeros((h,w,1), np.uint8)
-        return mask
+        emptyImage = np.zeros((h,w,channels), np.uint8)
+        return emptyImage
         
-    def maskPolygon(self,mask,polygon):    
-        color=(64)
-        cv2.fillConvexPoly(mask,polygon,color)
+    def drawPolygon(self,image,polygon,color=(64)):    
+        cv2.fillConvexPoly(image,polygon,color)
         
     def maskImage(self,image,mask):
         """ return the masked image that filters the trapezoid view"""
@@ -97,18 +96,47 @@ class ChessTrapezoid:
             for square in chess.SQUARES:
                 tsquare=self.tsquares[square]
                 if tsquare.fieldState in fieldStates:
-                    self.maskPolygon(mask,tsquare.ipolygon)
+                    self.drawPolygon(mask,tsquare.ipolygon)
+                
+    def idealColoredBoard(self,image):
+        idealImage=self.getEmptyImage(image, 3)
+        for square in chess.SQUARES:
+            tsquare=self.tsquares[square]
+            color=self.averageColors[tsquare.fieldState]
+            self.drawPolygon(idealImage, tsquare.ipolygon, color)
+        return idealImage    
+    
+    def byFieldState(self):            
+        # get a dict of fields sorted by field state
+        sortedTSquares={}
+        for square in chess.SQUARES:
+            tsquare=self.tsquares[square]
+            if not tsquare.fieldState in sortedTSquares:
+                sortedTSquares[tsquare.fieldState]=[]
+            sortedTSquares[tsquare.fieldState].append(tsquare)
+        return sortedTSquares
                     
     def analyzeColors(self,image):
+        """ get the average colors per fieldState """
+        self.averageColors={}
+        h, w = image.shape[:2] 
+        pixels=h*w
+        byFieldState=self.byFieldState()   
         for fieldState in FieldState:
-            mask=self.getEmptyMask(image)
+            mask=self.getEmptyImage(image)
             self.maskWithFieldStates(mask,[fieldState])
             masked=self.maskImage(image,mask)
             #https://stackoverflow.com/a/43112217/1497139
             avg_color_per_row = np.average(masked, axis=0)
             avg_color = np.average(avg_color_per_row, axis=0)
-            print("%s: %s" % (fieldState.title(),avg_color))
-                            
+            # the average color is based on a empty image with a lot of black pixels. Correct the average
+            # (at least a bit) accordingly
+            countedFields=len(byFieldState[fieldState])
+            factor=1 if countedFields==0 else 64/countedFields
+            avg_color=avg_color*factor
+            self.averageColors[fieldState]=avg_color.tolist()
+            if ChessTrapezoid.debug:
+                print("%s: %s" % (fieldState.title(),avg_color.tolist()))  
 
 class FieldState(IntEnum):
     """ the state of a field is a combination of the field color with a piece color + two empty field color options"""

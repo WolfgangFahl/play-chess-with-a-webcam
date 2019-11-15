@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Environment4Test import Environment4Test
-from Video import Video, VideoStream
+from Video import Video
 from ChessTrapezoid import ChessTrapezoid, FieldState
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
@@ -82,13 +82,18 @@ def test_RelativeXY():
         print ("%d r:(%.1f,%.1f) e:(%.1f,%.1f) == (%.1f,%.1f)?" % (index,rx,ry,ex,ey,x,y))   
         assert x ==pytest.approx(ex,0.1) 
         assert y ==pytest.approx(ey,0.1)
-
-def test_MaskFEN():
+        
+def test_SortedTSquares(): 
     trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374))
-    trapezoid.updatePieces(chess.STARTING_FEN) 
-    for square in chess.SQUARES:
-        tsquare=trapezoid.tsquares[square]
-        print(vars(tsquare))
+    trapezoid.updatePieces(chess.STARTING_FEN)    
+    sortedTSquares=trapezoid.byFieldState()
+    expected=[16,8,8,16,8,8]
+    for fieldState,tsquareList in sortedTSquares.items():
+        l=len(tsquareList)
+        if debug:
+            print(fieldState.title(),l)
+        assert expected[fieldState]==l
+        
 
 def test_ChessTrapezoid():
     video=Video()
@@ -102,9 +107,14 @@ def test_ChessTrapezoid():
             #trapezoid.prepareMask(bgr)
             #trapezoid.maskPolygon(trapezoid.polygon)  
             trapezoid.updatePieces(chess.STARTING_BOARD_FEN)
+            startc=timer()  
             trapezoid.analyzeColors(bgr)
+            endc=timer()
+            print('color analysis took %.3f s' % (endc-startc))    
+            idealImage=trapezoid.idealColoredBoard(bgr)
+            video.showImage(idealImage,"ideal")
         
-        mask=trapezoid.getEmptyMask(bgr)
+        mask=trapezoid.getEmptyImage(bgr)
         trapezoid.maskWithFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
         masked=trapezoid.maskImage(bgr,mask)
         if frame % speedup==0:
@@ -121,5 +131,5 @@ def test_ChessTrapezoid():
 test_Rotation()     
 test_Transform() 
 test_RelativeXY()  
-test_MaskFEN()
+test_SortedTSquares()
 test_ChessTrapezoid()
