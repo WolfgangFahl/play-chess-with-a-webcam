@@ -12,8 +12,16 @@ class ChessTrapezoid:
     
     """ Chess Trapezoid as seen via a webcam """
     def __init__(self,topLeft,topRight,bottomRight,bottomLeft):
-        self.tl,self.tr,self.br,self.br=topLeft,topRight,bottomRight,bottomLeft
+        self.tl,self.tr,self.br,self.bl=topLeft,topRight,bottomRight,bottomLeft
         self.poly=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
+        # prepare the perspective transformation
+        # https://stackoverflow.com/questions/27585355/python-open-cv-perspectivetransform
+        # https://stackoverflow.com/a/41768610/1497139
+        # the destination 
+        pts_dst = np.asarray([topLeft,topRight,bottomRight,bottomLeft],dtype=np.float32)
+        # the normed square described as a polygon in clockwise direction with an origin at top left
+        self.pts_normedSquare = np.asarray([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],dtype=np.float32)
+        self.transform=cv2.getPerspectiveTransform(self.pts_normedSquare,pts_dst)
         self.rotation=0
         # trapezoid representation of squares
         self.tsquares={}
@@ -22,6 +30,18 @@ class ChessTrapezoid:
             if ChessTrapezoid.debug:
                 print(tsquare)
             self.tsquares[square]=tsquare
+            
+    def relativeXY(self,rx,ry):
+        # see https://math.stackexchange.com/questions/2084647/obtain-two-dimensional-linear-space-on-trapezoid-shape
+        # https://stackoverflow.com/a/33303869/1497139
+        rxry = np.asarray([[rx, ry]],dtype=np.float32)
+        # target array - values are irrelevant because the will be overridden
+        xya=cv2.perspectiveTransform(np.array([rxry]),self.transform)
+        # example result:
+        # ndarray: [[[20. 40.]]]
+        xy=xya[0][0]
+        x,y=xy[0],xy[1]
+        return x,y
             
     def tSquareAt(self,row,col):
         row,col=self.rotateIndices(row, col)
