@@ -12,8 +12,8 @@ import pytest
 import chess
 
 testEnv = Environment4Test()
-speedup=1
-waitAtEnd=True
+speedup=5 # times 
+waitAtEnd=5000 # msecs
 debug=False
 
 def test_Rotation():
@@ -117,16 +117,17 @@ def test_ChessTrapezoid():
         mask=trapezoid.getEmptyImage(bgr)
         trapezoid.maskWithFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
         masked=trapezoid.maskImage(bgr,mask)
+        warped=trapezoid.warpedBoard(masked)
         if frame % speedup==0:
             keyWait=5
-            if frame>=frames-speedup and waitAtEnd:
-                keyWait=10000
-            video.showImage(masked, "masked", keyWait=keyWait)
+            video.showImage(warped, "warped", keyWait=keyWait)
         #print(frame)
         assert ret
         assert bgr is not None         
     end=timer()
     print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))    
+    if waitAtEnd>0:
+        video.showImage(warped, "warped", keyWait=waitAtEnd)
         
 test_Rotation()     
 test_Transform() 
