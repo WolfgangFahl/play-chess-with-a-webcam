@@ -5,11 +5,19 @@ import numpy as np
 from enum import IntEnum
 import cv2
 import chess
+from Video import Video
 
+class Transformation(IntEnum):
+    """ Transformation kind"""
+    RELATIVE=0 # 1.0 x 1.0
+    IDEAL=1 # e.g. 640x640
+    ORIGINAL=2 # whatever the image size is
+    
 class ChessTrapezoid:
     """ Chess board Trapezoid (UK) / Trapezium (US) / Trapez (DE)  as seen via a webcam image """
 
     debug=True
+    showDebugImage=False
     rows=8
     cols=8
   
@@ -25,6 +33,7 @@ class ChessTrapezoid:
         # the normed square described as a polygon in clockwise direction with an origin at top left
         self.pts_normedSquare = np.asarray([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],dtype=np.float32)
         self.transform=cv2.getPerspectiveTransform(self.pts_normedSquare,pts_dst)
+        self.idealSize=idealSize
         s=idealSize
         self.pts_IdealSquare = np.asarray([[0.0, 0.0], [s, 0.0], [s, s], [0.0, s]],dtype=np.float32)
         self.inverseTransform=cv2.getPerspectiveTransform(pts_dst,self.pts_IdealSquare)
@@ -73,10 +82,14 @@ class ChessTrapezoid:
     def getEmptyImage(self,image,channels=1):
         """ prepare a trapezoid/polygon mask to focus on the square chess field seen as a trapezoid"""
         h, w = image.shape[:2]
+        emptyImage=self.getEmtpyImage4WidthAndHeight(w, h, channels)
+        return emptyImage
+    
+    def getEmtpyImage4WidthAndHeight(self,w,h,channels):    
         emptyImage = np.zeros((h,w,channels), np.uint8)
         return emptyImage
 
-    def drawPolygon(self,image,polygon,color=(64)):
+    def drawPolygon(self,image,polygon,color):
         cv2.fillConvexPoly(image,polygon,color)
 
     def maskImage(self,image,mask):
@@ -93,25 +106,25 @@ class ChessTrapezoid:
             tsquare.piece=piece
             tsquare.fieldState=tsquare.getFieldState()
 
-    def maskWithFieldStates(self,mask,fieldStates):
-        """ set the mask image that will filter the trapezoid view according to piece positions when using maskImage"""
+    def drawFieldStates(self,image,fieldStates,transformation=Transformation.ORIGINAL,color=(64)):
+        """ draw the field states e.g. to set the mask image that will filter the trapezoid view according to piece positions when using maskImage"""
         if self.board is not None:
             for square in chess.SQUARES:
                 tsquare=self.tsquares[square]
                 if tsquare.fieldState in fieldStates:
-                    self.drawPolygon(mask,tsquare.ipolygon)
+                    self.drawPolygon(image,tsquare.getPolygon(transformation),color)
 
     def warpedBoard(self,image):
         h, w = image.shape[:2]
         warped=cv2.warpPerspective(image,self.inverseTransform,(w,h))
         return warped
 
-    def idealColoredBoard(self,image):
-        idealImage=self.getEmptyImage(image, 3)
+    def idealColoredBoard(self,w,h,transformation=Transformation.IDEAL):
+        idealImage=self.getEmtpyImage4WidthAndHeight(w,h,3)
         for square in chess.SQUARES:
             tsquare=self.tsquares[square]
             color=self.averageColors[tsquare.fieldState]
-            self.drawPolygon(idealImage, tsquare.ipolygon, color)
+            self.drawPolygon(idealImage, tsquare.getPolygon(transformation), color)
         return idealImage
 
     def byFieldState(self):
@@ -124,15 +137,14 @@ class ChessTrapezoid:
             sortedTSquares[tsquare.fieldState].append(tsquare)
         return sortedTSquares
 
-    def analyzeColors(self,image):
+    def analyzeColors(self,image,video=Video()):
         """ get the average colors per fieldState """
         self.averageColors={}
-        h, w = image.shape[:2]
-        pixels=h*w
+        warped=self.warpedBoard(image)
         byFieldState=self.byFieldState()
         for fieldState in FieldState:
-            mask=self.getEmptyImage(image)
-            self.maskWithFieldStates(mask,[fieldState])
+            mask=self.getEmptyImage(warped)
+            self.drawFieldStates(mask,[fieldState],Transformation.IDEAL)
             masked=self.maskImage(image,mask)
             #https://stackoverflow.com/a/43112217/1497139
             avg_color_per_row = np.average(masked, axis=0)
@@ -143,8 +155,11 @@ class ChessTrapezoid:
             factor=1 if countedFields==0 else 64/countedFields
             avg_color=avg_color*factor
             self.averageColors[fieldState]=avg_color.tolist()
+            if ChessTrapezoid.showDebugImage:
+                video.showImage(masked,fieldState.title())
             if ChessTrapezoid.debug:
-                print("%s: %s" % (fieldState.title(),avg_color.tolist()))
+                b,g,r=avg_color.tolist()
+                print("%15s: %3d, %3d, %3d" % (fieldState.title(),b,g,r))
 
 class FieldState(IntEnum):
     """ the state of a field is a combination of the field color with a piece color + two empty field color options"""
@@ -172,7 +187,7 @@ class ChessTSquare:
         self.row=ChessTrapezoid.rows-1-chess.square_rank(square)
         self.col=chess.square_file(square)
         # https://gamedev.stackexchange.com/a/44998/133453
-        self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 0 else chess.BLACK
+        self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 1 else chess.BLACK
         self.fieldState=None
         self.piece=None
 
@@ -183,14 +198,24 @@ class ChessTSquare:
     def setPolygons(self,trapez,rtl_x,rtl_y,rtr_x,rtr_y,rbr_x,rbr_y,rbl_x,rbl_y):
         """ set my relative and warped polygons from the given relative corner coordinates from top left via top right, bottom right to bottom left """
         self.rpolygon=np.array([(rtl_x,rtl_y),(rtr_x,rtr_y),(rbr_x,rbr_y),(rbl_x,rbl_y)])
+        self.idealPolygon=(self.rpolygon*trapez.idealSize).astype(np.int32)
         self.polygon=np.array([trapez.relativeXY(rtl_x,rtl_y),trapez.relativeXY(rtr_x,rtr_y),trapez.relativeXY(rbr_x,rbr_y),trapez.relativeXY(rbl_x,rbl_y)])
         self.ipolygon=self.polygon.astype(np.int32)
 
-
+    def getPolygon(self,transformation):
+        if transformation==Transformation.ORIGINAL:
+            return self.ipolygon
+        elif transformation==Transformation.RELATIVE:
+            return self.rpolygon
+        elif transformation==Transformation.IDEAL:
+            return self.idealPolygon
+        else:
+            raise Exception("invalid transformation %d for getPolygon",transformation)
+        
     def getFieldState(self):
         piece = self.piece
         if piece is None:
-            if self.fieldColor == chess.BLACK:
+            if self.fieldColor == chess.WHITE:
                 return FieldState.WHITE_EMPTY
             else:
                 return FieldState.BLACK_EMPTY

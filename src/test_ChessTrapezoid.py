@@ -13,7 +13,7 @@ import chess
 
 testEnv = Environment4Test()
 speedup=5 # times 
-waitAtEnd=5000 # msecs
+waitAtEnd=0 # msecs
 debug=False
 
 def test_Rotation():
@@ -108,14 +108,15 @@ def test_ChessTrapezoid():
             #trapezoid.maskPolygon(trapezoid.polygon)  
             trapezoid.updatePieces(chess.STARTING_BOARD_FEN)
             startc=timer()  
-            trapezoid.analyzeColors(bgr)
+            warped=trapezoid.warpedBoard(bgr)
+            trapezoid.analyzeColors(warped)
             endc=timer()
             print('color analysis took %.3f s' % (endc-startc))    
-            idealImage=trapezoid.idealColoredBoard(bgr)
+            idealImage=trapezoid.idealColoredBoard(trapezoid.idealSize,trapezoid.idealSize)
             video.showImage(idealImage,"ideal")
         
         mask=trapezoid.getEmptyImage(bgr)
-        trapezoid.maskWithFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
+        trapezoid.drawFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
         masked=trapezoid.maskImage(bgr,mask)
         warped=trapezoid.warpedBoard(masked)
         if frame % speedup==0:
