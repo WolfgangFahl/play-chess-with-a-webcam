@@ -4,18 +4,6 @@
 import numpy as np
 import cv2
 import chess
-
-class ChessTSquare:
-    """ a chess square in it's trapezoidal perspective """
-    def __init__(self,square):
-        self.square=square
-        self.an=chess.SQUARE_NAMES[square]
-        self.row=ChessTrapezoid.rows-1-chess.square_rank(square)
-        self.col=chess.square_file(square)
-        # https://gamedev.stackexchange.com/a/44998/133453
-        self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 0 else chess.BLACK   
-        self.piece=None
-        #tsquare['poly']=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
             
 class ChessTrapezoid:
     """ Chess board Trapezoid (UK) / Trapezium (US) / Trapez (DE)  as seen via a webcam image """
@@ -27,7 +15,7 @@ class ChessTrapezoid:
     def __init__(self,topLeft,topRight,bottomRight,bottomLeft):
         """ construct me from the given corner points"""
         self.tl,self.tr,self.br,self.bl=topLeft,topRight,bottomRight,bottomLeft
-        self.poly=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
+        self.polygon=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
         # prepare the perspective transformation
         # https://stackoverflow.com/questions/27585355/python-open-cv-perspectivetransform
         # https://stackoverflow.com/a/41768610/1497139
@@ -40,7 +28,7 @@ class ChessTrapezoid:
         # trapezoid representation of squares
         self.tsquares={}
         for square in chess.SQUARES:
-            tsquare=ChessTSquare(square)
+            tsquare=ChessTSquare(self,square)
             if ChessTrapezoid.debug:
                 print(tsquare)
             self.tsquares[square]=tsquare
@@ -66,6 +54,7 @@ class ChessTrapezoid:
         return self.tsquares[square]
     
     def rotateIndices(self,row,col):
+        """ rotate the indices or rows and columns according to the board rotation"""
         if self.rotation==0:
             return row,col
         elif self.rotation==90:
@@ -82,18 +71,45 @@ class ChessTrapezoid:
         h, w = image.shape[:2]    
         self.mask = np.zeros((h,w,1), np.uint8)  
         color=(128)
-        cv2.fillConvexPoly(self.mask,self.poly,color)
+        cv2.fillConvexPoly(self.mask,self.polygon,color)
         
     def maskImage(self,image):
         """ return the masked image that filters the trapezoid view"""
         masked=cv2.bitwise_and(image,image,mask=self.mask)
         return masked
     
-    def maskFEN(self,fen):
+    def updatePieces(self,fen):
+        """ update the piece positions according to the given FEN"""
         self.board=chess.Board(fen)
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
             tsquare=self.tsquares[square]
             tsquare.piece=piece
     
-    
+    def maskWithPieces(self,image):
+        """ set the mask image that will filter the trapezoid view according to piece positions when using maskImage"""
+       
+class ChessTSquare:
+    """ a chess square in it's trapezoidal perspective """
+    # relative position and size of original square
+    rw=1/(ChessTrapezoid.rows)
+    rh=1/(ChessTrapezoid.cols)
+        
+    def __init__(self,trapez,square):
+        ''' construct me from the given trapez  and square '''
+        self.square=square
+        self.an=chess.SQUARE_NAMES[square]
+        self.row=ChessTrapezoid.rows-1-chess.square_rank(square)
+        self.col=chess.square_file(square)
+        # https://gamedev.stackexchange.com/a/44998/133453
+        self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 0 else chess.BLACK   
+        self.piece=None
+       
+        self.rx,self.ry=self.row*ChessTSquare.rw,self.col*ChessTSquare.rh
+        self.x,self.y=trapez.relativeXY(self.rx, self.ry)
+        self.setPolygons(trapez,self.rx,self.ry,self.rx+ChessTSquare.rw,self.ry,self.rx+ChessTSquare.rw,self.ry+ChessTSquare.rh,self.rx,self.ry+ChessTSquare.rh)
+        
+    def setPolygons(self,trapez,rtl_x,rtl_y,rtr_x,rtr_y,rbr_x,rbr_y,rbl_x,rbl_y):
+        """ set my relative and warped polygons from the given relative corner coordinates from top left via top right, bottom right to bottom left """
+        self.rpolygon=np.array([(rtl_x,rtl_y),(rtr_x,rtr_y),(rbr_x,rbr_y),(rbl_x,rbl_y)])
+        self.polygon=np.array([trapez.relativeXY(rtl_x,rtl_y),trapez.relativeXY(rtr_x,rtr_y),trapez.relativeXY(rbr_x,rbr_y),trapez.relativeXY(rbl_x,rbl_y)])

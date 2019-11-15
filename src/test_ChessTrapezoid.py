@@ -6,14 +6,15 @@ from Video import Video
 from ChessTrapezoid import ChessTrapezoid
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
-import numpy as np
+from matplotlib.patches import Polygon
+from matplotlib.collections import PatchCollection
 import pytest
 import chess
 
 testEnv = Environment4Test()
 speedup=10
 waitAtEnd=False
-debug=False
+debug=True
 
 def test_Rotation():
     csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
@@ -40,30 +41,34 @@ def test_Rotation():
            
 def test_Transform():
     trapez=ChessTrapezoid((20,40),(44,38),(60,8),(10,10))
-    if debug:
-        plt.figure()
-        plt.plot(trapez.pts_normedSquare[[0,1,2,3,0], 0],trapez.pts_normedSquare[[0,1,2,3,0], 1], '-')
-    squares=ChessTrapezoid.rows*ChessTrapezoid.cols
-    xvalues=np.zeros(squares,np.float32)
-    yvalues=np.zeros(squares,np.float32)
-    rxvalues=np.zeros(squares,np.float32)
-    ryvalues=np.zeros(squares,np.float32)
-    index=0
-    for row in range(ChessTrapezoid.rows):
-        for col in range (ChessTrapezoid.cols):
-            rx,ry=row/(ChessTrapezoid.rows-1),col/(ChessTrapezoid.cols-1)
-            rxvalues[index]=rx
-            ryvalues[index]=ry
-            x,y=trapez.relativeXY(rx, ry)
-            xvalues[index]=x
-            yvalues[index]=y
-            index=index+1
-    
+    #if debug:
+    #    plt.figure()
+    #    plt.plot(trapez.pts_normedSquare[[0,1,2,3,0], 0],trapez.pts_normedSquare[[0,1,2,3,0], 1], '-')
+    squarePatches = []
+    tSquarePatches = []    
+    # https://stackoverflow.com/questions/26935701/ploting-filled-polygons-in-python
+    for square in chess.SQUARES:
+        tsquare=trapez.tsquares[square]
+        color=[1,1,1,1] if tsquare.fieldColor else [0.1,0.1,0.1,1]
+        polygon=Polygon(tsquare.rpolygon,color=color)
+        tpolygon=Polygon(tsquare.polygon,color=color)
+        squarePatches.append(polygon)
+        tSquarePatches.append(tpolygon)
+    # https://stackoverflow.com/questions/44725201/set-polygon-colors-matplotlib    
+    squareP = PatchCollection(squarePatches,match_original=True) 
+    tSquareP = PatchCollection(tSquarePatches,match_original=True)    
+
     if debug:        
-        plt.plot(rxvalues,ryvalues,'o')        
-        plt.figure()
-        plt.plot(trapez.poly[[0,1,2,3,0], 0], trapez.poly[[0,1,2,3,0], 1], '-')
-        plt.plot(xvalues,yvalues,'o')
+        fig, ax = plt.subplots(2)
+        ax1=ax[0]
+        ax1.set_title("relative normed square")
+        ax1.add_collection(squareP)
+        ax1.set_ylim(ax1.get_ylim()[::-1])
+        ax2=ax[1]      
+
+        ax2.set_title("trapezoidal warp")
+        ax2.add_collection(tSquareP)
+        ax2.autoscale()
         plt.show()               
 
 def test_RelativeXY():
@@ -80,7 +85,7 @@ def test_RelativeXY():
 
 def test_MaskFEN():
     trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374))
-    trapezoid.maskFEN(chess.STARTING_FEN) 
+    trapezoid.updatePieces(chess.STARTING_FEN) 
     for square in chess.SQUARES:
         tsquare=trapezoid.tsquares[square]
         print(vars(tsquare))
