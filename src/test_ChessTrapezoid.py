@@ -8,9 +8,10 @@ from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+import chess
 
 testEnv = Environment4Test()
-speedup=4
+speedup=10
 waitAtEnd=False
 debug=False
 
@@ -28,7 +29,7 @@ def test_Rotation():
         for row in range(ChessTrapezoid.rows):
             for col in range(ChessTrapezoid.cols):
                 tsquare=csquare.tSquareAt(row, col)
-                print(tsquare['an'],end='')
+                print(tsquare.an,end='')
             print()   
         for rowcol in indices:
             row,col=rowcol
@@ -77,6 +78,13 @@ def test_RelativeXY():
         assert x ==pytest.approx(ex,0.1) 
         assert y ==pytest.approx(ey,0.1)
 
+def test_MaskFEN():
+    trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374))
+    trapezoid.maskFEN(chess.STARTING_FEN) 
+    for square in chess.SQUARES:
+        tsquare=trapezoid.tsquares[square]
+        print(vars(tsquare))
+
 def test_ChessTrapezoid():
     video=Video()
     video.open(testEnv.testMedia + 'scholarsmate.avi')
@@ -102,4 +110,5 @@ def test_ChessTrapezoid():
 test_Rotation()     
 test_Transform() 
 test_RelativeXY()  
+test_MaskFEN()
 test_ChessTrapezoid()

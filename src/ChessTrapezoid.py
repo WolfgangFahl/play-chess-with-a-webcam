@@ -5,13 +5,27 @@ import numpy as np
 import cv2
 import chess
 
+class ChessTSquare:
+    """ a chess square in it's trapezoidal perspective """
+    def __init__(self,square):
+        self.square=square
+        self.an=chess.SQUARE_NAMES[square]
+        self.row=ChessTrapezoid.rows-1-chess.square_rank(square)
+        self.col=chess.square_file(square)
+        # https://gamedev.stackexchange.com/a/44998/133453
+        self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 0 else chess.BLACK   
+        self.piece=None
+        #tsquare['poly']=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
+            
 class ChessTrapezoid:
+    """ Chess board Trapezoid (UK) / Trapezium (US) / Trapez (DE)  as seen via a webcam image """
+    
     debug=False
     rows=8
     cols=8
     
-    """ Chess Trapezoid as seen via a webcam """
     def __init__(self,topLeft,topRight,bottomRight,bottomLeft):
+        """ construct me from the given corner points"""
         self.tl,self.tr,self.br,self.bl=topLeft,topRight,bottomRight,bottomLeft
         self.poly=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
         # prepare the perspective transformation
@@ -26,12 +40,13 @@ class ChessTrapezoid:
         # trapezoid representation of squares
         self.tsquares={}
         for square in chess.SQUARES:
-            tsquare=self.getSquare(square)
+            tsquare=ChessTSquare(square)
             if ChessTrapezoid.debug:
                 print(tsquare)
             self.tsquares[square]=tsquare
             
     def relativeXY(self,rx,ry):
+        """ convert a relative 0-1 based coordinate to a coordinate in the trapez"""
         # see https://math.stackexchange.com/questions/2084647/obtain-two-dimensional-linear-space-on-trapezoid-shape
         # https://stackoverflow.com/a/33303869/1497139
         rxry = np.asarray([[rx, ry]],dtype=np.float32)
@@ -44,19 +59,11 @@ class ChessTrapezoid:
         return x,y
             
     def tSquareAt(self,row,col):
+        """ get the trapezoid chessboard square for the given row and column"""
         row,col=self.rotateIndices(row, col)
         squareIndex = (ChessTrapezoid.rows-1-row) * ChessTrapezoid.cols + col;
         square = chess.SQUARES[squareIndex]
         return self.tsquares[square]
-        
-    def getSquare(self,square):
-        tsquare={}
-        tsquare['square']=square        
-        tsquare['an']=chess.SQUARE_NAMES[square]
-        tsquare['row']=ChessTrapezoid.rows-1-chess.square_rank(square)
-        tsquare['col']=chess.square_file(square)
-        #tsquare['poly']=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
-        return tsquare         
     
     def rotateIndices(self,row,col):
         if self.rotation==0:
@@ -82,7 +89,11 @@ class ChessTrapezoid:
         masked=cv2.bitwise_and(image,image,mask=self.mask)
         return masked
     
-    def maskFen(self,fen):
+    def maskFEN(self,fen):
         self.board=chess.Board(fen)
+        for square in chess.SQUARES:
+            piece = self.board.piece_at(square)
+            tsquare=self.tsquares[square]
+            tsquare.piece=piece
     
     
