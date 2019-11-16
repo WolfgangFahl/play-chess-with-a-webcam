@@ -194,7 +194,7 @@ class ChessTrapezoid:
                 video.showImage(masked,fieldState.title())
             if ChessTrapezoid.debug:
                 b,g,r=averageColor.color
-                print("%15s: %3d, %3d, %3d" % (fieldState.title(),b,g,r))
+                print("%15s (%2d): %3d, %3d, %3d" % (fieldState.title(),countedFields,b,g,r))
 
 class FieldState(IntEnum):
     """ the state of a field is a combination of the field color with a piece color + two empty field color options"""
@@ -232,10 +232,8 @@ class Color:
             self.color(0,0,0)
         else:    
             # the average color is based on a empty image with a lot of black pixels. Correct the average
-            factor=pixels/max(nonzero)      
-            avg_color_per_row = np.average(image, axis=0)
-            avg_color = np.average(avg_color_per_row, axis=0)
-            avg_color=avg_color*factor
+            factor=pixels/max(nonzero)
+            avg_color=means.flatten()*factor
             self.color=avg_color.tolist()
     
 class ChessTSquare:
