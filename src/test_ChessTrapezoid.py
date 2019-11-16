@@ -3,18 +3,20 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Environment4Test import Environment4Test
 from Video import Video
-from ChessTrapezoid import ChessTrapezoid
+from ChessTrapezoid import ChessTrapezoid, FieldState
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+import numpy as np
 import pytest
 import chess
 
 testEnv = Environment4Test()
-speedup=1 # times 
+speedup=10 # times 
 waitAtEnd=0 # msecs
 debug=False
+plotHistory=True
 
 def test_Rotation():
     csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
@@ -101,6 +103,7 @@ def test_ChessTrapezoid():
     frames=334
     start=timer()  
     trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374))
+    colorHistory={}
     for frame in range(frames):
         ret, bgr, quitWanted = video.readFrame(show=False)
         if frame==0:
@@ -113,6 +116,7 @@ def test_ChessTrapezoid():
         trapezoid.analyzeColors(warped)
         endc=timer()
         print('color analysis for frame %d took %.3f s' % (frame,endc-startc))    
+        colorHistory[frame]=trapezoid.averageColors.copy()
         
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
@@ -131,9 +135,38 @@ def test_ChessTrapezoid():
         assert ret
         assert bgr is not None         
     end=timer()
-    print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))    
+    print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))
+    if plotHistory:
+        plotColorHistory(colorHistory)
     if waitAtEnd>0:
         video.showImage(warped, "warped", keyWait=waitAtEnd)
+        
+def plotColorHistory(colorHistory):
+    l=len(colorHistory)
+    print ("color  history for %d frames" % (l))    
+    #fig,ax=plt.subplots(len(FieldState))
+    markers=['s','o','v','^','<','>']
+    dist=10
+    for fieldState in FieldState:
+        size=l//dist
+        x=np.empty(size)
+        r=np.empty(size)
+        g=np.empty(size)
+        b=np.empty(size)
+        for frame,avgColors in colorHistory.items():
+            avgColor=avgColors[fieldState]
+            if frame%dist==0:
+                index=frame//dist
+                if index<size:
+                    x[index]=frame
+                    b[index],g[index],r[index]=avgColor.color
+        #ax[fieldState].set_title(fieldState.title())    
+        plt.plot(x,r,c='r',marker=markers[fieldState])
+        plt.plot(x,g,c='g',marker=markers[fieldState])
+        plt.plot(x,b,c='b',marker=markers[fieldState],label=fieldState.title())
+        #ax[fieldState].autoscale()
+    plt.legend()    
+    plt.show()    
         
 test_Rotation()     
 test_Transform() 
