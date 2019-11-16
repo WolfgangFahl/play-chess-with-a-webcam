@@ -2,6 +2,7 @@
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import numpy as np
+import math
 from enum import IntEnum
 import cv2
 import chess
@@ -20,6 +21,8 @@ class ChessTrapezoid:
     showDebugImage=False
     rows=8
     cols=8
+    # default radius of pieces
+    PieceRadiusFactor=3
   
     def __init__(self,topLeft,topRight,bottomRight,bottomLeft,idealSize=640):
         """ construct me from the given corner points"""
@@ -90,7 +93,22 @@ class ChessTrapezoid:
         return emptyImage
 
     def drawPolygon(self,image,polygon,color):
+        """ draw the given polygon onto the given image with the given color"""
         cv2.fillConvexPoly(image,polygon,color)
+               
+    def drawCircle(self,image,center,radius,color,thickness=-1):
+        """ draw a circle onto the given image at the given center point with the given radius, color and thickness. """
+        if color is not None:
+            cv2.circle(image, center, radius, color=color, thickness=thickness)
+    
+    def drawRCircle(self,image,rcenter,rradius,color,thickness=-1):
+        """ draw a circle with relative coordinates"""
+        radius=int(rradius*self.idealSize)
+        rx,ry=rcenter
+        x=int(rx*self.idealSize)
+        y=int(ry*self.idealSize)
+        center=x,y
+        self.drawCircle(image,center,radius,color,thickness)
 
     def maskImage(self,image,mask):
         """ return the masked image that filters the trapezoid view"""
@@ -106,13 +124,13 @@ class ChessTrapezoid:
             tsquare.piece=piece
             tsquare.fieldState=tsquare.getFieldState()
 
-    def drawFieldStates(self,image,fieldStates,transformation=Transformation.ORIGINAL,color=(64)):
-        """ draw the field states e.g. to set the mask image that will filter the trapezoid view according to piece positions when using maskImage"""
+    def drawFieldStates(self,image,fieldStates,transformation=Transformation.ORIGINAL,channels=3):
+        """ draw the states for fields with the given field states e.g. to set the mask image that will filter the trapezoid view according to piece positions when using maskImage"""
         if self.board is not None:
             for square in chess.SQUARES:
                 tsquare=self.tsquares[square]
                 if tsquare.fieldState in fieldStates:
-                    tsquare.drawState(image,transformation,color)
+                    tsquare.drawState(image,transformation,channels)
 
     def warpedBoard(self,image):
         h, w = image.shape[:2]
@@ -120,11 +138,11 @@ class ChessTrapezoid:
         return warped
 
     def idealColoredBoard(self,w,h,transformation=Transformation.IDEAL):
+        """ draw an 'ideal' colored board according to a given set of parameters e.g. fieldColor, pieceColor, pieceRadius"""
         idealImage=self.getEmtpyImage4WidthAndHeight(w,h,3)
         for square in chess.SQUARES:
             tsquare=self.tsquares[square]
-            color=self.averageColors[tsquare.fieldState]
-            tsquare.drawState(idealImage,transformation,color)
+            tsquare.drawState(idealImage,transformation,3)
         return idealImage
 
     def byFieldState(self):
@@ -144,7 +162,7 @@ class ChessTrapezoid:
         byFieldState=self.byFieldState()
         for fieldState in FieldState:
             mask=self.getEmptyImage(warped)
-            self.drawFieldStates(mask,[fieldState],Transformation.IDEAL)
+            self.drawFieldStates(mask,[fieldState],Transformation.IDEAL,1)
             masked=self.maskImage(image,mask)
             #https://stackoverflow.com/a/43112217/1497139
             avg_color_per_row = np.average(masked, axis=0)
@@ -153,6 +171,11 @@ class ChessTrapezoid:
             # (at least a bit) accordingly
             countedFields=len(byFieldState[fieldState])
             factor=1 if countedFields==0 else 64/countedFields
+            # if the field has a piece on it we have drawn a circle which further eliminates pixels
+            if not (fieldState==FieldState.WHITE_EMPTY or fieldState==FieldState.BLACK_EMPTY):
+                rradius=1/ChessTrapezoid.PieceRadiusFactor
+                rarea=rradius*rradius*math.pi
+                factor=factor*1/rarea
             avg_color=avg_color*factor
             self.averageColors[fieldState]=avg_color.tolist()
             if ChessTrapezoid.showDebugImage:
@@ -173,7 +196,13 @@ class FieldState(IntEnum):
     def title(self,titles=["white empty", "white on white", "black on white","black empty","white on black","black on black"]):
         return titles[self]
 
-
+class Color:
+    """ Color definitions with maximum lightness difference """
+    white=(255,255,255)
+    lightgrey=(170,170,170)
+    darkgrey=(85,85,85)
+    black=(0,0,0)
+    
 class ChessTSquare:
     """ a chess square in it's trapezoidal perspective """
     # relative position and size of original square
@@ -191,6 +220,7 @@ class ChessTSquare:
         self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 1 else chess.BLACK
         self.fieldState=None
         self.piece=None
+        self.rPieceRadius=ChessTSquare.rw/ChessTrapezoid.PieceRadiusFactor
 
         self.rx,self.ry=self.row*ChessTSquare.rw,self.col*ChessTSquare.rh
         self.x,self.y=trapez.relativeXY(self.rx, self.ry)
@@ -233,6 +263,31 @@ class ChessTSquare:
         # this can't happen
         return None
 
-    def drawState(self,image,transformation,color):
+    def drawState(self,image,transformation,channels):
         """ draw my state onto the given image with the given transformation and color """
-        self.trapez.drawPolygon(image,self.getPolygon(transformation),color)
+        # default is drawing a single channel mask
+        squareImageColor=64
+        pieceImageColor=squareImageColor
+        if channels==3:
+            if self.fieldColor==chess.WHITE:
+                if FieldState.WHITE_EMPTY in self.trapez.averageColors:
+                    squareImageColor=self.trapez.averageColors[FieldState.WHITE_EMPTY]
+                else:
+                    squareImageColor=Color.white    
+            else:
+                if FieldState.BLACK_EMPTY in self.trapez.averageColors:
+                    squareImageColor=self.trapez.averageColors[FieldState.BLACK_EMPTY]
+                else:
+                    squareImageColor=Color.black
+        
+        if not (channels==1 and self.piece is not None): 
+            self.trapez.drawPolygon(image,self.getPolygon(transformation),squareImageColor)
+            
+        if self.piece is not None:
+            if channels==3:
+                if self.fieldState in self.trapez.averageColors:
+                    pieceImageColor=self.trapez.averageColors[self.fieldState]
+                else:    
+                    pieceImageColor=Color.darkgrey if self.piece.color==chess.BLACK else Color.lightgrey
+            rcenter=(self.rx+ChessTSquare.rw/2),(self.ry+ChessTSquare.rh/2)
+            self.trapez.drawRCircle(image,rcenter,self.rPieceRadius,pieceImageColor)
