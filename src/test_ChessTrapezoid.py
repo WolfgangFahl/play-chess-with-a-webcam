@@ -3,7 +3,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Environment4Test import Environment4Test
 from Video import Video
-from ChessTrapezoid import ChessTrapezoid, FieldState
+from ChessTrapezoid import ChessTrapezoid
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -12,7 +12,7 @@ import pytest
 import chess
 
 testEnv = Environment4Test()
-speedup=5 # times 
+speedup=1 # times 
 waitAtEnd=0 # msecs
 debug=False
 
@@ -107,21 +107,26 @@ def test_ChessTrapezoid():
             #trapezoid.prepareMask(bgr)
             #trapezoid.maskPolygon(trapezoid.polygon)  
             trapezoid.updatePieces(chess.STARTING_BOARD_FEN)
-            startc=timer()  
-            warped=trapezoid.warpedBoard(bgr)
-            trapezoid.analyzeColors(warped)
-            endc=timer()
-            print('color analysis took %.3f s' % (endc-startc))    
-            idealImage=trapezoid.idealColoredBoard(trapezoid.idealSize,trapezoid.idealSize)
-            video.showImage(idealImage,"ideal")
+        startc=timer()  
+        warped=trapezoid.warpedBoardImage(bgr)
+        warpedHeight, warpedWidth = warped.shape[:2]
+        trapezoid.analyzeColors(warped)
+        endc=timer()
+        print('color analysis for frame %d took %.3f s' % (frame,endc-startc))    
         
-        mask=trapezoid.getEmptyImage(bgr)
-        trapezoid.drawFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
-        masked=trapezoid.maskImage(bgr,mask)
-        warped=trapezoid.warpedBoard(masked)
+        idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
+        diffImage=trapezoid.diffBoardImage(warped,idealImage)
+        diffSum=trapezoid.diffSum(warped,idealImage)
+        
+        #mask=trapezoid.getEmptyImage(bgr)
+        #trapezoid.drawFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
+        #masked=trapezoid.maskImage(bgr,mask)
+        #warped=trapezoid.warpedBoard(masked)
         if frame % speedup==0:
             keyWait=5
             video.showImage(warped, "warped", keyWait=keyWait)
+            video.showImage(idealImage,"ideal")
+            video.showImage(diffImage,"diff")
         #print(frame)
         assert ret
         assert bgr is not None         

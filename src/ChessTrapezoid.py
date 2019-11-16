@@ -41,6 +41,8 @@ class ChessTrapezoid:
         self.pts_IdealSquare = np.asarray([[0.0, 0.0], [s, 0.0], [s, s], [0.0, s]],dtype=np.float32)
         self.inverseTransform=cv2.getPerspectiveTransform(pts_dst,self.pts_IdealSquare)
         self.rotation=0
+        # dict for average Colors
+        self.averageColors={}
         # trapezoid representation of squares
         self.tsquares={}
         for square in chess.SQUARES:
@@ -89,6 +91,7 @@ class ChessTrapezoid:
         return emptyImage
     
     def getEmtpyImage4WidthAndHeight(self,w,h,channels):    
+        """ get an empty image with the given width height and channels"""
         emptyImage = np.zeros((h,w,channels), np.uint8)
         return emptyImage
 
@@ -132,10 +135,31 @@ class ChessTrapezoid:
                 if tsquare.fieldState in fieldStates:
                     tsquare.drawState(image,transformation,channels)
 
-    def warpedBoard(self,image):
+    def warpedBoardImage(self,image):
         h, w = image.shape[:2]
         warped=cv2.warpPerspective(image,self.inverseTransform,(w,h))
         return warped
+    
+    def diffBoardImage(self,image,other):
+        if image is None :
+            raise Exception("image is None for diff")
+        if other is None:
+            raise Exception("other is None for diff")
+        h, w = image.shape[:2]
+        ho, wo = other.shape[:2]
+        if not h==ho or not w==wo:
+            raise Exception("image %d x %d has to have same size as other %d x %d for diff" % (w,h,wo,ho))
+        #return np.subtract(self.image,other)
+        return cv2.absdiff(image,other)   
+    
+    def diffSum(self,image,other):
+        #diffImage=self.diff(other) 
+        #return diffImage.sum()   
+        # https://stackoverflow.com/questions/17829092/opencv-cv2-absdiffimg1-img2-sum-without-temporary-img
+        diffSumValue=cv2.norm(image,other,cv2.NORM_L1)
+        if ChessTrapezoid.debug:
+            print("diffSum %.0f" % (diffSumValue))
+        return diffSumValue
 
     def idealColoredBoard(self,w,h,transformation=Transformation.IDEAL):
         """ draw an 'ideal' colored board according to a given set of parameters e.g. fieldColor, pieceColor, pieceRadius"""
@@ -157,31 +181,19 @@ class ChessTrapezoid:
 
     def analyzeColors(self,image,video=Video()):
         """ get the average colors per fieldState """
-        self.averageColors={}
-        warped=self.warpedBoard(image)
+        warped=self.warpedBoardImage(image)
         byFieldState=self.byFieldState()
         for fieldState in FieldState:
             mask=self.getEmptyImage(warped)
             self.drawFieldStates(mask,[fieldState],Transformation.IDEAL,1)
             masked=self.maskImage(image,mask)
-            #https://stackoverflow.com/a/43112217/1497139
-            avg_color_per_row = np.average(masked, axis=0)
-            avg_color = np.average(avg_color_per_row, axis=0)
-            # the average color is based on a empty image with a lot of black pixels. Correct the average
-            # (at least a bit) accordingly
             countedFields=len(byFieldState[fieldState])
-            factor=1 if countedFields==0 else 64/countedFields
-            # if the field has a piece on it we have drawn a circle which further eliminates pixels
-            if not (fieldState==FieldState.WHITE_EMPTY or fieldState==FieldState.BLACK_EMPTY):
-                rradius=1/ChessTrapezoid.PieceRadiusFactor
-                rarea=rradius*rradius*math.pi
-                factor=factor*1/rarea
-            avg_color=avg_color*factor
-            self.averageColors[fieldState]=avg_color.tolist()
+            averageColor=Color(masked,countedFields,fieldState)
+            self.averageColors[fieldState]=averageColor
             if ChessTrapezoid.showDebugImage:
                 video.showImage(masked,fieldState.title())
             if ChessTrapezoid.debug:
-                b,g,r=avg_color.tolist()
+                b,g,r=averageColor.color
                 print("%15s: %3d, %3d, %3d" % (fieldState.title(),b,g,r))
 
 class FieldState(IntEnum):
@@ -202,6 +214,26 @@ class Color:
     lightgrey=(170,170,170)
     darkgrey=(85,85,85)
     black=(0,0,0)
+    
+    def __init__(self,image,squareCount,fieldState):
+        # if there is no square the color is irrelevant (e.g. for an empty board with no pieces)
+        if squareCount==0:
+            return None
+        """ pick the an average color from the given masked image representating pixel from the given number of squares"""
+        #https://stackoverflow.com/a/43112217/1497139 
+        avg_color_per_row = np.average(image, axis=0)
+        avg_color = np.average(avg_color_per_row, axis=0)
+        # the average color is based on a empty image with a lot of black pixels. Correct the average
+        # (at least a bit) accordingly
+           
+        factor=1 if squareCount==0 else 64/squareCount
+        # if the field has a piece on it we have drawn a circle which further eliminates pixels
+        if not (fieldState==FieldState.WHITE_EMPTY or fieldState==FieldState.BLACK_EMPTY):
+            rradius=1/ChessTrapezoid.PieceRadiusFactor
+            rarea=rradius*rradius*math.pi
+            factor=factor*1/rarea
+        avg_color=avg_color*factor
+        self.color=avg_color.tolist()
     
 class ChessTSquare:
     """ a chess square in it's trapezoidal perspective """
@@ -271,12 +303,12 @@ class ChessTSquare:
         if channels==3:
             if self.fieldColor==chess.WHITE:
                 if FieldState.WHITE_EMPTY in self.trapez.averageColors:
-                    squareImageColor=self.trapez.averageColors[FieldState.WHITE_EMPTY]
+                    squareImageColor=self.trapez.averageColors[FieldState.WHITE_EMPTY].color
                 else:
                     squareImageColor=Color.white    
             else:
                 if FieldState.BLACK_EMPTY in self.trapez.averageColors:
-                    squareImageColor=self.trapez.averageColors[FieldState.BLACK_EMPTY]
+                    squareImageColor=self.trapez.averageColors[FieldState.BLACK_EMPTY].color
                 else:
                     squareImageColor=Color.black
         
@@ -286,7 +318,7 @@ class ChessTSquare:
         if self.piece is not None:
             if channels==3:
                 if self.fieldState in self.trapez.averageColors:
-                    pieceImageColor=self.trapez.averageColors[self.fieldState]
+                    pieceImageColor=self.trapez.averageColors[self.fieldState].color
                 else:    
                     pieceImageColor=Color.darkgrey if self.piece.color==chess.BLACK else Color.lightgrey
             rcenter=(self.rx+ChessTSquare.rw/2),(self.ry+ChessTSquare.rh/2)
