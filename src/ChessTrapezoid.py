@@ -112,7 +112,7 @@ class ChessTrapezoid:
             for square in chess.SQUARES:
                 tsquare=self.tsquares[square]
                 if tsquare.fieldState in fieldStates:
-                    self.drawPolygon(image,tsquare.getPolygon(transformation),color)
+                    tsquare.drawState(image,transformation,color)
 
     def warpedBoard(self,image):
         h, w = image.shape[:2]
@@ -124,7 +124,7 @@ class ChessTrapezoid:
         for square in chess.SQUARES:
             tsquare=self.tsquares[square]
             color=self.averageColors[tsquare.fieldState]
-            self.drawPolygon(idealImage, tsquare.getPolygon(transformation), color)
+            tsquare.drawState(idealImage,transformation,color)
         return idealImage
 
     def byFieldState(self):
@@ -182,6 +182,7 @@ class ChessTSquare:
 
     def __init__(self,trapez,square):
         ''' construct me from the given trapez  and square '''
+        self.trapez=trapez
         self.square=square
         self.an=chess.SQUARE_NAMES[square]
         self.row=ChessTrapezoid.rows-1-chess.square_rank(square)
@@ -210,7 +211,7 @@ class ChessTSquare:
         elif transformation==Transformation.IDEAL:
             return self.idealPolygon
         else:
-            raise Exception("invalid transformation %d for getPolygon",transformation)
+            raise Exception("invalid transformation %d for getPolygon",transformation)   
         
     def getFieldState(self):
         piece = self.piece
@@ -231,3 +232,7 @@ class ChessTSquare:
                 return FieldState.BLACK_BLACK
         # this can't happen
         return None
+
+    def drawState(self,image,transformation,color):
+        """ draw my state onto the given image with the given transformation and color """
+        self.trapez.drawPolygon(image,self.getPolygon(transformation),color)
