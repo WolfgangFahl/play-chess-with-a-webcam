@@ -6,7 +6,6 @@ import math
 from enum import IntEnum
 import cv2
 import chess
-from Video import Video
 
 class Transformation(IntEnum):
     """ Transformation kind"""
@@ -179,7 +178,7 @@ class ChessTrapezoid:
             sortedTSquares[tsquare.fieldState].append(tsquare)
         return sortedTSquares
 
-    def analyzeColors(self,image,video=Video()):
+    def analyzeColors(self,image,video):
         """ get the average colors per fieldState """
         warped=self.warpedBoardImage(image)
         byFieldState=self.byFieldState()
@@ -196,6 +195,14 @@ class ChessTrapezoid:
                 b,g,r=averageColor.color
                 bs,gs,rs=averageColor.stds
                 print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
+                
+    def detectMove(self,diffImage,video):
+        changes=0
+        for square in chess.SQUARES:
+            tsquare=self.tsquares[square]
+            changes+=tsquare.changed(diffImage,video)
+        if ChessTrapezoid.debug:
+            print ("detected %d " % (changes))   
 
 class FieldState(IntEnum):
     """ the state of a field is a combination of the field color with a piece color + two empty field color options"""
@@ -267,6 +274,8 @@ class ChessTSquare:
     # relative position and size of original square
     rw=1/(ChessTrapezoid.rows)
     rh=1/(ChessTrapezoid.cols)
+    
+    showDebugChange=["e2","e4"]
 
     def __init__(self,trapez,square):
         ''' construct me from the given trapez  and square '''
@@ -350,3 +359,16 @@ class ChessTSquare:
                     pieceImageColor=Color.darkgrey if self.piece.color==chess.BLACK else Color.lightgrey
             rcenter=(self.rx+ChessTSquare.rw/2),(self.ry+ChessTSquare.rh/2)
             self.trapez.drawRCircle(image,rcenter,self.rPieceRadius,pieceImageColor)
+            
+    def changed(self,diffImage,video):
+        h, w = diffImage.shape[:2]
+        x=int(self.rx*w)
+        y=int(self.ry*h)
+         
+        dh=h//ChessTrapezoid.rows
+        dw=w//ChessTrapezoid.cols
+        squareImage=diffImage[y:y +dh, x:x +dw]        
+        if self.an in ChessTSquare.showDebugChange:
+            video.showImage(squareImage,self.an)
+        return 0    
+            

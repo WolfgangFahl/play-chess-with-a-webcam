@@ -11,12 +11,10 @@ from matplotlib.collections import PatchCollection
 import numpy as np
 import pytest
 import chess
-import cv2
-import math
 
 testEnv = Environment4Test()
-speedup=15 # times 
-waitAtEnd=0 # msecs
+speedup=1 # times 
+waitAtEnd=25000 # msecs
 debug=False
 plotHistory=False
 displayDebug=True
@@ -97,7 +95,23 @@ def test_SortedTSquares():
         if debug:
             print(fieldState.title(),l)
         assert expected[fieldState]==l
-        
+
+def test_Stats():    
+    h=2
+    w=2
+    channels=3
+
+    image=np.zeros((h,w,channels), np.uint8)
+    image[0,0]=(100,50,200)
+    image[0,1]=(120,60,220)
+    avgcolor=Color(image)
+    gmean,bmean,rmean=avgcolor.color
+    gstds,bstds,rstds=avgcolor.stds
+    if debug:
+        print ("means %.2f %.2f %.2f " % (gmean,bmean,rmean))
+        print ("stds  %.2f %.2f %.2f " % (gstds,bstds,rstds))
+    assert avgcolor.color==(110.00,55.00,210.00 )
+    assert avgcolor.stds==(5.00,10.00,10.00)      
 
 def test_ChessTrapezoid():
     video=Video()
@@ -108,6 +122,7 @@ def test_ChessTrapezoid():
     colorHistory={}
     for frame in range(frames):
         ret, bgr, quitWanted = video.readFrame(show=False)
+        h,w = bgr.shape[:2]
         if frame==0:
             #trapezoid.prepareMask(bgr)
             #trapezoid.maskPolygon(trapezoid.polygon)  
@@ -115,15 +130,15 @@ def test_ChessTrapezoid():
         startc=timer()  
         warped=trapezoid.warpedBoardImage(bgr)
         warpedHeight, warpedWidth = warped.shape[:2]
-        trapezoid.analyzeColors(warped)
+        trapezoid.analyzeColors(warped,video)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
-        diffSum=trapezoid.diffSum(warped,idealImage)
+        trapezoid.detectMove(diffImage,video)
+        # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()
-        print('image analysis for frame %d took %.3f s' % (frame,endc-startc))    
+        print('image analysis for %dx%d frame %d took %.3f s' % (w,h,frame,endc-startc))    
         colorHistory[frame]=trapezoid.averageColors.copy()
-        
-       
+
         
         #mask=trapezoid.getEmptyImage(bgr)
         #trapezoid.drawFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
@@ -171,26 +186,9 @@ def plotColorHistory(colorHistory):
     plt.legend()    
     plt.show()
     
-def test_Stats():    
-    h=2
-    w=2
-    channels=3
-
-    image=np.zeros((h,w,channels), np.uint8)
-    image[0,0]=(100,50,200)
-    image[0,1]=(120,60,220)
-    avgcolor=Color(image)
-    gmean,bmean,rmean=avgcolor.color
-    gstds,bstds,rstds=avgcolor.stds
-    if debug:
-        print ("means %.2f %.2f %.2f " % (gmean,bmean,rmean))
-        print ("stds  %.2f %.2f %.2f " % (gstds,bstds,rstds))
-    assert avgcolor.color==(110.00,55.00,210.00 )
-    assert avgcolor.stds==(5.00,10.00,10.00)
-            
-test_Stats()        
 test_Rotation()     
 test_Transform() 
 test_RelativeXY()  
 test_SortedTSquares()
+test_Stats() 
 test_ChessTrapezoid()
