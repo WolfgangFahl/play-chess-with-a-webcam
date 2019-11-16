@@ -209,7 +209,7 @@ class FieldState(IntEnum):
         return titles[self]
 
 class Color:
-    """ Color definitions with maximum lightness difference """
+    """ Color definitions with maximum lightness difference and calculation of average color for a sample of square with a given fieldState """
     white=(255,255,255)
     lightgrey=(170,170,170)
     darkgrey=(85,85,85)
@@ -221,6 +221,7 @@ class Color:
             return None
         """ pick the an average color from the given masked image representating pixel from the given number of squares"""
         #https://stackoverflow.com/a/43112217/1497139 
+        (means, stds) = cv2.meanStdDev(image)
         avg_color_per_row = np.average(image, axis=0)
         avg_color = np.average(avg_color_per_row, axis=0)
         # the average color is based on a empty image with a lot of black pixels. Correct the average

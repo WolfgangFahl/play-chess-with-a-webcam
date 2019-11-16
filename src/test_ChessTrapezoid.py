@@ -16,7 +16,7 @@ testEnv = Environment4Test()
 speedup=10 # times 
 waitAtEnd=0 # msecs
 debug=False
-plotHistory=True
+plotHistory=False
 
 def test_Rotation():
     csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
