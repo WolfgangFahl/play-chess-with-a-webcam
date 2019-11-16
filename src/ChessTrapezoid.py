@@ -194,7 +194,8 @@ class ChessTrapezoid:
                 video.showImage(masked,fieldState.title())
             if ChessTrapezoid.debug:
                 b,g,r=averageColor.color
-                print("%15s (%2d): %3d, %3d, %3d" % (fieldState.title(),countedFields,b,g,r))
+                bs,gs,rs=averageColor.stds
+                print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
 
 class FieldState(IntEnum):
     """ the state of a field is a combination of the field color with a piece color + two empty field color options"""
@@ -214,6 +215,7 @@ class Color:
     lightgrey=(170,170,170)
     darkgrey=(85,85,85)
     black=(0,0,0)
+    debug=False
     
     def __init__(self,image):
         """ pick the an average color from the given image"""
@@ -225,17 +227,41 @@ class Color:
         r = image[:,:,2]
         h, w = image.shape[:2]
         pixels=h*w
-        nonzero= cv2.countNonZero(b),cv2.countNonZero(g),cv2.countNonZero(r)
-        mzero=max(nonzero)
+        nonzerotupel= cv2.countNonZero(b),cv2.countNonZero(g),cv2.countNonZero(r)
+        nonzero=max(nonzerotupel)
         # exotic case of a totally black picture
-        if mzero==0:
+        if nonzero==0:
             self.color(0,0,0)
         else:    
-            # the average color is based on a empty image with a lot of black pixels. Correct the average
-            factor=pixels/max(nonzero)
-            avg_color=means.flatten()*factor
-            self.color=avg_color.tolist()
-    
+            self.color,self.stds=self.fixMeans(means, stds, pixels, nonzero)
+            
+    def fixMeans(self,means,stds,pixels,nonzero):
+        """ fix the zero based means to nonzero based see https://stackoverflow.com/a/58891531/1497139"""
+        gmean,bmean,rmean=means.flatten()
+        gstds,bstds,rstds=stds.flatten()
+        if Color.debug:
+            print ("means %.2f %.2f %.2f " % (gmean,bmean,rmean))
+            print ("stds  %.2f %.2f %.2f " % (gstds,bstds,rstds))
+        factor=pixels/nonzero
+        fgmean=gmean*factor
+        fbmean=bmean*factor
+        frmean=rmean*factor
+        if Color.debug:
+            print ("non-zero means %.2f %.2f %.2f" % (fgmean,fbmean,frmean))
+        fsqsumb=(bstds*bstds+bmean*bmean)*pixels
+        fsqsumg=(gstds*gstds+gmean*gmean)*pixels
+        fsqsumr=(rstds*rstds+rmean*rmean)*pixels
+        if (Color.debug):
+            print ("fsqsum %.2f %.2f %.2f" % (fsqsumb,fsqsumg,fsqsumr))
+        fstdsb=math.sqrt(max(fsqsumb/nonzero-fbmean*fbmean,0))
+        fstdsg=math.sqrt(max(fsqsumg/nonzero-fgmean*fgmean,0))
+        fstdsr=math.sqrt(max(fsqsumr/nonzero-frmean*frmean,0))   
+        if Color.debug:
+            print ("non-zero stds %.2f %.2f %.2f" % (fstdsb,fstdsg,fstdsr))
+        fixedmeans=fgmean,fbmean,frmean
+        fixedstds=fstdsb,fstdsg,fstdsr
+        return fixedmeans,fixedstds    
+        
 class ChessTSquare:
     """ a chess square in it's trapezoidal perspective """
     # relative position and size of original square

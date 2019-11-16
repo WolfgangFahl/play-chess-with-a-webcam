@@ -3,7 +3,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Environment4Test import Environment4Test
 from Video import Video
-from ChessTrapezoid import ChessTrapezoid, FieldState
+from ChessTrapezoid import ChessTrapezoid, FieldState, Color
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -11,6 +11,8 @@ from matplotlib.collections import PatchCollection
 import numpy as np
 import pytest
 import chess
+import cv2
+import math
 
 testEnv = Environment4Test()
 speedup=15 # times 
@@ -167,8 +169,26 @@ def plotColorHistory(colorHistory):
         plt.plot(x,b,c='b',marker=markers[fieldState],label=fieldState.title())
         #ax[fieldState].autoscale()
     plt.legend()    
-    plt.show()    
-        
+    plt.show()
+    
+def test_Stats():    
+    h=2
+    w=2
+    channels=3
+
+    image=np.zeros((h,w,channels), np.uint8)
+    image[0,0]=(100,50,200)
+    image[0,1]=(120,60,220)
+    avgcolor=Color(image)
+    gmean,bmean,rmean=avgcolor.color
+    gstds,bstds,rstds=avgcolor.stds
+    if debug:
+        print ("means %.2f %.2f %.2f " % (gmean,bmean,rmean))
+        print ("stds  %.2f %.2f %.2f " % (gstds,bstds,rstds))
+    assert avgcolor.color==(110.00,55.00,210.00 )
+    assert avgcolor.stds==(5.00,10.00,10.00)
+            
+test_Stats()        
 test_Rotation()     
 test_Transform() 
 test_RelativeXY()  
