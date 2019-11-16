@@ -188,7 +188,7 @@ class ChessTrapezoid:
             self.drawFieldStates(mask,[fieldState],Transformation.IDEAL,1)
             masked=self.maskImage(image,mask)
             countedFields=len(byFieldState[fieldState])
-            averageColor=Color(masked,countedFields,fieldState)
+            averageColor=Color(masked)
             self.averageColors[fieldState]=averageColor
             if ChessTrapezoid.showDebugImage:
                 video.showImage(masked,fieldState.title())
@@ -215,26 +215,28 @@ class Color:
     darkgrey=(85,85,85)
     black=(0,0,0)
     
-    def __init__(self,image,squareCount,fieldState):
-        # if there is no square the color is irrelevant (e.g. for an empty board with no pieces)
-        if squareCount==0:
-            return None
-        """ pick the an average color from the given masked image representating pixel from the given number of squares"""
+    def __init__(self,image):
+        """ pick the an average color from the given image"""
         #https://stackoverflow.com/a/43112217/1497139 
         (means, stds) = cv2.meanStdDev(image)
-        avg_color_per_row = np.average(image, axis=0)
-        avg_color = np.average(avg_color_per_row, axis=0)
-        # the average color is based on a empty image with a lot of black pixels. Correct the average
-        # (at least a bit) accordingly
-           
-        factor=1 if squareCount==0 else 64/squareCount
-        # if the field has a piece on it we have drawn a circle which further eliminates pixels
-        if not (fieldState==FieldState.WHITE_EMPTY or fieldState==FieldState.BLACK_EMPTY):
-            rradius=1/ChessTrapezoid.PieceRadiusFactor
-            rarea=rradius*rradius*math.pi
-            factor=factor*1/rarea
-        avg_color=avg_color*factor
-        self.color=avg_color.tolist()
+        #https://stackoverflow.com/a/55163686/1497139
+        b = image[:,:,0]
+        g = image[:,:,1]
+        r = image[:,:,2]
+        h, w = image.shape[:2]
+        pixels=h*w
+        nonzero= cv2.countNonZero(b),cv2.countNonZero(g),cv2.countNonZero(r)
+        mzero=max(nonzero)
+        # exotic case of a totally black picture
+        if mzero==0:
+            self.color(0,0,0)
+        else:    
+            # the average color is based on a empty image with a lot of black pixels. Correct the average
+            factor=pixels/max(nonzero)      
+            avg_color_per_row = np.average(image, axis=0)
+            avg_color = np.average(avg_color_per_row, axis=0)
+            avg_color=avg_color*factor
+            self.color=avg_color.tolist()
     
 class ChessTSquare:
     """ a chess square in it's trapezoidal perspective """

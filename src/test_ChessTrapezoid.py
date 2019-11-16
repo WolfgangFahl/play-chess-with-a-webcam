@@ -13,11 +13,11 @@ import pytest
 import chess
 
 testEnv = Environment4Test()
-speedup=10 # times 
+speedup=15 # times 
 waitAtEnd=0 # msecs
 debug=False
 plotHistory=False
-
+displayDebug=True
 def test_Rotation():
     csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
     rotations=[0,90,180,270]
@@ -114,13 +114,14 @@ def test_ChessTrapezoid():
         warped=trapezoid.warpedBoardImage(bgr)
         warpedHeight, warpedWidth = warped.shape[:2]
         trapezoid.analyzeColors(warped)
-        endc=timer()
-        print('color analysis for frame %d took %.3f s' % (frame,endc-startc))    
-        colorHistory[frame]=trapezoid.averageColors.copy()
-        
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
         diffSum=trapezoid.diffSum(warped,idealImage)
+        endc=timer()
+        print('image analysis for frame %d took %.3f s' % (frame,endc-startc))    
+        colorHistory[frame]=trapezoid.averageColors.copy()
+        
+       
         
         #mask=trapezoid.getEmptyImage(bgr)
         #trapezoid.drawFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
@@ -129,9 +130,9 @@ def test_ChessTrapezoid():
         if frame % speedup==0:
             keyWait=5
             video.showImage(warped, "warped", keyWait=keyWait)
-            video.showImage(idealImage,"ideal")
-            video.showImage(diffImage,"diff")
-        #print(frame)
+            if displayDebug:
+                video.showImage(idealImage,"ideal")
+                video.showImage(diffImage,"diff")
         assert ret
         assert bgr is not None         
     end=timer()
