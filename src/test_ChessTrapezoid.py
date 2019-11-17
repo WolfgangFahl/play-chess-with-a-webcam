@@ -3,7 +3,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Environment4Test import Environment4Test
 from Video import Video
-from ChessTrapezoid import ChessTrapezoid, FieldState, Color
+from ChessTrapezoid import ChessTrapezoid, FieldState, Color, SquareChange
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -126,12 +126,14 @@ def test_Stats():
 
 def test_ChessTrapezoid():
     video=Video()
-    #testPath=testEnv.testMedia + 'scholarsmate.avi'
-    #frames=334
-    #trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374),rotation=270,idealSize=800) 
-    testPath="/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi"
-    trapezoid=ChessTrapezoid((210, 0), (603, 6), (581, 391), (208, 378),rotation=270,idealSize=800)
-    frames=150
+    testPath=testEnv.testMedia + 'scholarsmate.avi'
+    frames=334
+    trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374),rotation=270,idealSize=800) 
+    SquareChange.medianFrameCount=20
+    SquareChange.treshold=0.8
+    #testPath="/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi"
+    #trapezoid=ChessTrapezoid((210, 0), (603, 6), (581, 391), (208, 378),rotation=270,idealSize=800)
+    #frames=150
     #trapezoid=ChessTrapezoid([806, 29], [1578, 63], [1590, 837], [716, 763],rotation=180,idealSize=800)
     #frames=3000
     #testPath=1  
@@ -234,8 +236,7 @@ def plotChangeHistory(changeHistory,ans,title):
         value[frame]=changes['valid']
     ax4.plot(x,value,label="valid")    
     ax3.legend(loc="upper right")
- 
- 
+    
  
     plt.title(title)       
     plt.legend()      
