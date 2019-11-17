@@ -73,13 +73,13 @@ def test_Transform():
         ax2.autoscale()
         plt.show()               
 
-def test_RelativeXY():
+def test_RelativeToTrapezXY():
     trapez=ChessTrapezoid((20,40),(40,40),(60,10),(10,10))
     rxrys=[(0,0),(1,0),(1,1),(0,1),(0,0.5),(0.5,0.5),(1,0.5)]
     expected=[(20,40),(40,40),(60,10),(10,10),(17.1,31.4),(31.4,31.4),(45.7,31.4)]
     for index,rxry in enumerate(rxrys):
         rx,ry=rxry
-        x,y=trapez.relativeXY(rx,ry)
+        x,y=trapez.relativeToTrapezXY(rx,ry)
         ex,ey=expected[index]
         print ("%d r:(%.1f,%.1f) e:(%.1f,%.1f) == (%.1f,%.1f)?" % (index,rx,ry,ex,ey,x,y))   
         assert x ==pytest.approx(ex,0.1) 
@@ -130,15 +130,14 @@ def test_ChessTrapezoid():
         startc=timer()  
         warped=trapezoid.warpedBoardImage(bgr)
         warpedHeight, warpedWidth = warped.shape[:2]
-        trapezoid.analyzeColors(warped,video)
+        trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
-        trapezoid.detectMove(diffImage,video)
+        trapezoid.detectMove(diffImage)
         # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()
         print('image analysis for %dx%d frame %d took %.3f s' % (w,h,frame,endc-startc))    
         colorHistory[frame]=trapezoid.averageColors.copy()
-
         
         #mask=trapezoid.getEmptyImage(bgr)
         #trapezoid.drawFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
@@ -149,6 +148,7 @@ def test_ChessTrapezoid():
             video.showImage(warped, "warped", keyWait=keyWait)
             if displayDebug:
                 video.showImage(idealImage,"ideal")
+                trapezoid.drawDebug(diffImage)
                 video.showImage(diffImage,"diff")
         assert ret
         assert bgr is not None         
@@ -188,7 +188,7 @@ def plotColorHistory(colorHistory):
     
 test_Rotation()     
 test_Transform() 
-test_RelativeXY()  
+test_RelativeToTrapezXY()  
 test_SortedTSquares()
 test_Stats() 
 test_ChessTrapezoid()

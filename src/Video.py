@@ -351,7 +351,7 @@ class Video:
             self.drawText(frame, now, (width - int(text_width * 1.1), int(text_height * 1.2)),
                         font, fontScale * fontFactor, fontBGRColor, lineThickness)
         return frame
-    
+        
     def drawCenteredText(self,frame,text,x,y,fontBGRColor=(0, 255, 0), fontScale=1.0, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=1):
         height, width = frame.shape[:2]
         fontFactor=width/960

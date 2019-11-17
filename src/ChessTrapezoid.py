@@ -6,6 +6,7 @@ import math
 from enum import IntEnum
 import cv2
 import chess
+from Video import Video
 
 class Transformation(IntEnum):
     """ Transformation kind"""
@@ -23,10 +24,13 @@ class ChessTrapezoid:
     # default radius of pieces
     PieceRadiusFactor=3
   
-    def __init__(self,topLeft,topRight,bottomRight,bottomLeft,idealSize=640):
+    def __init__(self,topLeft,topRight,bottomRight,bottomLeft,idealSize=640,video=None):
         """ construct me from the given corner points"""
         self.tl,self.tr,self.br,self.bl=topLeft,topRight,bottomRight,bottomLeft
         self.polygon=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
+        # video access (for debugging and partly hiding open cv details)
+        if video is None:
+            self.video=Video()
         # prepare the perspective transformation
         # https://stackoverflow.com/questions/27585355/python-open-cv-perspectivetransform
         # https://stackoverflow.com/a/41768610/1497139
@@ -49,8 +53,13 @@ class ChessTrapezoid:
             if ChessTrapezoid.debug:
                 print(vars(tsquare))
             self.tsquares[square]=tsquare
-
-    def relativeXY(self,rx,ry):
+            
+    def relativeToIdealXY(self,rx,ry):
+        x=int(rx*self.idealSize)
+        y=int(ry*self.idealSize)
+        return x,y        
+    
+    def relativeToTrapezXY(self,rx,ry):
         """ convert a relative 0-1 based coordinate to a coordinate in the trapez"""
         # see https://math.stackexchange.com/questions/2084647/obtain-two-dimensional-linear-space-on-trapezoid-shape
         # https://stackoverflow.com/a/33303869/1497139
@@ -107,10 +116,12 @@ class ChessTrapezoid:
         """ draw a circle with relative coordinates"""
         radius=int(rradius*self.idealSize)
         rx,ry=rcenter
-        x=int(rx*self.idealSize)
-        y=int(ry*self.idealSize)
-        center=x,y
+        center=self.relativeToIdealXY(rx, ry)
         self.drawCircle(image,center,radius,color,thickness)
+        
+    def drawRCenteredText(self,image,text,rx,ry,color=(255,255,255)):
+        x,y=self.relativeToIdealXY(rx, ry)    
+        self.video.drawCenteredText(image, text, x, y,fontBGRColor=color)
 
     def maskImage(self,image,mask):
         """ return the masked image that filters the trapezoid view"""
@@ -167,7 +178,13 @@ class ChessTrapezoid:
             tsquare=self.tsquares[square]
             tsquare.drawState(idealImage,transformation,3)
         return idealImage
-
+    
+    def drawDebug(self,image,color=(255,255,255)):
+        """ draw debug information e.g. piecel symbol and an onto the given image"""
+        for square in chess.SQUARES:
+            tsquare=self.tsquares[square]
+            tsquare.drawDebug(image,color)
+  
     def byFieldState(self):
         # get a dict of fields sorted by field state
         sortedTSquares={}
@@ -178,7 +195,7 @@ class ChessTrapezoid:
             sortedTSquares[tsquare.fieldState].append(tsquare)
         return sortedTSquares
 
-    def analyzeColors(self,image,video):
+    def analyzeColors(self,image):
         """ get the average colors per fieldState """
         warped=self.warpedBoardImage(image)
         byFieldState=self.byFieldState()
@@ -190,17 +207,17 @@ class ChessTrapezoid:
             averageColor=Color(masked)
             self.averageColors[fieldState]=averageColor
             if ChessTrapezoid.showDebugImage:
-                video.showImage(masked,fieldState.title())
+                self.video.showImage(masked,fieldState.title())
             if ChessTrapezoid.debug:
                 b,g,r=averageColor.color
                 bs,gs,rs=averageColor.stds
                 print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
                 
-    def detectMove(self,diffImage,video):
+    def detectMove(self,diffImage):
         changes=0
         for square in chess.SQUARES:
             tsquare=self.tsquares[square]
-            changes+=tsquare.changed(diffImage,video)
+            changes+=tsquare.changed(diffImage)
         if ChessTrapezoid.debug:
             print ("detected %d " % (changes))   
 
@@ -282,8 +299,10 @@ class ChessTSquare:
         self.trapez=trapez
         self.square=square
         self.an=chess.SQUARE_NAMES[square]
+        # rank are rows in Algebraic Notation from 1 to 8
         self.row=ChessTrapezoid.rows-1-chess.square_rank(square)
-        self.col=chess.square_file(square)
+        # files are columns in Algebraic Notation from A to H
+        self.col=ChessTrapezoid.cols-1-chess.square_file(square)
         # https://gamedev.stackexchange.com/a/44998/133453
         self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 1 else chess.BLACK
         self.fieldState=None
@@ -291,14 +310,16 @@ class ChessTSquare:
         self.rPieceRadius=ChessTSquare.rw/ChessTrapezoid.PieceRadiusFactor
 
         self.rx,self.ry=self.row*ChessTSquare.rw,self.col*ChessTSquare.rh
-        self.x,self.y=trapez.relativeXY(self.rx, self.ry)
+        self.x,self.y=trapez.relativeToTrapezXY(self.rx, self.ry)
         self.setPolygons(trapez,self.rx,self.ry,self.rx+ChessTSquare.rw,self.ry,self.rx+ChessTSquare.rw,self.ry+ChessTSquare.rh,self.rx,self.ry+ChessTSquare.rh)
 
     def setPolygons(self,trapez,rtl_x,rtl_y,rtr_x,rtr_y,rbr_x,rbr_y,rbl_x,rbl_y):
         """ set my relative and warped polygons from the given relative corner coordinates from top left via top right, bottom right to bottom left """
         self.rpolygon=np.array([(rtl_x,rtl_y),(rtr_x,rtr_y),(rbr_x,rbr_y),(rbl_x,rbl_y)])
         self.idealPolygon=(self.rpolygon*trapez.idealSize).astype(np.int32)
-        self.polygon=np.array([trapez.relativeXY(rtl_x,rtl_y),trapez.relativeXY(rtr_x,rtr_y),trapez.relativeXY(rbr_x,rbr_y),trapez.relativeXY(rbl_x,rbl_y)])
+        # function to use to calculate polygon
+        r2t=trapez.relativeToTrapezXY
+        self.polygon=np.array([r2t(rtl_x,rtl_y),r2t(rtr_x,rtr_y),r2t(rbr_x,rbr_y),r2t(rbl_x,rbl_y)])
         self.ipolygon=self.polygon.astype(np.int32)
 
     def getPolygon(self,transformation):
@@ -332,7 +353,7 @@ class ChessTSquare:
         return None
 
     def drawState(self,image,transformation,channels):
-        """ draw my state onto the given image with the given transformation and color """
+        """ draw my state onto the given image with the given transformation and number of channels"""
         # default is drawing a single channel mask
         squareImageColor=64
         pieceImageColor=squareImageColor
@@ -350,17 +371,32 @@ class ChessTSquare:
         
         if not (channels==1 and self.piece is not None): 
             self.trapez.drawPolygon(image,self.getPolygon(transformation),squareImageColor)
-            
+        
+        
         if self.piece is not None:
             if channels==3:
                 if self.fieldState in self.trapez.averageColors:
                     pieceImageColor=self.trapez.averageColors[self.fieldState].color
                 else:    
                     pieceImageColor=Color.darkgrey if self.piece.color==chess.BLACK else Color.lightgrey
-            rcenter=(self.rx+ChessTSquare.rw/2),(self.ry+ChessTSquare.rh/2)
+            rcenter=self.rcenter()        
             self.trapez.drawRCircle(image,rcenter,self.rPieceRadius,pieceImageColor)
+    
+    def rcenter(self):        
+        rcx=(self.rx+ChessTSquare.rw/2)
+        rcy=(self.ry+ChessTSquare.rh/2)
+        return (rcx,rcy)
             
-    def changed(self,diffImage,video):
+    def drawDebug(self,image,color=(255,255,255)):
+        """ draw debug information onto the given image using the given color""" 
+        symbol=""
+        if self.piece is not None:
+            symbol=self.piece.symbol() # @TODO piece.unicode_symbol() - needs other font!
+        squareHint=self.an+" "+symbol
+        rcx,rcy=self.rcenter()
+        self.trapez.drawRCenteredText(image,squareHint,rcx,rcy,color=color)   
+             
+    def changed(self,diffImage):
         h, w = diffImage.shape[:2]
         x=int(self.rx*w)
         y=int(self.ry*h)
@@ -369,6 +405,6 @@ class ChessTSquare:
         dw=w//ChessTrapezoid.cols
         squareImage=diffImage[y:y +dh, x:x +dw]        
         if self.an in ChessTSquare.showDebugChange:
-            video.showImage(squareImage,self.an)
+            self.trapez.video.showImage(squareImage,self.an)
         return 0    
             
