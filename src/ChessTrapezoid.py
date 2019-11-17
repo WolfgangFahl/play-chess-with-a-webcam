@@ -24,7 +24,16 @@ class ChessTrapezoid:
     # default radius of pieces
     PieceRadiusFactor=3
   
-    def __init__(self,topLeft,topRight,bottomRight,bottomLeft,idealSize=640,video=None):
+    def __init__(self,topLeft,topRight,bottomRight,bottomLeft,idealSize=640,rotation=0,video=None):
+        self.rotation=rotation
+        trapezPoints=[topLeft,topRight,bottomRight,bottomLeft]
+        shifts=self.rotation//90
+        for shift in range(shifts):
+            trapezPoints.append(trapezPoints.pop(0))
+        topLeft,topRight,bottomRight,bottomLeft=trapezPoints
+        self.setup(topLeft,topRight,bottomRight,bottomLeft,idealSize,video)
+        
+    def setup(self,topLeft,topRight,bottomRight,bottomLeft,idealSize=640,video=None):    
         """ construct me from the given corner points"""
         self.tl,self.tr,self.br,self.bl=topLeft,topRight,bottomRight,bottomLeft
         self.polygon=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
@@ -72,25 +81,25 @@ class ChessTrapezoid:
         x,y=xy[0],xy[1]
         return x,y
 
-    def tSquareAt(self,row,col):
+    def tSquareAt(self,row,col,rotation=0):
         """ get the trapezoid chessboard square for the given row and column"""
-        row,col=self.rotateIndices(row, col)
+        row,col=self.rotateIndices(row, col,rotation)
         squareIndex = (ChessTrapezoid.rows-1-row) * ChessTrapezoid.cols + col;
         square = chess.SQUARES[squareIndex]
         return self.tsquares[square]
 
-    def rotateIndices(self,row,col):
+    def rotateIndices(self,row,col,rotation):
         """ rotate the indices or rows and columns according to the board rotation"""
-        if self.rotation==0:
+        if rotation==0:
             return row,col
-        elif self.rotation==90:
+        elif rotation==90:
             return ChessTrapezoid.cols-1-col,row
-        elif self.rotation==180:
+        elif rotation==180:
             return ChessTrapezoid.rows-1-row,ChessTrapezoid.cols-1-col
-        elif self.rotation==270:
+        elif rotation==270:
             return col,ChessTrapezoid.rows-1-row
         else:
-            raise Exception("invalid rotation %d for rotateIndices" % self.rotation)
+            raise Exception("invalid rotation %d for rotateIndices" % rotation)
 
     def getEmptyImage(self,image,channels=1):
         """ prepare a trapezoid/polygon mask to focus on the square chess field seen as a trapezoid"""
@@ -146,8 +155,7 @@ class ChessTrapezoid:
                     tsquare.drawState(image,transformation,channels)
 
     def warpedBoardImage(self,image):
-        h, w = image.shape[:2]
-        warped=cv2.warpPerspective(image,self.inverseTransform,(w,h))
+        warped=cv2.warpPerspective(image,self.inverseTransform,(self.idealSize,self.idealSize))
         return warped
     
     def diffBoardImage(self,image,other):
@@ -302,14 +310,14 @@ class ChessTSquare:
         # rank are rows in Algebraic Notation from 1 to 8
         self.row=ChessTrapezoid.rows-1-chess.square_rank(square)
         # files are columns in Algebraic Notation from A to H
-        self.col=ChessTrapezoid.cols-1-chess.square_file(square)
+        self.col=chess.square_file(square)
         # https://gamedev.stackexchange.com/a/44998/133453
         self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 1 else chess.BLACK
         self.fieldState=None
         self.piece=None
         self.rPieceRadius=ChessTSquare.rw/ChessTrapezoid.PieceRadiusFactor
 
-        self.rx,self.ry=self.row*ChessTSquare.rw,self.col*ChessTSquare.rh
+        self.rx,self.ry=self.col*ChessTSquare.rw,self.row*ChessTSquare.rh
         self.x,self.y=trapez.relativeToTrapezXY(self.rx, self.ry)
         self.setPolygons(trapez,self.rx,self.ry,self.rx+ChessTSquare.rw,self.ry,self.rx+ChessTSquare.rw,self.ry+ChessTSquare.rh,self.rx,self.ry+ChessTSquare.rh)
 

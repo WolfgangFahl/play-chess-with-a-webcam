@@ -18,6 +18,13 @@ waitAtEnd=25000 # msecs
 debug=False
 plotHistory=False
 displayDebug=True
+
+def test_RankAndFile():
+    csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
+    for square in chess.SQUARES:
+        tsquare=csquare.tsquares[square]
+        assert tsquare.an==chess.FILE_NAMES[tsquare.col]+chess.RANK_NAMES[7-tsquare.row]
+    
 def test_Rotation():
     csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
     rotations=[0,90,180,270]
@@ -29,14 +36,16 @@ def test_Rotation():
     index=0
     for rotation in rotations:
         csquare.rotation=rotation
+        anstr=""
         for row in range(ChessTrapezoid.rows):
             for col in range(ChessTrapezoid.cols):
                 tsquare=csquare.tSquareAt(row, col)
-                print(tsquare.an,end='')
-            print()   
+                anstr=anstr+tsquare.an
+            anstr=anstr+'\n'
+        print (anstr)       
         for rowcol in indices:
             row,col=rowcol
-            rotated=csquare.rotateIndices(row,col)
+            rotated=csquare.rotateIndices(row,col,rotation)
             print (rotation,rowcol,rotated,expected[index])
             assert rotated==expected[index]
             index=index+1
@@ -118,7 +127,7 @@ def test_ChessTrapezoid():
     video.open(testEnv.testMedia + 'scholarsmate.avi')
     frames=334
     start=timer()  
-    trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374))
+    trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374),rotation=270)
     colorHistory={}
     for frame in range(frames):
         ret, bgr, quitWanted = video.readFrame(show=False)
@@ -145,8 +154,10 @@ def test_ChessTrapezoid():
         #warped=trapezoid.warpedBoard(masked)
         if frame % speedup==0:
             keyWait=5
+            #trapezoid.drawDebug(warped)
             video.showImage(warped, "warped", keyWait=keyWait)
             if displayDebug:
+                #trapezoid.drawDebug(idealImage)
                 video.showImage(idealImage,"ideal")
                 trapezoid.drawDebug(diffImage)
                 video.showImage(diffImage,"diff")
@@ -186,6 +197,7 @@ def plotColorHistory(colorHistory):
     plt.legend()    
     plt.show()
     
+test_RankAndFile()    
 test_Rotation()     
 test_Transform() 
 test_RelativeToTrapezXY()  
