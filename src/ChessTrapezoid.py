@@ -17,7 +17,7 @@ class Transformation(IntEnum):
 class ChessTrapezoid:
     """ Chess board Trapezoid (UK) / Trapezium (US) / Trapez (DE)  as seen via a webcam image """
 
-    debug=True
+    debug=False
     showDebugImage=False
     rows=8
     cols=8
@@ -221,13 +221,12 @@ class ChessTrapezoid:
                 bs,gs,rs=averageColor.stds
                 print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
                 
-    def detectMove(self,diffImage):
-        changes=0
+    def detectChanges(self,diffImage):
+        changes={}
         for square in chess.SQUARES:
             tsquare=self.tsquares[square]
-            changes+=tsquare.changed(diffImage)
-        if ChessTrapezoid.debug:
-            print ("detected %d " % (changes))   
+            changes[tsquare.an]=tsquare.changes(diffImage)
+        return changes    
 
 class FieldState(IntEnum):
     """ the state of a field is a combination of the field color with a piece color + two empty field color options"""
@@ -300,7 +299,7 @@ class ChessTSquare:
     rw=1/(ChessTrapezoid.rows)
     rh=1/(ChessTrapezoid.cols)
     
-    showDebugChange=["e2","e4"]
+    showDebugChange=[]
 
     def __init__(self,trapez,square):
         ''' construct me from the given trapez  and square '''
@@ -404,15 +403,18 @@ class ChessTSquare:
         rcx,rcy=self.rcenter()
         self.trapez.drawRCenteredText(image,squareHint,rcx,rcy,color=color)   
              
-    def changed(self,diffImage):
+    def changes(self,diffImage):
         h, w = diffImage.shape[:2]
         x=int(self.rx*w)
         y=int(self.ry*h)
          
         dh=h//ChessTrapezoid.rows
         dw=w//ChessTrapezoid.cols
-        squareImage=diffImage[y:y +dh, x:x +dw]        
+        squareImage=diffImage[y:y +dh, x:x +dw]
+        diffSum=np.sum(squareImage)
+                
         if self.an in ChessTSquare.showDebugChange:
             self.trapez.video.showImage(squareImage,self.an)
-        return 0    
+            print("%s: %d" %(self.an,diffSum))
+        return diffSum
             

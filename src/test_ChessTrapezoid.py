@@ -13,11 +13,13 @@ import pytest
 import chess
 
 testEnv = Environment4Test()
-speedup=1 # times 
-waitAtEnd=25000 # msecs
+speedup=5 # times 
+waitAtEnd=0 # msecs
 debug=False
-plotHistory=False
-displayDebug=True
+debugChangeHistory=False
+debugPlotHistory=False
+displayImage=False
+displayDebug=False
 
 def test_RankAndFile():
     csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
@@ -124,13 +126,20 @@ def test_Stats():
 
 def test_ChessTrapezoid():
     video=Video()
-    video.open(testEnv.testMedia + 'scholarsmate.avi')
+    testPath=testEnv.testMedia + 'scholarsmate.avi'
     frames=334
+    trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374),rotation=270,idealSize=800) 
+    #testPath="/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi"
+    #trapezoid=ChessTrapezoid((210, 0), (603, 6), (581, 391), (208, 378),rotation=270,idealSize=800)
+    #frames=2000
+    video.open(testPath)
     start=timer()  
-    trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374),rotation=270)
     colorHistory={}
+    changeHistory={}
     for frame in range(frames):
         ret, bgr, quitWanted = video.readFrame(show=False)
+        assert ret
+        assert bgr is not None     
         h,w = bgr.shape[:2]
         if frame==0:
             #trapezoid.prepareMask(bgr)
@@ -142,7 +151,7 @@ def test_ChessTrapezoid():
         trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
-        trapezoid.detectMove(diffImage)
+        changeHistory[frame]=trapezoid.detectChanges(diffImage)
         # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()
         print('image analysis for %dx%d frame %d took %.3f s' % (w,h,frame,endc-startc))    
@@ -155,20 +164,43 @@ def test_ChessTrapezoid():
         if frame % speedup==0:
             keyWait=5
             #trapezoid.drawDebug(warped)
-            video.showImage(warped, "warped", keyWait=keyWait)
+            if displayImage:
+                video.showImage(warped, "warped", keyWait=keyWait)
             if displayDebug:
                 #trapezoid.drawDebug(idealImage)
                 video.showImage(idealImage,"ideal")
                 trapezoid.drawDebug(diffImage)
                 video.showImage(diffImage,"diff")
-        assert ret
-        assert bgr is not None         
+           
     end=timer()
     print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))
-    if plotHistory:
+    if debugChangeHistory:
+        ans=[]
+        #ans=["e2","e4","e7","e5","d1","h5","b8","c6","f1","c4","c8","f6","f7","a1","h8"]
+        for square in chess.SQUARES:
+            tsquare=trapezoid.tsquares[square]
+            ans.append(tsquare.an)
+        plotChangeHistory(changeHistory,ans)
+    if debugPlotHistory:
         plotColorHistory(colorHistory)
     if waitAtEnd>0:
         video.showImage(warped, "warped", keyWait=waitAtEnd)
+        
+def plotChangeHistory(changeHistory,ans):
+    l=len(changeHistory)
+    anIndex=0
+    for an in ans:
+        x=np.empty(l)
+        y=np.empty(l)
+        for frame,changes in changeHistory.items():
+            x[frame]=frame
+            y[frame]=changes[an]
+        plt.plot(x,y,label=an)   
+        anIndex+=1       
+    plt.title("difference from ideal per square over time")      
+    plt.legend()      
+    plt.show()    
+            
         
 def plotColorHistory(colorHistory):
     l=len(colorHistory)
