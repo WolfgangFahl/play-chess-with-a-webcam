@@ -18,8 +18,8 @@ waitAtEnd=0 # msecs
 debug=False
 debugChangeHistory=False
 debugPlotHistory=False
-displayImage=False
-displayDebug=False
+displayImage=True
+displayDebug=True
 
 def test_RankAndFile():
     csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
@@ -126,18 +126,23 @@ def test_Stats():
 
 def test_ChessTrapezoid():
     video=Video()
-    testPath=testEnv.testMedia + 'scholarsmate.avi'
-    frames=334
-    trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374),rotation=270,idealSize=800) 
-    #testPath="/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi"
-    #trapezoid=ChessTrapezoid((210, 0), (603, 6), (581, 391), (208, 378),rotation=270,idealSize=800)
-    #frames=2000
+    #testPath=testEnv.testMedia + 'scholarsmate.avi'
+    #frames=334
+    #trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374),rotation=270,idealSize=800) 
+    testPath="/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi"
+    trapezoid=ChessTrapezoid((210, 0), (603, 6), (581, 391), (208, 378),rotation=270,idealSize=800)
+    frames=150
+    #trapezoid=ChessTrapezoid([806, 29], [1578, 63], [1590, 837], [716, 763],rotation=180,idealSize=800)
+    #frames=3000
+    #testPath=1  
     video.open(testPath)
     start=timer()  
     colorHistory={}
     changeHistory={}
     for frame in range(frames):
         ret, bgr, quitWanted = video.readFrame(show=False)
+        if quitWanted:
+            break
         assert ret
         assert bgr is not None     
         h,w = bgr.shape[:2]
@@ -180,28 +185,62 @@ def test_ChessTrapezoid():
         for square in chess.SQUARES:
             tsquare=trapezoid.tsquares[square]
             ans.append(tsquare.an)
-        plotChangeHistory(changeHistory,ans)
+        plotChangeHistory(changeHistory,ans,"differential of difference from ideal per square over time")
     if debugPlotHistory:
         plotColorHistory(colorHistory)
     if waitAtEnd>0:
         video.showImage(warped, "warped", keyWait=waitAtEnd)
         
-def plotChangeHistory(changeHistory,ans):
+def plotChangeHistory(changeHistory,ans,title):
     l=len(changeHistory)
     anIndex=0
+    fig,axes=plt.subplots(5)
+    ax0=axes[0]
+    ax0.set_title('value')
+    ax1=axes[1]
+    ax1.set_title('median')
+    ax2=axes[2]
+    ax2.set_title('diff')
+    ax3=axes[3]
+    ax3.set_title('validdiff')
+    ax4=axes[4]
+    ax4.set_title('valid')
     for an in ans:
         x=np.empty(l)
-        y=np.empty(l)
+        value=np.empty(l)
+        mean=np.empty(l)
+        diff=np.empty(l)
+        validdiff=np.empty(l)
+        found=False
         for frame,changes in changeHistory.items():
             x[frame]=frame
-            y[frame]=changes[an]
-        plt.plot(x,y,label=an)   
-        anIndex+=1       
-    plt.title("difference from ideal per square over time")      
+            squareChange=changes[an]
+            value[frame]=squareChange.value
+            mean[frame]=squareChange.mean
+            diff[frame]=squareChange.diff
+            validdiff[frame] = squareChange.diff if squareChange.valid or changes['valid']>60 else 0
+            if validdiff[frame]>0.3:
+                found=True
+        ax0.plot(x,value,label=an)   
+        ax1.plot(x,mean,label=an)   
+        ax2.plot(x,diff,label=an)
+        if found:
+            ax3.plot(x,validdiff,label=an)
+        else:
+            ax3.plot(x,validdiff)
+        anIndex+=1
+    for frame,changes in changeHistory.items():
+        x[frame]=frame
+        value[frame]=changes['valid']
+    ax4.plot(x,value,label="valid")    
+    ax3.legend(loc="upper right")
+ 
+ 
+ 
+    plt.title(title)       
     plt.legend()      
     plt.show()    
             
-        
 def plotColorHistory(colorHistory):
     l=len(colorHistory)
     print ("color  history for %d frames" % (l))    

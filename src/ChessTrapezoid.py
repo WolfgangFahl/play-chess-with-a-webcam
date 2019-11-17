@@ -7,6 +7,7 @@ from enum import IntEnum
 import cv2
 import chess
 from Video import Video
+from RunningStats import RunningStats
 
 class Transformation(IntEnum):
     """ Transformation kind"""
@@ -55,6 +56,7 @@ class ChessTrapezoid:
         self.rotation=0
         # dict for average Colors
         self.averageColors={}
+        self.validChanges=0
         # trapezoid representation of squares
         self.tsquares={}
         for square in chess.SQUARES:
@@ -222,10 +224,16 @@ class ChessTrapezoid:
                 print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
                 
     def detectChanges(self,diffImage):
+        """ detect the changes of the given differential image """
         changes={}
+        validChanges=0
         for square in chess.SQUARES:
             tsquare=self.tsquares[square]
-            changes[tsquare.an]=tsquare.changes(diffImage)
+            squareChange=tsquare.changes(diffImage)
+            changes[tsquare.an]=squareChange
+            if squareChange.valid:
+                validChanges+=1
+        changes["valid"]=validChanges
         return changes    
 
 class FieldState(IntEnum):
@@ -291,7 +299,26 @@ class Color:
             print ("non-zero stds %.2f %.2f %.2f" % (fstdsb,fstdsg,fstdsr))
         fixedmeans=fgmean,fbmean,frmean
         fixedstds=fstdsb,fstdsg,fstdsr
-        return fixedmeans,fixedstds    
+        return fixedmeans,fixedstds
+
+class SquareChange:
+    """ keep track of changes of a square over time """
+    medianFrameCount=10
+    treshold=0.1
+    
+    def __init__(self,value,stats):
+        """ construct me from the given value with the given running stats"""
+        self.value=value
+        self.mean=stats.mean()
+        self.diff=value-self.mean
+        if stats.n<SquareChange.medianFrameCount:
+            stats.push(value)
+            self.valid=False
+            self.diff=0
+        else:
+            self.valid=abs(self.diff)<SquareChange.treshold
+            if self.valid:
+                stats.push(value)
         
 class ChessTSquare:
     """ a chess square in it's trapezoidal perspective """
@@ -304,6 +331,7 @@ class ChessTSquare:
     def __init__(self,trapez,square):
         ''' construct me from the given trapez  and square '''
         self.trapez=trapez
+        self.changeStats=RunningStats()
         self.square=square
         self.an=chess.SQUARE_NAMES[square]
         # rank are rows in Algebraic Notation from 1 to 8
@@ -314,6 +342,7 @@ class ChessTSquare:
         self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 1 else chess.BLACK
         self.fieldState=None
         self.piece=None
+        
         self.rPieceRadius=ChessTSquare.rw/ChessTrapezoid.PieceRadiusFactor
 
         self.rx,self.ry=self.col*ChessTSquare.rw,self.row*ChessTSquare.rh
@@ -404,6 +433,7 @@ class ChessTSquare:
         self.trapez.drawRCenteredText(image,squareHint,rcx,rcy,color=color)   
              
     def changes(self,diffImage):
+        """ check the changes analyzing the difference image of this square"""
         h, w = diffImage.shape[:2]
         x=int(self.rx*w)
         y=int(self.ry*h)
@@ -416,5 +446,5 @@ class ChessTSquare:
         if self.an in ChessTSquare.showDebugChange:
             self.trapez.video.showImage(squareImage,self.an)
             print("%s: %d" %(self.an,diffSum))
-        return diffSum
-            
+        change=SquareChange(diffSum/(h*w),self.changeStats)
+        return change
