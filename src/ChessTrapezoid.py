@@ -63,7 +63,7 @@ class ChessTrapezoid:
             tsquare=ChessTSquare(self,square)
             if ChessTrapezoid.debug:
                 print(vars(tsquare))
-            self.tsquares[square]=tsquare
+            self.tsquares[tsquare.square]=tsquare
             
     def relativeToIdealXY(self,rx,ry):
         x=int(rx*self.idealSize)
@@ -103,6 +103,11 @@ class ChessTrapezoid:
         else:
             raise Exception("invalid rotation %d for rotateIndices" % rotation)
 
+    def genSquares(self):
+        for square in chess.SQUARES:
+            tsquare=self.tsquares[square]
+            yield tsquare
+            
     def getEmptyImage(self,image,channels=1):
         """ prepare a trapezoid/polygon mask to focus on the square chess field seen as a trapezoid"""
         h, w = image.shape[:2]
@@ -142,9 +147,8 @@ class ChessTrapezoid:
     def updatePieces(self,fen):
         """ update the piece positions according to the given FEN"""
         self.board=chess.Board(fen)
-        for square in chess.SQUARES:
-            piece = self.board.piece_at(square)
-            tsquare=self.tsquares[square]
+        for tsquare in self.genSquares():
+            piece = self.board.piece_at(tsquare.square)
             tsquare.piece=piece
             tsquare.fieldState=tsquare.getFieldState()
 
@@ -227,13 +231,18 @@ class ChessTrapezoid:
         """ detect the changes of the given differential image """
         changes={}
         validChanges=0
-        for square in chess.SQUARES:
-            tsquare=self.tsquares[square]
-            squareChange=tsquare.changes(diffImage)
+        for tsquare in self.genSquares():
+            squareChange=tsquare.squareChange(diffImage)
             changes[tsquare.an]=squareChange
             if squareChange.valid:
                 validChanges+=1
         changes["valid"]=validChanges
+        # trigger statistics push if valid
+        if (validChanges>=60):
+            for tsquare in self.genSquares():
+                squareChange=changes[tsquare.an]
+                squareChange.push(tsquare.changeStats,squareChange.value)
+            
         return changes    
 
 class FieldState(IntEnum):
@@ -304,7 +313,7 @@ class Color:
 class SquareChange:
     """ keep track of changes of a square over time """
     medianFrameCount=10
-    treshold=0.1
+    treshold=0.2*64
     
     def __init__(self,value,stats):
         """ construct me from the given value with the given running stats"""
@@ -317,8 +326,10 @@ class SquareChange:
             self.diff=0
         else:
             self.valid=abs(self.diff)<SquareChange.treshold
-            if self.valid:
-                stats.push(value)
+                
+    def push(self,stats,value):
+        if self.valid:
+            stats.push(value)
         
 class ChessTSquare:
     """ a chess square in it's trapezoidal perspective """
@@ -432,7 +443,7 @@ class ChessTSquare:
         rcx,rcy=self.rcenter()
         self.trapez.drawRCenteredText(image,squareHint,rcx,rcy,color=color)   
              
-    def changes(self,diffImage):
+    def squareChange(self,diffImage):
         """ check the changes analyzing the difference image of this square"""
         h, w = diffImage.shape[:2]
         x=int(self.rx*w)
@@ -443,8 +454,8 @@ class ChessTSquare:
         squareImage=diffImage[y:y +dh, x:x +dw]
         diffSum=np.sum(squareImage)
                 
+        squareChange=SquareChange(diffSum/(dh*dw),self.changeStats)
         if self.an in ChessTSquare.showDebugChange:
             self.trapez.video.showImage(squareImage,self.an)
-            print("%s: %d" %(self.an,diffSum))
-        change=SquareChange(diffSum/(h*w),self.changeStats)
-        return change
+            print("%s: %s" %(self.an,vars(squareChange)))
+        return squareChange

@@ -3,7 +3,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from Environment4Test import Environment4Test
 from Video import Video
-from ChessTrapezoid import ChessTrapezoid, FieldState, Color, SquareChange
+from ChessTrapezoid import ChessTrapezoid,ChessTSquare, FieldState, Color, SquareChange
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -23,8 +23,7 @@ displayDebug=True
 
 def test_RankAndFile():
     csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
-    for square in chess.SQUARES:
-        tsquare=csquare.tsquares[square]
+    for tsquare in csquare.genSquares():
         assert tsquare.an==chess.FILE_NAMES[tsquare.col]+chess.RANK_NAMES[7-tsquare.row]
     
 def test_Rotation():
@@ -60,8 +59,7 @@ def test_Transform():
     squarePatches = []
     tSquarePatches = []    
     # https://stackoverflow.com/questions/26935701/ploting-filled-polygons-in-python
-    for square in chess.SQUARES:
-        tsquare=trapez.tsquares[square]
+    for tsquare in trapez.genSquares():
         color=[1,1,1,1] if tsquare.fieldColor else [0.1,0.1,0.1,1]
         polygon=Polygon(tsquare.rpolygon,color=color)
         tpolygon=Polygon(tsquare.polygon,color=color)
@@ -129,14 +127,17 @@ def test_ChessTrapezoid():
     testPath=testEnv.testMedia + 'scholarsmate.avi'
     frames=334
     trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374),rotation=270,idealSize=800) 
-    SquareChange.medianFrameCount=20
-    SquareChange.treshold=0.8
+    #SquareChange.medianFrameCount=12
+    #SquareChange.treshold=0.6
     #testPath="/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi"
     #trapezoid=ChessTrapezoid((210, 0), (603, 6), (581, 391), (208, 378),rotation=270,idealSize=800)
-    #frames=150
+    #frames=200
     #trapezoid=ChessTrapezoid([806, 29], [1578, 63], [1590, 837], [716, 763],rotation=180,idealSize=800)
-    #frames=3000
-    #testPath=1  
+    #frames=240
+    #testPath="/Users/wf/Documents/pyworkspace/PlayChessWithAWebCam/scholarsMate2019-11-17.avi"
+    #testPath=1
+    #frames=50000
+    #ChessTSquare.showDebugChange=["e2","e4"]
     video.open(testPath)
     start=timer()  
     colorHistory={}
@@ -158,10 +159,11 @@ def test_ChessTrapezoid():
         trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
-        changeHistory[frame]=trapezoid.detectChanges(diffImage)
+        squareChanges=trapezoid.detectChanges(diffImage)
+        changeHistory[frame]=squareChanges
         # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()
-        print('image analysis for %dx%d frame %d took %.3f s' % (w,h,frame,endc-startc))    
+        print('image analysis for %dx%d frame %5d took %.3f s with %d valid detects' % (w,h,frame,endc-startc,squareChanges["valid"]))    
         colorHistory[frame]=trapezoid.averageColors.copy()
         
         #mask=trapezoid.getEmptyImage(bgr)
@@ -184,8 +186,7 @@ def test_ChessTrapezoid():
     if debugChangeHistory:
         ans=[]
         #ans=["e2","e4","e7","e5","d1","h5","b8","c6","f1","c4","c8","f6","f7","a1","h8"]
-        for square in chess.SQUARES:
-            tsquare=trapezoid.tsquares[square]
+        for tsquare in trapezoid.genSquares():
             ans.append(tsquare.an)
         plotChangeHistory(changeHistory,ans,"differential of difference from ideal per square over time")
     if debugPlotHistory:
@@ -221,7 +222,7 @@ def plotChangeHistory(changeHistory,ans,title):
             mean[frame]=squareChange.mean
             diff[frame]=squareChange.diff
             validdiff[frame] = squareChange.diff if squareChange.valid or changes['valid']>60 else 0
-            if validdiff[frame]>0.3:
+            if validdiff[frame]>squareChange.treshold*1.5:
                 found=True
         ax0.plot(x,value,label=an)   
         ax1.plot(x,mean,label=an)   
@@ -236,7 +237,6 @@ def plotChangeHistory(changeHistory,ans,title):
         value[frame]=changes['valid']
     ax4.plot(x,value,label="valid")    
     ax3.legend(loc="upper right")
-    
  
     plt.title(title)       
     plt.legend()      
