@@ -49,21 +49,21 @@ def root():
 def autoindex(path='.'):
     return files_index.render_autoindex(path)
 
+@app.route('/chess/recordvideo')
+def video_record():
+    return webApp.videoRecord(env.games + '/videos/')
 
 @app.route('/video')
 def video_feed():
     return webApp.videoFeed()
 
-
 @app.route('/photo/<path:filename>', methods=['GET', 'POST'])
 def photoDownload(filename):
     return webApp.photoDownload(env.games + '/photos/', filename)
 
-
 @app.route("/chess/debug", methods=['GET'])
 def chessDebug():
     return webApp.chessDebug()
-
 
 @app.route("/chess/rotatevideo90", methods=['GET'])
 def videoRotate90():
@@ -133,7 +133,6 @@ def chessWebCamClick(width, height):
 @app.route("/chess/move/<move>", methods=['GET'])
 def chessMove(move):
     return webApp.chessMove(move)
-
 
 # capture a single still image
 @app.route("/chess/photo", methods=['GET'])

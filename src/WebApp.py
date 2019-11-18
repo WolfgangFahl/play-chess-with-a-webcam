@@ -24,6 +24,9 @@ class WebApp:
         self.board = Board()
         self.boardDetector = BoardDetector(self.board, self.video,args.speedup)
         self.env = Environment()
+        # not recording
+        self.videopath=None
+        self.videoout=None
         if args.game is None:
             self.webCamGame = self.createNewCame()
         else:
@@ -49,6 +52,7 @@ class WebApp:
 
     # return the index.html template content with the given message
     def index(self, msg):
+        self.log(msg)
         self.webCamGame.warp = self.warp
         self.webCamGame.save()
         gameid = self.webCamGame.gameid
@@ -161,7 +165,8 @@ class WebApp:
     def photo(self, path):
         try:
             # todo select input device
-            self.video.capture(self.args.input)
+            if self.video.frames == 0:
+                self.video.capture(self.args.input)
             filename = 'chessboard_%s.jpg' % (self.video.fileTimeStamp())
             # make sure the path exists
             self.webCamGame.checkDir(path)
@@ -170,6 +175,22 @@ class WebApp:
             return self.index(msg)
         except BaseException as e:
             return self.indexException(e)
+    
+    def videoRecord(self,path):
+        if self.videoout is None:
+            if self.video.frames == 0:
+                self.video.capture(self.args.input)
+            self.videofilename = 'chessgame_%s.avi' % (self.video.fileTimeStamp())
+            # make sure the path exists
+            self.webCamGame.checkDir(path)
+            self.videopath=path+self.videofilename
+            msg="started recording"
+        else:
+            self.videoout.release()
+            self.videopath=None
+            self.videoout=None    
+            msg="finished recording "+self.videofilename
+        return self.index(msg)   
 
     def videoRotate90(self):
         try:
@@ -184,6 +205,7 @@ class WebApp:
         self.video.pause(ispaused)
         msg = "video " + ('paused' if ispaused else 'running')
         return self.index(msg)
+    
 
     def videoFeed(self):
         if self.video.frames == 0:
@@ -228,6 +250,16 @@ class WebApp:
             warped = self.boardDetector.analyze(warped, self.video.frames, self.args.distance, self.args.step)
         if WebApp.debug:
             warped = self.video.addTimeStamp(warped)
+        # do we need to record?
+        if self.videopath is not None:
+            # is the output open?
+            if self.videoout is None:
+                # create correctly sized output
+                h, w = warped.shape[:2]
+                self.videoout=self.video.prepareRecording(self.videopath,w,h)
+         
+            self.videoout.write(warped)   
+            self.log("wrote frame %d to recording " % (self.video.frames)) 
         return warped
 
     # video generator

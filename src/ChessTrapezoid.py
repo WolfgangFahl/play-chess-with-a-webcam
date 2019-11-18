@@ -227,7 +227,7 @@ class ChessTrapezoid:
                 bs,gs,rs=averageColor.stds
                 print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
                 
-    def detectChanges(self,diffImage):
+    def detectChanges(self,diffImage,validChangesTreshold):
         """ detect the changes of the given differential image """
         changes={}
         validChanges=0
@@ -238,10 +238,12 @@ class ChessTrapezoid:
                 validChanges+=1
         changes["valid"]=validChanges
         # trigger statistics push if valid
-        if (validChanges>=60):
+        if (validChanges>=validChangesTreshold):
             for tsquare in self.genSquares():
                 squareChange=changes[tsquare.an]
                 squareChange.push(tsquare.changeStats,squareChange.value)
+                if not squareChange.valid:
+                    print ("%s not valid with %.1f" % (tsquare.an,squareChange.value))
             
         return changes    
 
@@ -279,7 +281,7 @@ class Color:
         nonzero=max(nonzerotupel)
         # exotic case of a totally black picture
         if nonzero==0:
-            self.color(0,0,0)
+            self.color=(0,0,0)
         else:    
             self.color,self.stds=self.fixMeans(means, stds, pixels, nonzero)
             
@@ -313,7 +315,7 @@ class Color:
 class SquareChange:
     """ keep track of changes of a square over time """
     medianFrameCount=10
-    treshold=0.2*64
+    treshold=0.2
     
     def __init__(self,value,stats):
         """ construct me from the given value with the given running stats"""
@@ -329,7 +331,7 @@ class SquareChange:
                 
     def push(self,stats,value):
         if self.valid:
-            stats.push(value)
+            stats.push(value) 
         
 class ChessTSquare:
     """ a chess square in it's trapezoidal perspective """
@@ -453,8 +455,8 @@ class ChessTSquare:
         dw=w//ChessTrapezoid.cols
         squareImage=diffImage[y:y +dh, x:x +dw]
         diffSum=np.sum(squareImage)
-                
-        squareChange=SquareChange(diffSum/(dh*dw),self.changeStats)
+        # the value is 64 times lower then the per pixel value        
+        squareChange=SquareChange(diffSum/(h*w),self.changeStats)
         if self.an in ChessTSquare.showDebugChange:
             self.trapez.video.showImage(squareImage,self.an)
             print("%s: %s" %(self.an,vars(squareChange)))

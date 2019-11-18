@@ -129,6 +129,12 @@ def test_ChessTrapezoid():
     trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374),rotation=270,idealSize=800) 
     #SquareChange.medianFrameCount=12
     #SquareChange.treshold=0.6
+    #testPath=testEnv.testMedia + 'scholarsMate2019-11-18.avi'
+    #frames=100
+    #trapezoid=ChessTrapezoid([0,0], [639,0], [639, 639], [0, 639],rotation=0,idealSize=800) 
+    #SquareChange.medianFrameCount=15
+    #SquareChange.treshold=0.3
+    validChangesTreshold=60
     #testPath="/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi"
     #trapezoid=ChessTrapezoid((210, 0), (603, 6), (581, 391), (208, 378),rotation=270,idealSize=800)
     #frames=200
@@ -159,7 +165,7 @@ def test_ChessTrapezoid():
         trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
-        squareChanges=trapezoid.detectChanges(diffImage)
+        squareChanges=trapezoid.detectChanges(diffImage,validChangesTreshold)
         changeHistory[frame]=squareChanges
         # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()

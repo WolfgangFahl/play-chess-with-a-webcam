@@ -196,16 +196,22 @@ class Video:
     
     def writeImage(self,image,filepath):
         cv2.imwrite(filepath, image)
-
-    # record the capture to a file with the given prefix using a timestamp
-    def record(self, prefix, printHints=True):
+        
+    def prepareRecording(self,filename,width,height,fps=None):    
         self.checkCap()
+        if fps is None:
+            fps=self.fps
         # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        out = cv2.VideoWriter(filename, fourcc, fps,
+                              (width, height))
+        return out 
+      
+    # record the capture to a file with the given prefix using a timestamp
+    def record(self, prefix, printHints=True, fps=None):
         filename = "%s%s.avi" % (prefix, self.timeStamp())
+        out=self.prepareRecording(filename,self.width,self.height,fps)
 
-        out = cv2.VideoWriter(filename, fourcc, 20.0,
-                              (self.width, self.height))
         if printHints:
             print("recording %s with %dx%d at %d fps press q to stop recording" % (
                 filename, self.width, self.height, self.fps))
