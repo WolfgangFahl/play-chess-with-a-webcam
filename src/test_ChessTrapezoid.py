@@ -144,24 +144,29 @@ def test_ChessTrapezoid():
     video=Video()
     
     #ans=["e2","e4","e7","e5","d1","h5","b8","c6","f1","c4","c8","f6","f7","a1","h8"]
-      
+    tk=testEnv.testMedia+'../../Chess-Testmedia/'
+    videos=testEnv.testMedia+'../games/videos/'
     testVideos=[
         TestVideo(75,10000,1,[[660,303], [1263, 257], [1338, 864],[663,909]],180,
             ans=["e2","e4"]),
-        TestVideo(75,334,testEnv.testMedia + 'scholarsmate.avi',[(140,5),(506,10),(507,377),(137,374)],270,
-            ans=["e2","e4"]),
+        TestVideo(334,334,testEnv.testMedia + 'scholarsmate.avi',[(140,5),(506,10),(507,377),(137,374)],270,
+            ans=None), # ans=["e2","e4"]),
         TestVideo(75,503,testEnv.testMedia + 'scholarsMate2019-11-18.avi',[[0,0],[611,0], [611, 611], [0, 611]],0,
             ans=["e2","e4"]),
         TestVideo(100,100,"/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi",[(210, 0), (603, 6), (581, 391), (208, 378)],rotation=270),
-        TestVideo(240,240,"/Users/wf/Documents/pyworkspace/PlayChessWithAWebCam/scholarsMate2019-11-17.avi",[],270)
+        TestVideo(240,240,"/Users/wf/Documents/pyworkspace/PlayChessWithAWebCam/scholarsMate2019-11-17.avi",[],270),
+        TestVideo(165,438,tk+"TK_scholarsmate4.avi",[[147, 129], [405, 123], [418, 385], [148, 390]],0,
+           ans=None), #["e2","e4","e7","e5"]),
+        TestVideo(62,91,videos+"chessgame_2019-11-19_203104.avi",[[0,0],[618,0], [618, 618], [0, 618]],0,
+           ans=None) # ["e2","e4","e7","e5"])
     ]
     # select a testVideo
     testVideo=testVideos[1]
     trapezoid=testVideo.setup().trapezoid
     frames=testVideo.frames
     #SquareChange.medianFrameCount=12
-    #SquareChange.treshold=0.6
-    validChangesTreshold=60
+    SquareChange.treshold=0.2
+    diffSumTreshold=4
     #ChessTSquare.showDebugChange=["e2","e4"]
     video.open(testVideo.path)
     start=timer()  
@@ -184,11 +189,11 @@ def test_ChessTrapezoid():
         trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
-        squareChanges=trapezoid.detectChanges(diffImage,validChangesTreshold)
+        squareChanges=trapezoid.detectChanges(diffImage,diffSumTreshold)
         changeHistory[frame]=squareChanges
         # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()
-        print('image analysis for %dx%d frame %5d took %.3f s with %d valid detects' % (w,h,frame,endc-startc,squareChanges["valid"]))    
+        print('image analysis for %dx%d frame %5d took %.3f s with %d valid %.0f diffsum %d/%d valid/invalid frames ' % (w,h,frame,endc-startc,squareChanges["valid"],squareChanges["diffSum"],squareChanges["validFrames"],squareChanges["invalidFrames"]))    
         colorHistory[frame]=trapezoid.averageColors.copy()
         
         #mask=trapezoid.getEmptyImage(bgr)
@@ -209,13 +214,13 @@ def test_ChessTrapezoid():
     end=timer()
     print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))
     if debugChangeHistory:
-        plotChangeHistory(changeHistory,testVideo.ans,"square changes over time")
+        plotChangeHistory(changeHistory,testVideo.ans,"square changes over time",diffSumTreshold)
     if debugPlotHistory:
         plotColorHistory(colorHistory)
     if waitAtEnd>0:
         video.showImage(warped, "warped", keyWait=waitAtEnd)
         
-def plotChangeHistory(changeHistory,ans,title):
+def plotChangeHistory(changeHistory,ans,title,diffSumTreshold):
     """ plot the changeHistory for the field with the given algebraic notations"""
     l=len(changeHistory)
     anIndex=0
@@ -223,7 +228,7 @@ def plotChangeHistory(changeHistory,ans,title):
     ax0=axes[0]
     ax0.set_title('value')
     ax1=axes[1]
-    ax1.set_title('median')
+    ax1.set_title('mean')
     ax2=axes[2]
     ax2.set_title('diff')
     ax3=axes[3]
@@ -243,7 +248,7 @@ def plotChangeHistory(changeHistory,ans,title):
             value[frame]=squareChange.value
             mean[frame]=squareChange.mean
             diff[frame]=squareChange.diff
-            validdiff[frame] = squareChange.diff if squareChange.valid or changes['valid']>60 else 0
+            validdiff[frame] = 0 if changes['diffSum']-abs(squareChange.diff)>diffSumTreshold else squareChange.diff 
             if validdiff[frame]>squareChange.treshold*1.5:
                 found=True
         ax0.plot(x,value,label=an)   
@@ -256,8 +261,9 @@ def plotChangeHistory(changeHistory,ans,title):
         anIndex+=1
     for frame,changes in changeHistory.items():
         x[frame]=frame
-        value[frame]=changes['valid']
-    ax4.plot(x,value,label="valid")    
+        diffSum=changes['diffSum']
+        value[frame]=diffSum
+    ax4.plot(x,value,label="diffSum")    
     if len(ans)<10:
         ax0.legend(loc="upper right")
         ax1.legend(loc="upper right")

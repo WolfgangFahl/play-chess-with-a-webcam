@@ -56,7 +56,8 @@ class ChessTrapezoid:
         self.rotation=0
         # dict for average Colors
         self.averageColors={}
-        self.validChanges=0
+        self.validFrames=0
+        self.invalidFrames=0
         # trapezoid representation of squares
         self.tsquares={}
         for square in chess.SQUARES:
@@ -227,24 +228,38 @@ class ChessTrapezoid:
                 bs,gs,rs=averageColor.stds
                 print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
                 
-    def detectChanges(self,diffImage,validChangesTreshold):
+    def detectChanges(self,diffImage,diffSumTreshold):
         """ detect the changes of the given differential image """
         changes={}
         validChanges=0
+        diffSum=0
         for tsquare in self.genSquares():
             squareChange=tsquare.squareChange(diffImage)
             changes[tsquare.an]=squareChange
+            diffSum+=abs(squareChange.diff)
             if squareChange.valid:
                 validChanges+=1
-        changes["valid"]=validChanges
         # trigger statistics push if valid
-        if (validChanges>=validChangesTreshold):
-            for tsquare in self.genSquares():
-                squareChange=changes[tsquare.an]
+        validBoard=diffSum<diffSumTreshold
+        if validBoard:
+            self.validFrames+=1
+        else:
+            self.invalidFrames+=1    
+        for tsquare in self.genSquares():
+            squareChange=changes[tsquare.an]
+            if validBoard:
                 squareChange.push(tsquare.changeStats,squareChange.value)
                 if not squareChange.valid:
                     print ("%s not valid with %.1f" % (tsquare.an,squareChange.value))
-            
+            else:
+                if self.invalidFrames>=3:
+                    tsquare.changeStats.clear()
+                    self.invalidFrames=0
+                    self.validFrames=0
+        changes["valid"]=validChanges
+        changes["diffSum"]=diffSum
+        changes["validFrames"]=self.validFrames
+        changes["invalidFrames"]=self.invalidFrames            
         return changes    
 
 class FieldState(IntEnum):
