@@ -25,9 +25,9 @@ class ChessTrapezoid:
     # default radius of pieces
     PieceRadiusFactor=3
   
-    def __init__(self,topLeft,topRight,bottomRight,bottomLeft,idealSize=640,rotation=0,video=None):
+    def __init__(self,trapezPoints,idealSize=640,rotation=0,video=None):
         self.rotation=rotation
-        trapezPoints=[topLeft,topRight,bottomRight,bottomLeft]
+        #trapezPoints=[topLeft,topRight,bottomRight,bottomLeft]
         shifts=self.rotation//90
         for shift in range(shifts):
             trapezPoints.append(trapezPoints.pop(0))

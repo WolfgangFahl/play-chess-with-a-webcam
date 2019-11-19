@@ -22,12 +22,12 @@ displayImage=True
 displayDebug=True
 
 def test_RankAndFile():
-    csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
+    csquare=ChessTrapezoid([(0,0),(100,0),(100,100),(0,100)])
     for tsquare in csquare.genSquares():
         assert tsquare.an==chess.FILE_NAMES[tsquare.col]+chess.RANK_NAMES[7-tsquare.row]
     
 def test_Rotation():
-    csquare=ChessTrapezoid((0,0),(100,0),(100,100),(0,100))
+    csquare=ChessTrapezoid([(0,0),(100,0),(100,100),(0,100)])
     rotations=[0,90,180,270]
     indices=[(0,0),(7,0),(7,7),(0,7)]
     expected=[(0,0),(7,0),(7,7),(0,7),
@@ -52,7 +52,7 @@ def test_Rotation():
             index=index+1
            
 def test_Transform():
-    trapez=ChessTrapezoid((20,40),(44,38),(60,8),(10,10))
+    trapez=ChessTrapezoid([(20,40),(44,38),(60,8),(10,10)])
     #if debug:
     #    plt.figure()
     #    plt.plot(trapez.pts_normedSquare[[0,1,2,3,0], 0],trapez.pts_normedSquare[[0,1,2,3,0], 1], '-')
@@ -83,7 +83,7 @@ def test_Transform():
         plt.show()               
 
 def test_RelativeToTrapezXY():
-    trapez=ChessTrapezoid((20,40),(40,40),(60,10),(10,10))
+    trapez=ChessTrapezoid([(20,40),(40,40),(60,10),(10,10)])
     rxrys=[(0,0),(1,0),(1,1),(0,1),(0,0.5),(0.5,0.5),(1,0.5)]
     expected=[(20,40),(40,40),(60,10),(10,10),(17.1,31.4),(31.4,31.4),(45.7,31.4)]
     for index,rxry in enumerate(rxrys):
@@ -95,7 +95,7 @@ def test_RelativeToTrapezXY():
         assert y ==pytest.approx(ey,0.1)
         
 def test_SortedTSquares(): 
-    trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374))
+    trapezoid=ChessTrapezoid([(140,5),(506,10),(507,377),(137,374)])
     trapezoid.updatePieces(chess.STARTING_FEN)    
     sortedTSquares=trapezoid.byFieldState()
     expected=[16,8,8,16,8,8]
@@ -122,29 +122,48 @@ def test_Stats():
     assert avgcolor.color==(110.00,55.00,210.00 )
     assert avgcolor.stds==(5.00,10.00,10.00)      
 
+class TestVideo:
+    def __init__(self,frames,totalFrames,path,points,rotation=270,idealSize=800,ans=None):
+        self.path=path
+        self.frames=frames
+        self.totalFrames=totalFrames,
+        self.points=points
+        self.rotation=rotation
+        self.idealSize=idealSize
+        self.ans=ans
+        
+    def setup(self):    
+        self.trapezoid=ChessTrapezoid(self.points,rotation=self.rotation,idealSize=self.idealSize) 
+        if self.ans is None:
+            self.ans=[]
+            for tsquare in self.trapezoid.genSquares():
+                self.ans.append(tsquare.an)
+        return self       
+        
 def test_ChessTrapezoid():
     video=Video()
-    testPath=testEnv.testMedia + 'scholarsmate.avi'
-    frames=334
-    trapezoid=ChessTrapezoid((140,5),(506,10),(507,377),(137,374),rotation=270,idealSize=800) 
+    
+    #ans=["e2","e4","e7","e5","d1","h5","b8","c6","f1","c4","c8","f6","f7","a1","h8"]
+      
+    testVideos=[
+        TestVideo(75,10000,1,[[660,303], [1263, 257], [1338, 864],[663,909]],180,
+            ans=["e2","e4"]),
+        TestVideo(75,334,testEnv.testMedia + 'scholarsmate.avi',[(140,5),(506,10),(507,377),(137,374)],270,
+            ans=["e2","e4"]),
+        TestVideo(75,503,testEnv.testMedia + 'scholarsMate2019-11-18.avi',[[0,0],[611,0], [611, 611], [0, 611]],0,
+            ans=["e2","e4"]),
+        TestVideo(100,100,"/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi",[(210, 0), (603, 6), (581, 391), (208, 378)],rotation=270),
+        TestVideo(240,240,"/Users/wf/Documents/pyworkspace/PlayChessWithAWebCam/scholarsMate2019-11-17.avi",[],270)
+    ]
+    # select a testVideo
+    testVideo=testVideos[1]
+    trapezoid=testVideo.setup().trapezoid
+    frames=testVideo.frames
     #SquareChange.medianFrameCount=12
     #SquareChange.treshold=0.6
-    #testPath=testEnv.testMedia + 'scholarsMate2019-11-18.avi'
-    #frames=100
-    #trapezoid=ChessTrapezoid([0,0], [639,0], [639, 639], [0, 639],rotation=0,idealSize=800) 
-    #SquareChange.medianFrameCount=15
-    #SquareChange.treshold=0.3
     validChangesTreshold=60
-    #testPath="/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi"
-    #trapezoid=ChessTrapezoid((210, 0), (603, 6), (581, 391), (208, 378),rotation=270,idealSize=800)
-    #frames=200
-    #trapezoid=ChessTrapezoid([806, 29], [1578, 63], [1590, 837], [716, 763],rotation=180,idealSize=800)
-    #frames=240
-    #testPath="/Users/wf/Documents/pyworkspace/PlayChessWithAWebCam/scholarsMate2019-11-17.avi"
-    #testPath=1
-    #frames=50000
     #ChessTSquare.showDebugChange=["e2","e4"]
-    video.open(testPath)
+    video.open(testVideo.path)
     start=timer()  
     colorHistory={}
     changeHistory={}
@@ -190,17 +209,14 @@ def test_ChessTrapezoid():
     end=timer()
     print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))
     if debugChangeHistory:
-        ans=[]
-        #ans=["e2","e4","e7","e5","d1","h5","b8","c6","f1","c4","c8","f6","f7","a1","h8"]
-        for tsquare in trapezoid.genSquares():
-            ans.append(tsquare.an)
-        plotChangeHistory(changeHistory,ans,"differential of difference from ideal per square over time")
+        plotChangeHistory(changeHistory,testVideo.ans,"square changes over time")
     if debugPlotHistory:
         plotColorHistory(colorHistory)
     if waitAtEnd>0:
         video.showImage(warped, "warped", keyWait=waitAtEnd)
         
 def plotChangeHistory(changeHistory,ans,title):
+    """ plot the changeHistory for the field with the given algebraic notations"""
     l=len(changeHistory)
     anIndex=0
     fig,axes=plt.subplots(5)
@@ -242,8 +258,12 @@ def plotChangeHistory(changeHistory,ans,title):
         x[frame]=frame
         value[frame]=changes['valid']
     ax4.plot(x,value,label="valid")    
+    if len(ans)<10:
+        ax0.legend(loc="upper right")
+        ax1.legend(loc="upper right")
+        ax2.legend(loc="upper right")
     ax3.legend(loc="upper right")
- 
+   
     plt.title(title)       
     plt.legend()      
     plt.show()    
