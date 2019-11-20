@@ -228,13 +228,13 @@ class ChessTrapezoid:
                 bs,gs,rs=averageColor.stds
                 print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
                 
-    def detectChanges(self,diffImage,diffSumTreshold):
+    def detectChanges(self,image,diffImage,diffSumTreshold):
         """ detect the changes of the given differential image """
         changes={}
         validChanges=0
         diffSum=0
         for tsquare in self.genSquares():
-            squareChange=tsquare.squareChange(diffImage)
+            squareChange=tsquare.squareChange(image,diffImage)
             changes[tsquare.an]=squareChange
             diffSum+=abs(squareChange.diff)
             if squareChange.valid:
@@ -249,13 +249,17 @@ class ChessTrapezoid:
             squareChange=changes[tsquare.an]
             if validBoard:
                 squareChange.push(tsquare.changeStats,squareChange.value)
-                if not squareChange.valid:
-                    print ("%s not valid with %.1f" % (tsquare.an,squareChange.value))
+                if self.validFrames>=squareChange.meanFrameCount:
+                    tsquare.preMoveImage=tsquare.squareImage
+                    if not squareChange.valid:
+                        tsquare.checkMoved()
+                self.invalidFrames=0    
             else:
                 if self.invalidFrames>=3:
-                    tsquare.changeStats.clear()
-                    self.invalidFrames=0
-                    self.validFrames=0
+                    if self.validFrames>=squareChange.meanFrameCount:
+                        tsquare.changeStats.clear()
+                        self.invalidFrames=0
+                        self.validFrames=0
         changes["valid"]=validChanges
         changes["diffSum"]=diffSum
         changes["validFrames"]=self.validFrames
@@ -329,7 +333,7 @@ class Color:
 
 class SquareChange:
     """ keep track of changes of a square over time """
-    medianFrameCount=10
+    meanFrameCount=10
     treshold=0.2
     
     def __init__(self,value,stats):
@@ -337,7 +341,7 @@ class SquareChange:
         self.value=value
         self.mean=stats.mean()
         self.diff=value-self.mean
-        if stats.n<SquareChange.medianFrameCount:
+        if stats.n<SquareChange.meanFrameCount:
             stats.push(value)
             self.valid=False
             self.diff=0
@@ -370,6 +374,8 @@ class ChessTSquare:
         self.fieldColor=chess.WHITE if (self.col+self.row) % 2 == 1 else chess.BLACK
         self.fieldState=None
         self.piece=None
+        self.preMoveImage=None
+        self.postMoveImage=None
         
         self.rPieceRadius=ChessTSquare.rw/ChessTrapezoid.PieceRadiusFactor
 
@@ -460,7 +466,7 @@ class ChessTSquare:
         rcx,rcy=self.rcenter()
         self.trapez.drawRCenteredText(image,squareHint,rcx,rcy,color=color)   
              
-    def squareChange(self,diffImage):
+    def squareChange(self,image,diffImage):
         """ check the changes analyzing the difference image of this square"""
         h, w = diffImage.shape[:2]
         x=int(self.rx*w)
@@ -468,11 +474,16 @@ class ChessTSquare:
          
         dh=h//ChessTrapezoid.rows
         dw=w//ChessTrapezoid.cols
-        squareImage=diffImage[y:y +dh, x:x +dw]
-        diffSum=np.sum(squareImage)
+        self.squareImage=image[y:y +dh, x:x +dw]
+        self.diffImage=diffImage[y:y +dh, x:x +dw]
+        diffSum=np.sum(self.diffImage)
         # the value is 64 times lower then the per pixel value        
-        squareChange=SquareChange(diffSum/(h*w),self.changeStats)
+        self.currentChange=SquareChange(diffSum/(h*w),self.changeStats)
+        return self.currentChange
+    
+    def checkMoved(self):
+        self.postMoveImage=self.squareImage
         if self.an in ChessTSquare.showDebugChange:
-            self.trapez.video.showImage(squareImage,self.an)
-            print("%s: %s" %(self.an,vars(squareChange)))
-        return squareChange
+            self.trapez.video.showImage(self.preMoveImage,self.an+" pre")
+            self.trapez.video.showImage(self.postMoveImage,self.an+" post")
+            print("%s: %s" %(self.an,vars(self.currentChange)))

@@ -153,7 +153,7 @@ def test_ChessTrapezoid():
             ans=None), # ans=["e2","e4"]),
         TestVideo(75,503,testEnv.testMedia + 'scholarsMate2019-11-18.avi',[[0,0],[611,0], [611, 611], [0, 611]],0,
             ans=["e2","e4"]),
-        TestVideo(100,100,"/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi",[(210, 0), (603, 6), (581, 391), (208, 378)],rotation=270),
+        TestVideo(150,5000,"/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi",[(210, 0), (603, 6), (581, 391), (208, 378)],rotation=270),
         TestVideo(240,240,"/Users/wf/Documents/pyworkspace/PlayChessWithAWebCam/scholarsMate2019-11-17.avi",[],270),
         TestVideo(165,438,tk+"TK_scholarsmate4.avi",[[147, 129], [405, 123], [418, 385], [148, 390]],0,
            ans=None), #["e2","e4","e7","e5"]),
@@ -164,10 +164,10 @@ def test_ChessTrapezoid():
     testVideo=testVideos[1]
     trapezoid=testVideo.setup().trapezoid
     frames=testVideo.frames
-    #SquareChange.medianFrameCount=12
+    #SquareChange.meanFrameCount=12
     SquareChange.treshold=0.2
-    diffSumTreshold=4
-    #ChessTSquare.showDebugChange=["e2","e4"]
+    diffSumTreshold=2.5
+    ChessTSquare.showDebugChange=["e2","e4"]
     video.open(testVideo.path)
     start=timer()  
     colorHistory={}
@@ -189,11 +189,11 @@ def test_ChessTrapezoid():
         trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
-        squareChanges=trapezoid.detectChanges(diffImage,diffSumTreshold)
+        squareChanges=trapezoid.detectChanges(warped,diffImage,diffSumTreshold)
         changeHistory[frame]=squareChanges
         # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()
-        print('image analysis for %dx%d frame %5d took %.3f s with %d valid %.0f diffsum %d/%d valid/invalid frames ' % (w,h,frame,endc-startc,squareChanges["valid"],squareChanges["diffSum"],squareChanges["validFrames"],squareChanges["invalidFrames"]))    
+        print('%dx%d frame %5d in %.3f s with %2d ✅ %4.1f Δ %4d ✅/%4d ❌' % (w,h,frame,endc-startc,squareChanges["valid"],squareChanges["diffSum"],squareChanges["validFrames"],squareChanges["invalidFrames"]))    
         colorHistory[frame]=trapezoid.averageColors.copy()
         
         #mask=trapezoid.getEmptyImage(bgr)
@@ -248,7 +248,7 @@ def plotChangeHistory(changeHistory,ans,title,diffSumTreshold):
             value[frame]=squareChange.value
             mean[frame]=squareChange.mean
             diff[frame]=squareChange.diff
-            validdiff[frame] = 0 if changes['diffSum']-abs(squareChange.diff)>diffSumTreshold else squareChange.diff 
+            validdiff[frame] = 0 if changes['diffSum']>diffSumTreshold else squareChange.diff 
             if validdiff[frame]>squareChange.treshold*1.5:
                 found=True
         ax0.plot(x,value,label=an)   
