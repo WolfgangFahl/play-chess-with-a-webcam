@@ -228,7 +228,7 @@ class ChessTrapezoid:
                 bs,gs,rs=averageColor.stds
                 print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
                 
-    def detectChanges(self,image,diffImage,diffSumTreshold):
+    def detectChanges(self,image,diffImage,validDiffSumTreshold,invalidDiffSumTreshold):
         """ detect the changes of the given differential image """
         changes={}
         validChanges=0
@@ -239,27 +239,21 @@ class ChessTrapezoid:
             diffSum+=abs(squareChange.diff)
             if squareChange.valid:
                 validChanges+=1
+        invalidStarted=self.invalidFrames>3
+        invalidStable=self.invalidFrames>=squareChange.meanFrameCount,
+        validStable=self.validFrames>=squareChange.meanFrameCount        
         # trigger statistics push if valid
-        validBoard=diffSum<diffSumTreshold
+        validBoard=diffSum<invalidDiffSumTreshold if invalidStable else diffSum<validDiffSumTreshold
         if validBoard:
             self.validFrames+=1
         else:
             self.invalidFrames+=1    
         for tsquare in self.genSquares():
             squareChange=changes[tsquare.an]
-            if validBoard:
-                squareChange.push(tsquare.changeStats,squareChange.value)
-                if self.validFrames>=squareChange.meanFrameCount:
-                    tsquare.preMoveImage=tsquare.squareImage
-                    if not squareChange.valid:
-                        tsquare.checkMoved()
-                self.invalidFrames=0    
-            else:
-                if self.invalidFrames>=3:
-                    if self.validFrames>=squareChange.meanFrameCount:
-                        tsquare.changeStats.clear()
-                        self.invalidFrames=0
-                        self.validFrames=0
+            validEnd,invalidEnd=tsquare.checkMoved(validBoard,invalidStarted,invalidStable,validStable)
+            if invalidEnd: self.invalidFrames=0
+            if validEnd: self.validFrames=0
+            
         changes["valid"]=validChanges
         changes["diffSum"]=diffSum
         changes["validFrames"]=self.validFrames
@@ -481,9 +475,34 @@ class ChessTSquare:
         self.currentChange=SquareChange(diffSum/(h*w),self.changeStats)
         return self.currentChange
     
-    def checkMoved(self):
-        self.postMoveImage=self.squareImage
-        if self.an in ChessTSquare.showDebugChange:
-            self.trapez.video.showImage(self.preMoveImage,self.an+" pre")
-            self.trapez.video.showImage(self.postMoveImage,self.an+" post")
-            print("%s: %s" %(self.an,vars(self.currentChange)))
+    def checkMoved(self,validBoard,invalidStarted,invalidStable,validStable):
+        """ check a figure has been moved, so that the state of this square has changed """
+        squareChange=self.currentChange
+        invalidEnd=False
+        validEnd=False
+        # if the whole board is valid
+        if validBoard:
+            # if we come from an stable invalid period then this is likely a move
+            if invalidStable and self.preMoveImage is not None:
+                if not squareChange.valid:
+                    self.postMoveImage=self.squareImage
+                    if self.an in ChessTSquare.showDebugChange:
+                        print("%s: %s" %(self.an,vars(squareChange))) 
+                        self.trapez.video.showImage(self.preMoveImage,self.an+" pre")
+                        self.trapez.video.showImage(self.postMoveImage,self.an+" post")
+                    self.changeStats.clear()
+                    self.preMoveImage=None
+                
+            invalidEnd=True
+            # add the current change statistics to my statistics
+            squareChange.push(self.changeStats,squareChange.value)
+            # if we have been valid for a long enough period of time
+            if validStable:
+                # remember my image - we are ready to detect a move
+                self.preMoveImage=self.squareImage               
+        else:
+            if invalidStarted:
+                validEnd=True
+       
+        return validEnd,invalidEnd    
+            

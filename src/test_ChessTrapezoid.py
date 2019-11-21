@@ -166,7 +166,8 @@ def test_ChessTrapezoid():
     frames=testVideo.frames
     #SquareChange.meanFrameCount=12
     SquareChange.treshold=0.2
-    diffSumTreshold=2.5
+    validDiffSumTreshold=1.4
+    invalidDiffSumTreshold=2.6
     ChessTSquare.showDebugChange=["e2","e4"]
     video.open(testVideo.path)
     start=timer()  
@@ -189,7 +190,7 @@ def test_ChessTrapezoid():
         trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
-        squareChanges=trapezoid.detectChanges(warped,diffImage,diffSumTreshold)
+        squareChanges=trapezoid.detectChanges(warped,diffImage, validDiffSumTreshold,invalidDiffSumTreshold)
         changeHistory[frame]=squareChanges
         # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()
@@ -214,7 +215,7 @@ def test_ChessTrapezoid():
     end=timer()
     print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))
     if debugChangeHistory:
-        plotChangeHistory(changeHistory,testVideo.ans,"square changes over time",diffSumTreshold)
+        plotChangeHistory(changeHistory,testVideo.ans,"square changes over time",validDiffSumTreshold)
     if debugPlotHistory:
         plotColorHistory(colorHistory)
     if waitAtEnd>0:
