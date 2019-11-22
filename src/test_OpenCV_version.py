@@ -7,7 +7,7 @@ import cv2
 def test_Version():
     version = cv2.__version__
     print (version)
-    assert version == "4.1.1"
+    assert version == "4.1.2"
 
 
 test_Version()
