@@ -7,7 +7,7 @@ from enum import IntEnum
 import cv2
 import chess
 from Video import Video
-from RunningStats import RunningStats
+from RunningStats import RunningStats, MovingAverage
 
 class Transformation(IntEnum):
     """ Transformation kind"""
@@ -24,6 +24,7 @@ class ChessTrapezoid:
     cols=8
     # default radius of pieces
     PieceRadiusFactor=3
+    DiffSumMovingAverageLength=5
   
     def __init__(self,trapezPoints,idealSize=640,rotation=0,video=None):
         self.rotation=rotation
@@ -58,6 +59,7 @@ class ChessTrapezoid:
         self.averageColors={}
         self.validFrames=0
         self.invalidFrames=0
+        self.diffSumAverage=MovingAverage(ChessTrapezoid.DiffSumMovingAverageLength)
         # trapezoid representation of squares
         self.tsquares={}
         for square in chess.SQUARES:
@@ -228,7 +230,7 @@ class ChessTrapezoid:
                 bs,gs,rs=averageColor.stds
                 print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
                 
-    def detectChanges(self,image,diffImage,validDiffSumTreshold,invalidDiffSumTreshold):
+    def detectChanges(self,image,diffImage,validDiffSumTreshold,invalidDiffSumTreshold,diffSumDeltaTreshold):
         """ detect the changes of the given differential image """
         changes={}
         validChanges=0
@@ -239,11 +241,17 @@ class ChessTrapezoid:
             diffSum+=abs(squareChange.diff)
             if squareChange.valid:
                 validChanges+=1
+        
+        self.diffSumAverage.push(diffSum)        
+        diffSumDelta=self.diffSumAverage.mean()-diffSum
         invalidStarted=self.invalidFrames>3
         invalidStable=self.invalidFrames>=squareChange.meanFrameCount,
-        validStable=self.validFrames>=squareChange.meanFrameCount        
+        validStable=self.validFrames>=squareChange.meanFrameCount     
         # trigger statistics push if valid
-        validBoard=diffSum<invalidDiffSumTreshold if invalidStable else diffSum<validDiffSumTreshold
+        if invalidStable:
+            validBoard=diffSum<invalidDiffSumTreshold and abs(diffSumDelta)<diffSumDeltaTreshold 
+        else:
+            validBoard=diffSum<validDiffSumTreshold
         if validBoard:
             self.validFrames+=1
         else:
@@ -253,9 +261,11 @@ class ChessTrapezoid:
             validEnd,invalidEnd=tsquare.checkMoved(validBoard,invalidStarted,invalidStable,validStable)
             if invalidEnd: self.invalidFrames=0
             if validEnd: self.validFrames=0
-            
+        
+        changes["validBoard"]=validBoard    
         changes["valid"]=validChanges
         changes["diffSum"]=diffSum
+        changes["diffSumDelta"]=diffSumDelta
         changes["validFrames"]=self.validFrames
         changes["invalidFrames"]=self.invalidFrames            
         return changes    
@@ -335,6 +345,7 @@ class SquareChange:
         self.value=value
         self.mean=stats.mean()
         self.diff=value-self.mean
+        self.variance=stats.variance()
         if stats.n<SquareChange.meanFrameCount:
             stats.push(value)
             self.valid=False

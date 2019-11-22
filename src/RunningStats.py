@@ -2,11 +2,37 @@
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import math
+from collections import deque
 
+class MovingAverage:
+    """ calculate a moving average """
+    def __init__(self,maxlen):
+        self.maxlen=maxlen
+        self.d=deque(maxlen=maxlen)
+        self.sum=0
+        self.n=0
+        self.value=None
+        
+    def push(self,value):
+        """ recalculate the Moving Average based on a new value"""
+        self.value=value
+        self.sum += value
+        if self.n<self.maxlen:
+            self.n+=1
+        else:
+            self.sum-=self.d.popleft()
+        self.d.append(value)
+     
+    def mean(self):    
+        if self.n==0:
+            return None
+        return self.sum / self.n    
 
 # see https://stackoverflow.com/a/17637351/1497139
+# see also https://gist.github.com/alexalemi/2151722
+# see also https://www.johndcook.com/blog/standard_deviation/
 class RunningStats:
-    """ calculate mean, variance and standard deviation in one pass using Welfford's algorithm """
+    """ calculate mean, variance and standard deviation in one pass using Welford's algorithm """
 
     def __init__(self):
         self.n = 0

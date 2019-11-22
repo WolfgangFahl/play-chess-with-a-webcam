@@ -8,6 +8,7 @@ from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+import math
 import numpy as np
 import pytest
 import chess
@@ -153,7 +154,7 @@ def test_ChessTrapezoid():
             ans=None), # ans=["e2","e4"]),
         TestVideo(75,503,testEnv.testMedia + 'scholarsMate2019-11-18.avi',[[0,0],[611,0], [611, 611], [0, 611]],0,
             ans=["e2","e4"]),
-        TestVideo(150,5000,"/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi",[(210, 0), (603, 6), (581, 391), (208, 378)],rotation=270),
+        TestVideo(300,5000,"/Users/wf/source/python/play-chess-with-a-webcam/media/chessVideo2019-10-17_185821.avi",[(210, 0), (603, 6), (581, 391), (208, 378)],rotation=270),
         TestVideo(240,240,"/Users/wf/Documents/pyworkspace/PlayChessWithAWebCam/scholarsMate2019-11-17.avi",[],270),
         TestVideo(165,438,tk+"TK_scholarsmate4.avi",[[147, 129], [405, 123], [418, 385], [148, 390]],0,
            ans=None), #["e2","e4","e7","e5"]),
@@ -165,10 +166,11 @@ def test_ChessTrapezoid():
     trapezoid=testVideo.setup().trapezoid
     frames=testVideo.frames
     #SquareChange.meanFrameCount=12
-    SquareChange.treshold=0.2
+    SquareChange.treshold=0.1
     validDiffSumTreshold=1.4
-    invalidDiffSumTreshold=2.6
-    ChessTSquare.showDebugChange=["e2","e4"]
+    invalidDiffSumTreshold=4.8
+    diffSumDeltaTreshold=0.2
+    ChessTSquare.showDebugChange=["e2","e4","e7","e5"]
     video.open(testVideo.path)
     start=timer()  
     colorHistory={}
@@ -190,11 +192,12 @@ def test_ChessTrapezoid():
         trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
-        squareChanges=trapezoid.detectChanges(warped,diffImage, validDiffSumTreshold,invalidDiffSumTreshold)
+        squareChanges=trapezoid.detectChanges(warped,diffImage, validDiffSumTreshold,invalidDiffSumTreshold,diffSumDeltaTreshold)
         changeHistory[frame]=squareChanges
         # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()
-        print('%dx%d frame %5d in %.3f s with %2d ✅ %4.1f Δ %4d ✅/%4d ❌' % (w,h,frame,endc-startc,squareChanges["valid"],squareChanges["diffSum"],squareChanges["validFrames"],squareChanges["invalidFrames"]))    
+        print('%dx%d frame %5d in %.3f s with %2d ✅ %4.1f Δ %4.1f ΣΔ %4d ✅/%4d ❌' 
+              % (w,h,frame,endc-startc,squareChanges["valid"],squareChanges["diffSum"],squareChanges["diffSumDelta"],squareChanges["validFrames"],squareChanges["invalidFrames"]))    
         colorHistory[frame]=trapezoid.averageColors.copy()
         
         #mask=trapezoid.getEmptyImage(bgr)
@@ -215,17 +218,17 @@ def test_ChessTrapezoid():
     end=timer()
     print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))
     if debugChangeHistory:
-        plotChangeHistory(changeHistory,testVideo.ans,"square changes over time",validDiffSumTreshold)
+        plotChangeHistory(changeHistory,testVideo.ans,"square changes over time",validDiffSumTreshold,invalidDiffSumTreshold)
     if debugPlotHistory:
         plotColorHistory(colorHistory)
     if waitAtEnd>0:
         video.showImage(warped, "warped", keyWait=waitAtEnd)
         
-def plotChangeHistory(changeHistory,ans,title,diffSumTreshold):
+def plotChangeHistory(changeHistory,ans,title,validDiffSumTreshold,invalidDiffSumTreshold):
     """ plot the changeHistory for the field with the given algebraic notations"""
     l=len(changeHistory)
     anIndex=0
-    fig,axes=plt.subplots(5)
+    fig,axes=plt.subplots(7)
     ax0=axes[0]
     ax0.set_title('value')
     ax1=axes[1]
@@ -235,23 +238,37 @@ def plotChangeHistory(changeHistory,ans,title,diffSumTreshold):
     ax3=axes[3]
     ax3.set_title('validdiff')
     ax4=axes[4]
-    ax4.set_title('valid')
+    ax4.set_title('detected')
+    ax5=axes[5]
+    ax5.set_title('diffsum')
+    ax6=axes[6]
+    ax6.set_title('diffsumdelta')
     for an in ans:
         x=np.empty(l)
         value=np.empty(l)
         mean=np.empty(l)
+        stdv=np.empty(l)
         diff=np.empty(l)
         validdiff=np.empty(l)
+        detected=np.empty(l)
+        diffSum=np.empty(l)
+        diffSumDelta=np.empty(l) 
         found=False
+        detectedFound=False
         for frame,changes in changeHistory.items():
             x[frame]=frame
             squareChange=changes[an]
             value[frame]=squareChange.value
             mean[frame]=squareChange.mean
+            stdv[frame]=math.sqrt(squareChange.variance)
             diff[frame]=squareChange.diff
-            validdiff[frame] = 0 if changes['diffSum']>diffSumTreshold else squareChange.diff 
+            diffSum[frame]=changes['diffSum']
+            validdiff[frame] = 0 if diffSum[frame]>validDiffSumTreshold else squareChange.diff 
+            detected[frame] = squareChange.diff if changes['validBoard'] else 0
             if validdiff[frame]>squareChange.treshold*1.5:
-                found=True
+                found=True 
+            if detected[frame]>squareChange.treshold*1.5:     
+                detectedFound=True
         ax0.plot(x,value,label=an)   
         ax1.plot(x,mean,label=an)   
         ax2.plot(x,diff,label=an)
@@ -259,17 +276,24 @@ def plotChangeHistory(changeHistory,ans,title,diffSumTreshold):
             ax3.plot(x,validdiff,label=an)
         else:
             ax3.plot(x,validdiff)
+        if detectedFound:
+            ax4.plot(x,detected,label=an)
+        else:
+            ax4.plot(x,detected)
         anIndex+=1
     for frame,changes in changeHistory.items():
         x[frame]=frame
-        diffSum=changes['diffSum']
-        value[frame]=diffSum
-    ax4.plot(x,value,label="diffSum")    
+        diffSum[frame]=changes['diffSum']
+        delta=changes['diffSumDelta']
+        diffSumDelta[frame]=delta if abs(delta)<2 else 0
+    ax5.plot(x,diffSum,label="diffSum")  
+    ax6.plot(x,diffSumDelta)      
     if len(ans)<10:
         ax0.legend(loc="upper right")
         ax1.legend(loc="upper right")
         ax2.legend(loc="upper right")
     ax3.legend(loc="upper right")
+    ax4.legend(loc="upper right")
    
     plt.title(title)       
     plt.legend()      

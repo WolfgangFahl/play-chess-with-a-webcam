@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from RunningStats import RunningStats, ColorStats
+from RunningStats import RunningStats, ColorStats, MovingAverage
 import pytest
-
 
 def test_RunningStats():
     rs = RunningStats()
@@ -40,6 +39,17 @@ def test_ColorStats():
     assert sG == pytest.approx(8.164966, prec)
     assert sB == pytest.approx(17.078251, prec)
 
-
+def test_MovingAverage():
+    values=[10,12,8,13,15,14]
+    means=[10,11,10,11,12,14]
+    ma=MovingAverage(3)
+    index=0
+    for value in values:
+        ma.push(value)
+        print ("%d: %f %f" % (index,value,ma.mean()))
+        assert means[index]==ma.mean()
+        index+=1
+    
 test_RunningStats()
 test_ColorStats()
+test_MovingAverage()
