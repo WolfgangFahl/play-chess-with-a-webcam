@@ -18,9 +18,7 @@ testEnv = Environment4Test()
 speedup=5 # times 
 waitAtEnd=0 # msecs
 debug=False
-debugChangeHistory=False
 debugPlotHistory=False
-debugMoveDetected=False
 displayImage=True
 displayDebug=True
 
@@ -172,6 +170,8 @@ def test_ChessTrapezoid():
     # select a testVideo
     if getpass.getuser()=="travis":
         testVideo=testVideos[1]
+        debugMoveDetected=False
+        debugChangeHistory=False
     else:
         testVideo=testVideos[3]
         debugChangeHistory=True
