@@ -12,6 +12,7 @@ import math
 import numpy as np
 import pytest
 import chess
+import getpass
 
 testEnv = Environment4Test()
 speedup=5 # times 
@@ -19,6 +20,7 @@ waitAtEnd=0 # msecs
 debug=False
 debugChangeHistory=False
 debugPlotHistory=False
+debugMoveDetected=False
 displayImage=True
 displayDebug=True
 
@@ -139,8 +141,14 @@ class TestVideo:
             self.ans=[]
             for tsquare in self.trapezoid.genSquares():
                 self.ans.append(tsquare.an)
-        return self       
-        
+        return self     
+
+def onMoveDetected(tSquare):
+    if tSquare.an in ChessTSquare.showDebugChange:
+        print("%s: %s" %(tSquare.an,vars(tSquare.currentChange))) 
+        tSquare.trapez.video.showImage(tSquare.preMoveImage,tSquare.an+" pre")
+        tSquare.trapez.video.showImage(tSquare.postMoveImage,tSquare.an+" post")      
+    
 def test_ChessTrapezoid():
     video=Video()
     
@@ -162,8 +170,16 @@ def test_ChessTrapezoid():
            ans=None) # ["e2","e4","e7","e5"])
     ]
     # select a testVideo
-    testVideo=testVideos[1]
+    if getpass.getuser()=="travis":
+        testVideo=testVideos[1]
+    else:
+        testVideo=testVideos[3]
+        debugChangeHistory=True
+        debugMoveDetected=True
+    
     trapezoid=testVideo.setup().trapezoid
+    if debugMoveDetected:
+        trapezoid.onMoveDetected=onMoveDetected
     frames=testVideo.frames
     #SquareChange.meanFrameCount=12
     SquareChange.treshold=0.1
@@ -325,7 +341,7 @@ def plotColorHistory(colorHistory):
         #ax[fieldState].autoscale()
     plt.legend()    
     plt.show()
-    
+
 test_RankAndFile()    
 test_Rotation()     
 test_Transform() 

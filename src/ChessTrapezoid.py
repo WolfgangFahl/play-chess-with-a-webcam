@@ -55,6 +55,8 @@ class ChessTrapezoid:
         self.pts_IdealSquare = np.asarray([[0.0, 0.0], [s, 0.0], [s, s], [0.0, s]],dtype=np.float32)
         self.inverseTransform=cv2.getPerspectiveTransform(pts_dst,self.pts_IdealSquare)
         self.rotation=0
+        # callback when move is detected
+        self.onMoveDetected=None
         # dict for average Colors
         self.averageColors={}
         self.validFrames=0
@@ -497,10 +499,8 @@ class ChessTSquare:
             if invalidStable and self.preMoveImage is not None:
                 if not squareChange.valid:
                     self.postMoveImage=self.squareImage
-                    if self.an in ChessTSquare.showDebugChange:
-                        print("%s: %s" %(self.an,vars(squareChange))) 
-                        self.trapez.video.showImage(self.preMoveImage,self.an+" pre")
-                        self.trapez.video.showImage(self.postMoveImage,self.an+" post")
+                    if self.trapez.onMoveDetected is not None:
+                        self.trapez.onMoveDetected(self)
                     self.changeStats.clear()
                     self.preMoveImage=None
                 
