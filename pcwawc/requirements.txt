@@ -1,0 +1,41 @@
+# 2019-10-14 WF
+#
+# runtime dependencies
+#
+# https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_tutorials.html
+opencv-python
+# python-chess
+# https://buildmedia.readthedocs.org/media/pdf/python-chess/latest/python-chess.pdf
+python-chess
+# image utils
+imutils
+# Image Processing in Python - Alternative to opencv e.g. for perspective Transformation
+# https://scikit-image.org/
+# scikit-image
+# web tools
+Flask
+Flask-RESTful
+Flask-AutoIndex
+# config and state saving
+PyYAML
+# mss https://pypi.org/project/mss/ An ultra fast cross-platform multiple screenshots module in pure python using ctypes.
+mss
+# PIL Python Image Library fork see https://pillow.readthedocs.io/en/stable/
+Pillow
+# https://kivy.org Kivy - Open source Python library for rapid development of applications
+# that make use of innovative user interfaces, such as multi-touch apps.
+# uncommented and not used (yet) due to issues on ubuntu
+# kivy
+# Json pickle
+jsonpickle
+#
+# test dependencies
+#
+# python tests
+pytest
+# matplotlib
+matplotlib
+# scipy
+scipy
+# pytest-cov
+pytest-cov
