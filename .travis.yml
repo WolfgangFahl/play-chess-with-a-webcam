@@ -9,7 +9,7 @@ services:
   - xvfb
 # command to install dependencies
 install:
-  - pip install -r src/requirements.txt
+  - pip install -r pcwawc/requirements.txt
 # command to run tests
 script:
   - pytest
