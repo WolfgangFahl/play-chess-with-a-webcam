@@ -26,6 +26,7 @@ def test_WebCamGame():
         print (json)
     assert '"fen": "8/8/8/8/8/8/8/8 w - -"' in json      
     assert "chessBoard001" in json
+    #webCamGame.save("testGames") 
 
     
 def test_WebCamGames():

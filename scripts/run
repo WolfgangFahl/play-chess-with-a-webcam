@@ -6,4 +6,4 @@ then
   export PYTHONPATH=""
 fi
 scriptdir=$(dirname $0)
-python3 $scriptdir/../src/ChessCam.py $@
+python3 $scriptdir/../pcwawc/ChessCam.py $@

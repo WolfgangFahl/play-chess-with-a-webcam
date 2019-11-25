@@ -245,7 +245,7 @@ EOF
 
 # install required python modules
 pythonModules() {
-  cd $scriptdir/../src
+  cd $scriptdir/../pcwawc
   pip=pip3
   if [ "$USER" = "travis" ]
   then

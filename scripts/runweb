@@ -38,12 +38,12 @@ openUrl() {
     status=$(curl -Is $l_url | head -1)
     echo "waiting $l_count/$l_loops for $l_url: $status"
     case $status in
-      *200*OK*) 
+      *200*OK*)
 	l_open="open"
 	os=$(uname)
 	case $os in
 	  Linux*)
-            l_open="xdg-open"  
+            l_open="xdg-open"
 	    ;;
 	esac
 	$l_open $l_url
@@ -88,7 +88,7 @@ then
   export PYTHONPATH=""
 fi
 scriptdir=$(dirname $0)
-srcdir=$scriptdir/../src
+srcdir=$scriptdir/../pcwawc
 pyapp=webchesscam.py
 killifrunning $pyapp
 port=5003

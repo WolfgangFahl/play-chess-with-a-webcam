@@ -100,4 +100,4 @@ cat << EOF
 EOF
 }
 
-umldoc $scriptdir/../src "Play Chess With A WebCam github repository" https://github.com/WolfgangFahl/play-chess-with-a-webcam/tree/master/src
+umldoc $scriptdir/../pcwawc "Play Chess With A WebCam github repository" https://github.com/WolfgangFahl/play-chess-with-a-webcam/tree/master/src
