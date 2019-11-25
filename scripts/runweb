@@ -87,6 +87,7 @@ if [ $? -eq 0 ]
 then
   export PYTHONPATH=""
 fi
+export PYTHONPATH=".:$PYTHONPATH"
 scriptdir=$(dirname $0)
 srcdir=$scriptdir/../pcwawc
 pyapp=webchesscam.py
