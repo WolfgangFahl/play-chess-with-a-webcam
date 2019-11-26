@@ -96,7 +96,7 @@ class BoardFinder(object):
         Returns: 2-tuple containing the two dominant angles. (None, None) if
                  none were found."""
         # Ensure Hough lines were already found
-        if len(self.lines) <= 0:
+        if self.lines is None or len(self.lines) <= 0:
             return (None, None)
 
         # https://answers.opencv.org/question/2966/how-do-the-rho-and-theta-values-work-in-houghlines/

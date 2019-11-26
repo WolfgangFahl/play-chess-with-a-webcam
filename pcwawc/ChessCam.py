@@ -39,9 +39,9 @@ class ChessCam(object):
                                      " coordinates of the board)")
                     continue
 
-                quit = not self.video.showImage(processedImages[2], "chessCam")
-                if quit:
-                   raise UserExit
+                doquit = not self.video.showImage(processedImages[1], "chessCam")
+                if doquit:
+                    raise UserExit
 
                 try:
                     move = self.moveDetector.detectMove(processedImages[0])

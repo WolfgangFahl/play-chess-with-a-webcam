@@ -164,11 +164,13 @@ def test_ChessTrapezoid():
         TestVideo(240,240,"/Users/wf/Documents/pyworkspace/PlayChessWithAWebCam/scholarsMate2019-11-17.avi",[],270),
         TestVideo(165,438,tk+"TK_scholarsmate4.avi",[[147, 129], [405, 123], [418, 385], [148, 390]],0,
            ans=None), #["e2","e4","e7","e5"]),
-         TestVideo(250,1392,tk+"TK_scholarsmate7.avi",[[0, 0], [404,0], [404,404], [0,404]],0,
+        TestVideo(250,1392,tk+"TK_scholarsmate7.avi",[[0, 0], [404,0], [404,404], [0,404]],0,
            ans=None), #["e2","e4","e7","e5"]),
         TestVideo(62,91,videos+"chessgame_2019-11-19_203104.avi",[[0,0],[618,0], [618, 618], [0, 618]],0,
            ans=None), # ["e2","e4","e7","e5"])
         TestVideo(45,45,videos+"chessgame_2019-11-23_133629.avi",[[0,0],[607,0], [607, 607], [0, 607]],0,
+           ans=None), # ["e2","e4"])
+        TestVideo(189,189,videos+"chessgame_2019-11-25_142721.avi",[[0,0],[955,0], [955, 955], [0, 955]],270,
            ans=None) # ["e2","e4"])
     ]
     # select a testVideo
@@ -177,12 +179,12 @@ def test_ChessTrapezoid():
         debugMoveDetected=False
         debugChangeHistory=False
     else:
-        testVideo=testVideos[1]
-        debugMoveDetected=False
-        debugChangeHistory=False
-        #testVideo=testVideos[6]
-        #debugChangeHistory=True
-        #debugMoveDetected=True
+        #testVideo=testVideos[0]
+        #debugMoveDetected=False
+        #debugChangeHistory=False
+        testVideo=testVideos[9]
+        debugChangeHistory=True
+        debugMoveDetected=True
     
     trapezoid=testVideo.setup().trapezoid
     if debugMoveDetected:
