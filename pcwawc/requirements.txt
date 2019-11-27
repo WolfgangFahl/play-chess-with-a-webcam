@@ -28,6 +28,9 @@ Pillow
 # kivy
 # Json pickle
 jsonpickle
+#  statemachine
+# https://github.com/pytransitions/transitions
+transitions
 #
 # test dependencies
 #

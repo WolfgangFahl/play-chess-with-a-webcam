@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 import chess
 import getpass
+from pcwawc.detectstate import DetectState
 
 testEnv = Environment4Test()
 speedup=5 # times 
@@ -170,7 +171,7 @@ def test_ChessTrapezoid():
            ans=None), # ["e2","e4","e7","e5"])
         TestVideo(45,45,videos+"chessgame_2019-11-23_133629.avi",[[0,0],[607,0], [607, 607], [0, 607]],0,
            ans=None), # ["e2","e4"])
-        TestVideo(189,189,videos+"chessgame_2019-11-25_142721.avi",[[0,0],[955,0], [955, 955], [0, 955]],270,
+        TestVideo(244,244,videos+"chessgame_2019-11-26_145653.avi",[[0,0],[925,0], [925, 925], [0, 925]],0,
            ans=None) # ["e2","e4"])
     ]
     # select a testVideo
@@ -182,19 +183,17 @@ def test_ChessTrapezoid():
         #testVideo=testVideos[0]
         #debugMoveDetected=False
         #debugChangeHistory=False
-        testVideo=testVideos[9]
+        testVideo=testVideos[3]
         debugChangeHistory=True
         debugMoveDetected=True
     
     trapezoid=testVideo.setup().trapezoid
-    if debugMoveDetected:
-        trapezoid.onMoveDetected=onMoveDetected
     frames=testVideo.frames
     #SquareChange.meanFrameCount=12
     SquareChange.treshold=0.1
-    validDiffSumTreshold=1.4
-    invalidDiffSumTreshold=4.8
-    diffSumDeltaTreshold=0.2
+    detectState=DetectState(validDiffSumTreshold=1.4,invalidDiffSumTreshold=4.8,diffSumDeltaTreshold=0.2)
+    if debugMoveDetected:
+        detectState.onMoveDetected=onMoveDetected
     ChessTSquare.showDebugChange=["e2","e4","e7","e5"]
     video.open(testVideo.path)
     start=timer()  
@@ -216,12 +215,14 @@ def test_ChessTrapezoid():
         warpedHeight, warpedWidth = warped.shape[:2]
         trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
+        preMoveImage=trapezoid.preMoveBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
-        squareChanges=trapezoid.detectChanges(warped,diffImage, validDiffSumTreshold,invalidDiffSumTreshold,diffSumDeltaTreshold)
+        #diffImage=trapezoid.diffBoardImage(warped,preMoveImage)
+        squareChanges=trapezoid.detectChanges(warped,diffImage, detectState)
         changeHistory[frame]=squareChanges
         # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()
-        print('%dx%d frame %5d in %.3f s with %2d ✅ %4.1f Δ %4.1f ΣΔ %4d ✅/%4d ❌' 
+        print('%dx%d frame %5d in %.3f s with %2d ✅ %5.1f Δ %5.1f ΣΔ %4d ✅/%4d ❌' 
               % (w,h,frame,endc-startc,squareChanges["valid"],squareChanges["diffSum"],squareChanges["diffSumDelta"],squareChanges["validFrames"],squareChanges["invalidFrames"]))    
         colorHistory[frame]=trapezoid.averageColors.copy()
         
@@ -239,17 +240,18 @@ def test_ChessTrapezoid():
                 video.showImage(idealImage,"ideal")
                 trapezoid.drawDebug(diffImage)
                 video.showImage(diffImage,"diff")
+                video.showImage(preMoveImage,"preMove")
            
     end=timer()
     print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))
     if debugChangeHistory:
-        plotChangeHistory(changeHistory,testVideo,"square changes over time",validDiffSumTreshold,invalidDiffSumTreshold)
+        plotChangeHistory(changeHistory,testVideo,"square changes over time",detectState)
     if debugPlotHistory:
         plotColorHistory(colorHistory)
     if waitAtEnd>0:
         video.showImage(warped, "warped", keyWait=waitAtEnd)
         
-def plotChangeHistory(changeHistory,testVideo,title,validDiffSumTreshold,invalidDiffSumTreshold):
+def plotChangeHistory(changeHistory,testVideo,title,detectState):
     #plot=PlotLib("Move Detection",PlotLib.A4(turned=True))
     basename=os.path.basename(testVideo.path).replace(".avi","")
     ans=testVideo.ans
@@ -293,7 +295,7 @@ def plotChangeHistory(changeHistory,testVideo,title,validDiffSumTreshold,invalid
             stdv[frame]=math.sqrt(squareChange.variance)
             diff[frame]=squareChange.diff
             diffSum[frame]=changes['diffSum']
-            validdiff[frame] = 0 if diffSum[frame]>validDiffSumTreshold else squareChange.diff 
+            validdiff[frame] = 0 if diffSum[frame]>detectState.validDiffSumTreshold else squareChange.diff 
             detected[frame] = squareChange.diff if changes['validBoard'] else 0
             if validdiff[frame]>squareChange.treshold*1.5:
                 found=True 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import numpy as np
 import math
@@ -6,6 +6,7 @@ from enum import IntEnum
 import cv2
 import chess
 from pcwawc.Video import Video
+from pcwawc.detectstate import DetectState
 from pcwawc.RunningStats import RunningStats, MovingAverage
 
 class Transformation(IntEnum):
@@ -54,12 +55,8 @@ class ChessTrapezoid:
         self.pts_IdealSquare = np.asarray([[0.0, 0.0], [s, 0.0], [s, s], [0.0, s]],dtype=np.float32)
         self.inverseTransform=cv2.getPerspectiveTransform(pts_dst,self.pts_IdealSquare)
         self.rotation=0
-        # callback when move is detected
-        self.onMoveDetected=None
         # dict for average Colors
         self.averageColors={}
-        self.validFrames=0
-        self.invalidFrames=0
         self.diffSumAverage=MovingAverage(ChessTrapezoid.DiffSumMovingAverageLength)
         # trapezoid representation of squares
         self.tsquares={}
@@ -159,8 +156,7 @@ class ChessTrapezoid:
     def drawFieldStates(self,image,fieldStates,transformation=Transformation.ORIGINAL,channels=3):
         """ draw the states for fields with the given field states e.g. to set the mask image that will filter the trapezoid view according to piece positions when using maskImage"""
         if self.board is not None:
-            for square in chess.SQUARES:
-                tsquare=self.tsquares[square]
+            for tsquare in self.genSquares():
                 if tsquare.fieldState in fieldStates:
                     tsquare.drawState(image,transformation,channels)
 
@@ -192,11 +188,17 @@ class ChessTrapezoid:
     def idealColoredBoard(self,w,h,transformation=Transformation.IDEAL):
         """ draw an 'ideal' colored board according to a given set of parameters e.g. fieldColor, pieceColor, pieceRadius"""
         idealImage=self.getEmtpyImage4WidthAndHeight(w,h,3)
-        for square in chess.SQUARES:
-            tsquare=self.tsquares[square]
+        for tsquare in self.genSquares():
             tsquare.drawState(idealImage,transformation,3)
         return idealImage
-    
+   
+    def preMoveBoard(self,w,h):
+        """ get an image of the board as it was before any move """
+        refImage=self.getEmtpyImage4WidthAndHeight(w,h,3)
+        for tsquare in self.genSquares():
+            tsquare.addPreMoveImage(refImage)
+        return refImage;
+     
     def drawDebug(self,image,color=(255,255,255)):
         """ draw debug information e.g. piecel symbol and an onto the given image"""
         for square in chess.SQUARES:
@@ -231,8 +233,9 @@ class ChessTrapezoid:
                 bs,gs,rs=averageColor.stds
                 print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
                 
-    def detectChanges(self,image,diffImage,validDiffSumTreshold,invalidDiffSumTreshold,diffSumDeltaTreshold):
-        """ detect the changes of the given differential image """
+    def detectChanges(self,image,diffImage,detectState):
+        """ detect the changes of the given differential image using the given detect state machine"""
+        detectState.nextFrame()
         changes={}
         validChanges=0
         diffSum=0
@@ -242,33 +245,22 @@ class ChessTrapezoid:
             diffSum+=abs(squareChange.diff)
             if squareChange.valid:
                 validChanges+=1
+            #if self.frames==1:
+            #    tsquare.preMoveImage=np.copy(tsquare.squareImage) 
         
         self.diffSumAverage.push(diffSum)        
         diffSumDelta=self.diffSumAverage.mean()-diffSum
-        invalidStarted=self.invalidFrames>3
-        invalidStable=self.invalidFrames>=squareChange.meanFrameCount,
-        validStable=self.validFrames>=squareChange.meanFrameCount     
-        # trigger statistics push if valid
-        if invalidStable:
-            validBoard=diffSum<invalidDiffSumTreshold and abs(diffSumDelta)<diffSumDeltaTreshold 
-        else:
-            validBoard=diffSum<validDiffSumTreshold
-        if validBoard:
-            self.validFrames+=1
-        else:
-            self.invalidFrames+=1    
+        detectState.check(diffSum,diffSumDelta,squareChange.meanFrameCount)
         for tsquare in self.genSquares():
             squareChange=changes[tsquare.an]
-            validEnd,invalidEnd=tsquare.checkMoved(validBoard,invalidStarted,invalidStable,validStable)
-            if invalidEnd: self.invalidFrames=0
-            if validEnd: self.validFrames=0
+            tsquare.checkMoved(detectState)
         
-        changes["validBoard"]=validBoard    
+        changes["validBoard"]=detectState.validBoard    
         changes["valid"]=validChanges
         changes["diffSum"]=diffSum
         changes["diffSumDelta"]=diffSumDelta
-        changes["validFrames"]=self.validFrames
-        changes["invalidFrames"]=self.invalidFrames            
+        changes["validFrames"]=detectState.validFrames
+        changes["invalidFrames"]=detectState.invalidFrames            
         return changes    
 
 class FieldState(IntEnum):
@@ -462,6 +454,19 @@ class ChessTSquare:
         rcx=(self.rx+ChessTSquare.rw/2)
         rcy=(self.ry+ChessTSquare.rh/2)
         return (rcx,rcy)
+    
+    def rxy2xy(self,image):
+        h, w = image.shape[:2]
+        x=int(self.rx*w)
+        y=int(self.ry*h)
+        dh=h//ChessTrapezoid.rows
+        dw=w//ChessTrapezoid.cols
+        return h,w,x,y,dh,dw
+    
+    def addPreMoveImage(self,image):
+        if self.preMoveImage is not None:
+            h,w,x,y,dh,dw=self.rxy2xy(image)
+            np.copyto(image[y:y +dh, x:x +dw],self.preMoveImage)
             
     def drawDebug(self,image,color=(255,255,255)):
         """ draw debug information onto the given image using the given color""" 
@@ -474,12 +479,8 @@ class ChessTSquare:
              
     def squareChange(self,image,diffImage):
         """ check the changes analyzing the difference image of this square"""
-        h, w = diffImage.shape[:2]
-        x=int(self.rx*w)
-        y=int(self.ry*h)
-         
-        dh=h//ChessTrapezoid.rows
-        dw=w//ChessTrapezoid.cols
+        h,w,x,y,dh,dw=self.rxy2xy(image)
+        
         self.squareImage=image[y:y +dh, x:x +dw]
         self.diffImage=diffImage[y:y +dh, x:x +dw]
         diffSum=np.sum(self.diffImage)
@@ -487,19 +488,19 @@ class ChessTSquare:
         self.currentChange=SquareChange(diffSum/(h*w),self.changeStats)
         return self.currentChange
     
-    def checkMoved(self,validBoard,invalidStarted,invalidStable,validStable):
+    def checkMoved(self,detectState):
         """ check a figure has been moved, so that the state of this square has changed """
         squareChange=self.currentChange
         invalidEnd=False
         validEnd=False
         # if the whole board is valid
-        if validBoard:
+        if detectState.validBoard:
             # if we come from an stable invalid period then this is likely a move
-            if invalidStable and self.preMoveImage is not None:
+            if detectState.invalidStable and self.preMoveImage is not None:
                 if not squareChange.valid:
                     self.postMoveImage=self.squareImage
-                    if self.trapez.onMoveDetected is not None:
-                        self.trapez.onMoveDetected(self)
+                    if detectState.onMoveDetected is not None:
+                        detectState.onMoveDetected(self)
                     self.changeStats.clear()
                     self.preMoveImage=None
                 
@@ -507,12 +508,14 @@ class ChessTSquare:
             # add the current change statistics to my statistics
             squareChange.push(self.changeStats,squareChange.value)
             # if we have been valid for a long enough period of time
-            if validStable:
+            if detectState.validStable:
                 # remember my image - we are ready to detect a move
-                self.preMoveImage=self.squareImage               
+                self.preMoveImage=self.squareImage      
+                pass         
         else:
-            if invalidStarted:
+            if detectState.invalidStarted:
                 validEnd=True
        
-        return validEnd,invalidEnd    
+        if invalidEnd: detectState.invalidFrames=0
+        if validEnd: detectState.validFrames=0   
             

@@ -69,7 +69,7 @@ killifrunning() {
 # start the server
 startServer() {
   local l_args="$1"
-  color_msg $blue "starting server only with args $l_args"
+  color_msg $blue "starting play chess with a webcam server with args $l_args"
   if [ ! -d $logdir ]
   then
     sudo mkdir -p $logdir
@@ -115,5 +115,7 @@ do
 done
 color_msg $blue "starting webchesscam"
 startServer "$args"
-openUrl "http://localhost:$port" 10 1.0&
+url="http://localhost:$port"
+color_msg $blue "opening browser for $url"
+openUrl "$url" 10 1.0&
 tail -f $logdir/$logfile
