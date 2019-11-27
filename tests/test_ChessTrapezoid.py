@@ -134,11 +134,19 @@ def test_ColorDistribution():
         end = timer()
         height, width = warped.shape[:2]
         print("%.3fs for loading image %s: %4d x %4d" % ((end-start),title,width,height))
-        #video.showImage(warped,title,keyWait=500)
         trapez.updatePieces(imageInfo["fen"])
-        ChessTrapezoid.colorDebug=True
+        #ChessTrapezoid.colorDebug=True
         averageColors=trapez.analyzeColors(warped)
-        trapez.checkColors(warped,averageColors)
+        colorPercent=trapez.checkColors(warped,averageColors)
+        warpedHeight, warpedWidth = warped.shape[:2]
+        idealImage=trapez.idealColoredBoard(warpedWidth,warpedHeight)
+        diffImage=trapez.diffBoardImage(warped,idealImage)
+        for tSquare in trapez.genSquares():
+            percent="%.0f" % (colorPercent[tSquare.an]) 
+            trapez.drawRCenteredText(diffImage, percent, tSquare.rcx,tSquare.rcy,(0,255,0))
+        #video.showImage(warped,title,keyWait=15000)
+        video.writeImage(diffImage,"/tmp/"+title+"-colors.jpg")
+            
 
 class TestVideo:
     def __init__(self,frames,totalFrames,path,points,rotation=270,idealSize=800,ans=None):
@@ -377,11 +385,11 @@ def plotColorHistory(colorHistory):
     plt.legend()    
     plt.show()
 
-test_RankAndFile()    
-test_Rotation()     
-test_Transform() 
-test_RelativeToTrapezXY()  
-test_SortedTSquares()
-test_Stats() 
+#test_RankAndFile()    
+#test_Rotation()     
+#test_Transform() 
+#test_RelativeToTrapezXY()  
+#test_SortedTSquares()
+#test_Stats() 
 test_ColorDistribution()
-test_ChessTrapezoid()
+#test_ChessTrapezoid()

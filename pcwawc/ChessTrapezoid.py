@@ -106,6 +106,7 @@ class ChessTrapezoid:
             raise Exception("invalid rotation %d for rotateIndices" % rotation)
 
     def genSquares(self):
+        """ generator for all chess squares """
         for square in chess.SQUARES:
             tsquare=self.tsquares[square]
             yield tsquare
@@ -211,8 +212,7 @@ class ChessTrapezoid:
         sortedTSquares={}
         for fieldState in FieldState:
             sortedTSquares[fieldState]=[]
-        for square in chess.SQUARES:
-            tsquare=self.tsquares[square]
+        for tsquare in self.genSquares():
             sortedTSquares[tsquare.fieldState].append(tsquare)
         return sortedTSquares
 
@@ -236,6 +236,7 @@ class ChessTrapezoid:
     def checkColors(self,image,averageColors):
         """ check the colors against the expectation """
         byFieldState=self.byFieldState()
+        colorPercent={}
         for fieldState in byFieldState.keys():  
             # https://stackoverflow.com/questions/54019108/how-to-count-the-pixels-of-a-certain-color-with-opencv
             averageColor=averageColors[fieldState]
@@ -249,7 +250,11 @@ class ChessTrapezoid:
                 pixels=h*w
                 nonzero=cv2.countNonZero(asExpected)
                 #self.video.showImage(asExpected,tsquare.an)
-                print ("%s: %.0f%%" % (tsquare.an,nonzero/pixels*100))
+                colorPercent[tsquare.an]=nonzero/pixels*100
+                if ChessTrapezoid.colorDebug:
+                    print ("%s: %.0f%%" % (tsquare.an,colorPercent[tsquare.an]))
+        return colorPercent        
+                
                 
                 
     def detectChanges(self,image,diffImage,detectState):
@@ -419,6 +424,8 @@ class ChessTSquare:
         self.rPieceRadius=ChessTSquare.rw/ChessTrapezoid.PieceRadiusFactor
 
         self.rx,self.ry=self.col*ChessTSquare.rw,self.row*ChessTSquare.rh
+        self.rcx=self.rx+ChessTSquare.rw*0.5
+        self.rcy=self.ry+ChessTSquare.rh*0.5
         self.x,self.y=trapez.relativeToTrapezXY(self.rx, self.ry)
         self.setPolygons(trapez,self.rx,self.ry,self.rx+ChessTSquare.rw,self.ry,self.rx+ChessTSquare.rw,self.ry+ChessTSquare.rh,self.rx,self.ry+ChessTSquare.rh)
 
