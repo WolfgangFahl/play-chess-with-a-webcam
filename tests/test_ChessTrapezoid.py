@@ -123,6 +123,22 @@ def test_Stats():
         print ("stds  %.2f %.2f %.2f " % (gstds,bstds,rstds))
     assert avgcolor.color==(110.00,55.00,210.00 )
     assert avgcolor.stds==(5.00,10.00,10.00)      
+    
+def test_ColorDistribution():
+    for imageInfo in testEnv.imageInfos:
+        start = timer()
+        image,video,warp=testEnv.prepareFromImageInfo(imageInfo)  
+        title=imageInfo["title"]
+        trapez=ChessTrapezoid(warp.pointList,rotation=warp.rotation,idealSize=800)  
+        warped=trapez.warpedBoardImage(image)
+        end = timer()
+        height, width = warped.shape[:2]
+        print("%.3fs for loading image %s: %4d x %4d" % ((end-start),title,width,height))
+        #video.showImage(warped,title,keyWait=500)
+        trapez.updatePieces(imageInfo["fen"])
+        ChessTrapezoid.colorDebug=True
+        averageColors=trapez.analyzeColors(warped)
+        trapez.checkColors(warped,averageColors)
 
 class TestVideo:
     def __init__(self,frames,totalFrames,path,points,rotation=270,idealSize=800,ans=None):
@@ -142,9 +158,9 @@ class TestVideo:
                 self.ans.append(tsquare.an)
         return self     
 
-def onMoveDetected(tSquare):
-    if tSquare.an in ChessTSquare.showDebugChange:
-        print("%s: %s" %(tSquare.an,vars(tSquare.currentChange))) 
+def onPieceMoveDetected(tSquare):
+    print("pieced %s moved: %s" %(tSquare.an,vars(tSquare.currentChange)))
+    if tSquare.an in ChessTSquare.showDebugChange: 
         tSquare.trapez.video.showImage(tSquare.preMoveImage,tSquare.an+" pre")
         tSquare.trapez.video.showImage(tSquare.postMoveImage,tSquare.an+" post")      
     
@@ -184,8 +200,9 @@ def test_ChessTrapezoid():
         #debugMoveDetected=False
         #debugChangeHistory=False
         testVideo=testVideos[3]
-        debugChangeHistory=True
-        debugMoveDetected=True
+        debugChangeHistory=False
+        debugMoveDetected=False
+        ChessTrapezoid.debug=False
     
     trapezoid=testVideo.setup().trapezoid
     frames=testVideo.frames
@@ -193,7 +210,7 @@ def test_ChessTrapezoid():
     SquareChange.treshold=0.1
     detectState=DetectState(validDiffSumTreshold=1.4,invalidDiffSumTreshold=4.8,diffSumDeltaTreshold=0.2)
     if debugMoveDetected:
-        detectState.onMoveDetected=onMoveDetected
+        detectState.onPieceMoveDetected=onPieceMoveDetected
     ChessTSquare.showDebugChange=["e2","e4","e7","e5"]
     video.open(testVideo.path)
     start=timer()  
@@ -366,4 +383,5 @@ test_Transform()
 test_RelativeToTrapezXY()  
 test_SortedTSquares()
 test_Stats() 
+test_ColorDistribution()
 test_ChessTrapezoid()

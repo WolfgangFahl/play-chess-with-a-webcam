@@ -6,7 +6,6 @@ from enum import IntEnum
 import cv2
 import chess
 from pcwawc.Video import Video
-from pcwawc.detectstate import DetectState
 from pcwawc.RunningStats import RunningStats, MovingAverage
 
 class Transformation(IntEnum):
@@ -19,6 +18,7 @@ class ChessTrapezoid:
     """ Chess board Trapezoid (UK) / Trapezium (US) / Trapez (DE)  as seen via a webcam image """
 
     debug=False
+    colorDebug=False
     showDebugImage=False
     rows=8
     cols=8
@@ -31,7 +31,8 @@ class ChessTrapezoid:
         #trapezPoints=[topLeft,topRight,bottomRight,bottomLeft]
         shifts=self.rotation//90
         for shift in range(shifts):
-            trapezPoints.append(trapezPoints.pop(0))
+            left=trapezPoints.pop(0)
+            trapezPoints.append(left)
         topLeft,topRight,bottomRight,bottomLeft=trapezPoints
         self.setup(topLeft,topRight,bottomRight,bottomLeft,idealSize,video)
         
@@ -208,10 +209,10 @@ class ChessTrapezoid:
     def byFieldState(self):
         # get a dict of fields sorted by field state
         sortedTSquares={}
+        for fieldState in FieldState:
+            sortedTSquares[fieldState]=[]
         for square in chess.SQUARES:
             tsquare=self.tsquares[square]
-            if not tsquare.fieldState in sortedTSquares:
-                sortedTSquares[tsquare.fieldState]=[]
             sortedTSquares[tsquare.fieldState].append(tsquare)
         return sortedTSquares
 
@@ -219,7 +220,7 @@ class ChessTrapezoid:
         """ get the average colors per fieldState """
         warped=self.warpedBoardImage(image)
         byFieldState=self.byFieldState()
-        for fieldState in FieldState:
+        for fieldState in byFieldState.keys():
             mask=self.getEmptyImage(warped)
             self.drawFieldStates(mask,[fieldState],Transformation.IDEAL,1)
             masked=self.maskImage(image,mask)
@@ -228,10 +229,28 @@ class ChessTrapezoid:
             self.averageColors[fieldState]=averageColor
             if ChessTrapezoid.showDebugImage:
                 self.video.showImage(masked,fieldState.title())
-            if ChessTrapezoid.debug:
-                b,g,r=averageColor.color
-                bs,gs,rs=averageColor.stds
-                print("%15s (%2d): %3d, %3d, %3d ± %3d, %3d, %3d " % (fieldState.title(),countedFields,b,g,r,bs,gs,rs))
+            if ChessTrapezoid.colorDebug:
+                print("%15s (%2d): %s" % (fieldState.title(),countedFields,averageColor))
+        return self.averageColors      
+    
+    def checkColors(self,image,averageColors):
+        """ check the colors against the expectation """
+        byFieldState=self.byFieldState()
+        for fieldState in byFieldState.keys():  
+            # https://stackoverflow.com/questions/54019108/how-to-count-the-pixels-of-a-certain-color-with-opencv
+            averageColor=averageColors[fieldState]
+            fields=byFieldState[fieldState]
+            lower,upper=averageColor.colorRange()
+            print ("%25s (%2d): %s -> %s - %s" % (fieldState.title(),len(fields),averageColor,lower,upper))
+            for tsquare in fields:
+                squareImage=tsquare.getSquareImage(image)
+                asExpected=cv2.inRange(squareImage,lower,upper)
+                h, w = squareImage.shape[:2]
+                pixels=h*w
+                nonzero=cv2.countNonZero(asExpected)
+                #self.video.showImage(asExpected,tsquare.an)
+                print ("%s: %.0f%%" % (tsquare.an,nonzero/pixels*100))
+                
                 
     def detectChanges(self,image,diffImage,detectState):
         """ detect the changes of the given differential image using the given detect state machine"""
@@ -250,7 +269,7 @@ class ChessTrapezoid:
         
         self.diffSumAverage.push(diffSum)        
         diffSumDelta=self.diffSumAverage.mean()-diffSum
-        detectState.check(diffSum,diffSumDelta,squareChange.meanFrameCount)
+        detectState.check(validChanges,diffSum,diffSumDelta,squareChange.meanFrameCount)
         for tsquare in self.genSquares():
             squareChange=changes[tsquare.an]
             tsquare.checkMoved(detectState)
@@ -287,6 +306,16 @@ class Color:
         """ pick the an average color from the given image"""
         #https://stackoverflow.com/a/43112217/1497139 
         (means, stds) = cv2.meanStdDev(image)
+        pixels,nonzero=Color.countNonZero(image)
+        # exotic case of a totally black picture
+        if nonzero==0:
+            self.color=(0,0,0)
+            self.stds=(0,0,0)
+        else:    
+            self.color,self.stds=self.fixMeans(means, stds, pixels, nonzero)
+            
+    @staticmethod
+    def countNonZero(image):        
         #https://stackoverflow.com/a/55163686/1497139
         b = image[:,:,0]
         g = image[:,:,1]
@@ -295,12 +324,24 @@ class Color:
         pixels=h*w
         nonzerotupel= cv2.countNonZero(b),cv2.countNonZero(g),cv2.countNonZero(r)
         nonzero=max(nonzerotupel)
-        # exotic case of a totally black picture
-        if nonzero==0:
-            self.color=(0,0,0)
-        else:    
-            self.color,self.stds=self.fixMeans(means, stds, pixels, nonzero)
-            
+        return pixels,nonzero   
+    
+    def __str__(self):        
+        b,g,r=self.color
+        bs,gs,rs=self.stds
+        s=("%3d, %3d, %3d ± %3d, %3d, %3d " % (b,g,r,bs,gs,rs))
+        return s
+    
+    def fix(self,value):
+        return 0 if value<0 else 255 if value>255 else value
+    
+    def colorRange(self):
+        b,g,r=self.color
+        bs,gs,rs=self.stds
+        lower = np.array([self.fix(b-bs), self.fix(g-gs) ,self.fix(r-rs)], dtype = 'uint8')
+        upper = np.array([self.fix(b+bs), self.fix(g+gs) ,self.fix(r+rs)], dtype = 'uint8')
+        return lower,upper
+                
     def fixMeans(self,means,stds,pixels,nonzero):
         """ fix the zero based means to nonzero based see https://stackoverflow.com/a/58891531/1497139"""
         gmean,bmean,rmean=means.flatten()
@@ -476,6 +517,12 @@ class ChessTSquare:
         squareHint=self.an+" "+symbol
         rcx,rcy=self.rcenter()
         self.trapez.drawRCenteredText(image,squareHint,rcx,rcy,color=color)   
+        
+    def getSquareImage(self,image):
+        """ get the image of me within the given image"""
+        h,w,x,y,dh,dw=self.rxy2xy(image)
+        squareImage=image[y:y +dh, x:x +dw]
+        return squareImage        
              
     def squareChange(self,image,diffImage):
         """ check the changes analyzing the difference image of this square"""
@@ -491,20 +538,18 @@ class ChessTSquare:
     def checkMoved(self,detectState):
         """ check a figure has been moved, so that the state of this square has changed """
         squareChange=self.currentChange
-        invalidEnd=False
-        validEnd=False
         # if the whole board is valid
         if detectState.validBoard:
             # if we come from an stable invalid period then this is likely a move
             if detectState.invalidStable and self.preMoveImage is not None:
                 if not squareChange.valid:
                     self.postMoveImage=self.squareImage
-                    if detectState.onMoveDetected is not None:
-                        detectState.onMoveDetected(self)
+                    if detectState.onPieceMoveDetected is not None:
+                        detectState.onPieceMoveDetected(self)
                     self.changeStats.clear()
                     self.preMoveImage=None
                 
-            invalidEnd=True
+            detectState.invalidEnd()
             # add the current change statistics to my statistics
             squareChange.push(self.changeStats,squareChange.value)
             # if we have been valid for a long enough period of time
@@ -514,8 +559,5 @@ class ChessTSquare:
                 pass         
         else:
             if detectState.invalidStarted:
-                validEnd=True
-       
-        if invalidEnd: detectState.invalidFrames=0
-        if validEnd: detectState.validFrames=0   
+                detectState.validEnd()
             

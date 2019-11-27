@@ -4,7 +4,7 @@
 from pcwawc.Board import Board
 from pcwawc.Environment import Environment
 from pcwawc.Video import Video
-from pcwawc.WebApp import Warp
+from pcwawc.Game import Warp
 from timeit import default_timer as timer
 import os
 
@@ -23,10 +23,11 @@ class Environment4Test(Environment):
         ([360,238],[2380,224],[2385,2251],[407,2256]),
         ([483,132],[1338,124],[1541, 936],[255, 953]),
         ([  8,  1],[ 813,  1],[ 817, 812],[  3, 809]),
-        ([  0,  0],[ 522,  0],[ 523, 523],[  0, 523])
+        ([  0,  0],[ 522,  0],[ 523, 523],[  0, 523]),
+        ([678, 33], [1582, 33], [1571, 923], [686, 896])
         ]
     
-    rotations=[0,0,0,0,270,270,270,0,0,0,0,0]
+    rotations=[0,0,0,0,270,270,270,0,0,0,0,0,270]
     
     fens=[
         Board.EMPTY_FEN,
@@ -40,6 +41,7 @@ class Environment4Test(Environment):
         Board.EMPTY_FEN,
         Board.EMPTY_FEN,
         Board.EMPTY_FEN,
+        Board.START_FEN,
         Board.START_FEN
     ]
 
@@ -82,13 +84,16 @@ class Environment4Test(Environment):
         height, width = image.shape[:2]
         print ("read image %s: %dx%d" % (filename, width, height))
         return image,video
-
-    def loadFromImageInfo(self,webApp,imageInfo):
+    
+    def prepareFromImageInfo(self,imageInfo):
         warpPoints=imageInfo['warpPoints']
-        webApp.warp = Warp(list(warpPoints))
-        webApp.warp.rotation=imageInfo['rotation']
+        warp = Warp(list(warpPoints))
+        warp.rotation=imageInfo['rotation']
         image,video = self.getImageWithVideo(imageInfo['index'])
-        webApp.video=video
+        return image,video,warp
+   
+    def loadFromImageInfo(self,webApp,imageInfo):
+        image,webApp.video,webApp.warp=self.prepareFromImageInfo(imageInfo)
         start = timer()
         webApp.board.setFEN(imageInfo['fen'])
         bgr = webApp.warpAndRotate(image)
