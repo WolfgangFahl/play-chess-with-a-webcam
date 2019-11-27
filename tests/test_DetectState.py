@@ -19,7 +19,7 @@ def testDetectState():
     for value in values:
         diffSum, diffSumDelta=value
         detectState.nextFrame()
-        detectState.check(diffSum, diffSumDelta, meanFrameCount)
+        detectState.check(64,diffSum, diffSumDelta, meanFrameCount)
     assert detectState.frames==10    
     #print (vars(detectState))
     assert detectState.validFrames==10
