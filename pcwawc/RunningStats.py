@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import math
+import sys
 from collections import deque
 
 class MovingAverage:
@@ -26,6 +27,17 @@ class MovingAverage:
         if self.n==0:
             return None
         return self.sum / self.n    
+    
+class MinMaxMixin(object):   
+    def initMinMax(self):
+        self.min=sys.maxsize
+        self.max=-sys.maxsize
+        
+    def pushMinMax(self,value):
+        if value>self.max:
+            self.max=value
+        if value<self.min:
+            self.min=value         
 
 # see https://stackoverflow.com/a/17637351/1497139
 # see also https://gist.github.com/alexalemi/2151722
@@ -66,7 +78,31 @@ class RunningStats:
     def standard_deviation(self):
         return math.sqrt(self.variance())
 
-
+    def __str__(self):        
+        return self.format()
+    
+    def format(self,formatS="%d: %.1f ± %.1f"):
+        m=self.mean()
+        s=self.standard_deviation()
+        text=(formatS % (self.n,m,s))
+        return text
+    
+class MinMaxStats(RunningStats,MinMaxMixin):
+    """ running statistics with minimum and maximum """
+    def __init__(self):
+        super(MinMaxStats, self).__init__()
+        super().initMinMax()
+        
+    def push(self,value):    
+        super().push(value)
+        super().pushMinMax(value)
+        
+    def formatMinMax(self,formatR="%d: %.1f ± %.1f",formatM=" %.1f - %.1f"):
+        text=super().format(formatR)
+        text+=formatM % (self.min, self.max)
+        return text    
+        
+    
 class ColorStats():
     """ calculate the RunningStats for 3 color channels like RGB or HSV simultaneously"""
 

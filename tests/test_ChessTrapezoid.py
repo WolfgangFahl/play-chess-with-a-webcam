@@ -137,7 +137,11 @@ def test_ColorDistribution():
         trapez.updatePieces(imageInfo["fen"])
         #ChessTrapezoid.colorDebug=True
         averageColors=trapez.analyzeColors(warped)
-        colorPercent=trapez.checkColors(warped,averageColors)
+        colorPercent=trapez.checkColors(warped,averageColors,1.1)
+        stats=colorPercent["stats"]
+        for fieldState in FieldState:
+            print("%20s: %s" %(fieldState.title(),stats[fieldState].formatMinMax(formatR="%2d: %4.1f ± %4.1f",formatM=" %4.1f - %4.1f")))
+        
         warpedHeight, warpedWidth = warped.shape[:2]
         idealImage=trapez.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapez.diffBoardImage(warped,idealImage)

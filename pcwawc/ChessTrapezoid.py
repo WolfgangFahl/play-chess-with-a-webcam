@@ -6,7 +6,7 @@ from enum import IntEnum
 import cv2
 import chess
 from pcwawc.Video import Video
-from pcwawc.RunningStats import RunningStats, MovingAverage
+from pcwawc.RunningStats import RunningStats,MinMaxStats, MovingAverage
 
 class Transformation(IntEnum):
     """ Transformation kind"""
@@ -233,15 +233,19 @@ class ChessTrapezoid:
                 print("%15s (%2d): %s" % (fieldState.title(),countedFields,averageColor))
         return self.averageColors      
     
-    def checkColors(self,image,averageColors):
+    def checkColors(self,image,averageColors,rangeFactor=1.0):
         """ check the colors against the expectation """
         byFieldState=self.byFieldState()
         colorPercent={}
+        stats={}
+        for fieldState in FieldState:
+            stats[fieldState]=MinMaxStats()
+        colorPercent['stats']=stats    
         for fieldState in byFieldState.keys():  
             # https://stackoverflow.com/questions/54019108/how-to-count-the-pixels-of-a-certain-color-with-opencv
             averageColor=averageColors[fieldState]
             fields=byFieldState[fieldState]
-            lower,upper=averageColor.colorRange()
+            lower,upper=averageColor.colorRange(rangeFactor)
             print ("%25s (%2d): %s -> %s - %s" % (fieldState.title(),len(fields),averageColor,lower,upper))
             for tsquare in fields:
                 squareImage=tsquare.getSquareImage(image)
@@ -251,10 +255,10 @@ class ChessTrapezoid:
                 nonzero=cv2.countNonZero(asExpected)
                 #self.video.showImage(asExpected,tsquare.an)
                 colorPercent[tsquare.an]=nonzero/pixels*100
+                stats[fieldState].push(colorPercent[tsquare.an])
                 if ChessTrapezoid.colorDebug:
                     print ("%s: %.0f%%" % (tsquare.an,colorPercent[tsquare.an]))
         return colorPercent        
-                
                 
                 
     def detectChanges(self,image,diffImage,detectState):
@@ -340,11 +344,12 @@ class Color:
     def fix(self,value):
         return 0 if value<0 else 255 if value>255 else value
     
-    def colorRange(self):
+    def colorRange(self,rangeFactor):
         b,g,r=self.color
         bs,gs,rs=self.stds
-        lower = np.array([self.fix(b-bs), self.fix(g-gs) ,self.fix(r-rs)], dtype = 'uint8')
-        upper = np.array([self.fix(b+bs), self.fix(g+gs) ,self.fix(r+rs)], dtype = 'uint8')
+        rf=rangeFactor
+        lower = np.array([self.fix(b-bs*rf), self.fix(g-gs*rf) ,self.fix(r-rs*rf)], dtype = 'uint8')
+        upper = np.array([self.fix(b+bs*rf), self.fix(g+gs*rf) ,self.fix(r+rs*rf)], dtype = 'uint8')
         return lower,upper
                 
     def fixMeans(self,means,stds,pixels,nonzero):
@@ -407,7 +412,7 @@ class ChessTSquare:
     def __init__(self,trapez,square):
         ''' construct me from the given trapez  and square '''
         self.trapez=trapez
-        self.changeStats=RunningStats()
+        self.changeStats=MinMaxStats()
         self.square=square
         self.an=chess.SQUARE_NAMES[square]
         # rank are rows in Algebraic Notation from 1 to 8
