@@ -239,39 +239,20 @@ class ChessTrapezoid:
         for factor in [x*0.05 for x in range(20,41)]:
             """ optimize the factor for the color check"""
             startc=timer()
-            colorPercentCandidate=self.checkColors(image,averageColors,factor)
+            fieldColorStatsCandidate=self.checkColors(image,averageColors,factor)
             endc=timer()
-            stats=colorPercentCandidate["stats"]
-            if debug:
-                print ("color check %.3f s with factor %.2f" % ((endc-startc),factor))
-                for fieldState in FieldState:
-                    print("%20s: %s" %(fieldState.title(),stats[fieldState].formatMinMax(formatR="%2d: %4.1f ± %4.1f",formatM=" %4.1f - %4.1f")))
-            whiteEmptyMin=stats[FieldState.WHITE_EMPTY].min
-            whiteFilledMax=max(stats[FieldState.WHITE_BLACK].max,stats[FieldState.WHITE_WHITE].max)
-            whiteSelectivity=whiteEmptyMin-whiteFilledMax
-            blackEmptyMin=stats[FieldState.BLACK_EMPTY].min
-            blackFilledMax=max(stats[FieldState.BLACK_BLACK].max,stats[FieldState.BLACK_WHITE].max)
-            blackSelectivity=blackEmptyMin-blackFilledMax
-            minSelectivity=min(whiteSelectivity,blackSelectivity)
-            if minSelectivity>optimalSelectivity:
-                optimalSelectivity=minSelectivity
-                colorPercent=colorPercentCandidate
-                colorPercent["factor"]=factor
-                colorPercent["whiteSelectivity"]=whiteSelectivity
-                colorPercent["minSelectivity"]=minSelectivity
-                colorPercent["blackSelectivity"]=blackSelectivity
+            fieldColorStatsCandidate.analyzeStats(factor,endc-startc)
+            if fieldColorStatsCandidate.minSelectivity>optimalSelectivity:
+                optimalSelectivity=fieldColorStatsCandidate.minSelectivity
+                colorStats=fieldColorStatsCandidate
                 if debug:
-                    print ("selectivity %5.1f white: %5.1f black: %5.1f " % (minSelectivity,whiteSelectivity,blackSelectivity))
-        return colorPercent       
+                    print ("selectivity %5.1f white: %5.1f black: %5.1f " % (self.minSelectivity,self.whiteSelectivity,self.blackSelectivity))
+        return colorStats       
         
     def checkColors(self,image,averageColors,rangeFactor=1.0):
         """ check the colors against the expectation """
         byFieldState=self.byFieldState()
-        colorPercent={}
-        stats={}
-        for fieldState in FieldState:
-            stats[fieldState]=MinMaxStats()
-        colorPercent['stats']=stats    
+        colorStats=FieldColorStats()
         for fieldState in byFieldState.keys():  
             # https://stackoverflow.com/questions/54019108/how-to-count-the-pixels-of-a-certain-color-with-opencv
             if fieldState in [FieldState.WHITE_BLACK, FieldState.WHITE_EMPTY,FieldState.WHITE_WHITE]:
@@ -288,12 +269,9 @@ class ChessTrapezoid:
                 h, w = squareImage.shape[:2]
                 pixels=h*w
                 nonzero=cv2.countNonZero(asExpected)
+                colorStats.push(fieldState,tsquare.an,nonzero/pixels*100)
                 #self.video.showImage(asExpected,tsquare.an)
-                colorPercent[tsquare.an]=nonzero/pixels*100
-                stats[fieldState].push(colorPercent[tsquare.an])
-                if ChessTrapezoid.colorDebug:
-                    print ("%s: %.0f%%" % (tsquare.an,colorPercent[tsquare.an]))
-        return colorPercent        
+        return colorStats
                 
                 
     def detectChanges(self,image,diffImage,detectState):
@@ -337,6 +315,42 @@ class FieldState(IntEnum):
 
     def title(self,titles=["white empty", "white on white", "black on white","black empty","white on black","black on black"]):
         return titles[self]
+    
+class FieldColorStats(object):
+    """ Color statistics for Fields """
+    def __init__(self):
+        self.stats={}
+        self.colorPercent={}
+        for fieldState in FieldState:
+            self.stats[fieldState]=MinMaxStats() 
+            
+    def push(self,fieldState,an,percent):
+        self.colorPercent[an]=percent
+        self.stats[fieldState].push(percent)    
+        
+    def analyzeStats(self,factor,time,debug=False):
+        self.factor=factor    
+        self.whiteEmptyMin=self.stats[FieldState.WHITE_EMPTY].min
+        self.whiteFilledMax=max(self.stats[FieldState.WHITE_BLACK].max,self.stats[FieldState.WHITE_WHITE].max)
+        self.whiteSelectivity=self.whiteEmptyMin-self.whiteFilledMax
+        self.blackEmptyMin=self.stats[FieldState.BLACK_EMPTY].min
+        self.blackFilledMax=max(self.stats[FieldState.BLACK_BLACK].max,self.stats[FieldState.BLACK_WHITE].max)
+        self.blackSelectivity=self.blackEmptyMin-self.blackFilledMax
+        self.minSelectivity=min(self.whiteSelectivity,self.blackSelectivity)
+        if debug:
+            self.showDebug(time)
+     
+    def showDebug(self,time):
+        print ("color check %.3f s with factor %.2f" % ((time),self.factor))
+        for fieldState in FieldState:
+            self.showFieldStateDebug(fieldState)
+            
+    def showFieldStateDebug(self,fieldState):       
+        print("%20s: %s" %(fieldState.title(),self.stats[fieldState].formatMinMax(formatR="%2d: %4.1f ± %4.1f",formatM=" %4.1f - %4.1f")))       
+        
+    def showStatsDebug(self,time):
+        print("%.3fs for color check optimization factor: %5.1f selectivity min %5.1f,white: %5.1f black: %5.1f" % (time,self.factor,self.minSelectivity,self.whiteSelectivity,self.blackSelectivity))
+               
 
 class Color:
     """ Color definitions with maximum lightness difference and calculation of average color for a sample of square with a given fieldState """

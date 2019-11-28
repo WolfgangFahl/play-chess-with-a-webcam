@@ -150,18 +150,14 @@ def test_ColorDistribution():
         #ChessTrapezoid.colorDebug=True
         averageColors=trapez.analyzeColors(warped)
         startc=timer()
-        colorPercent=trapez.optimizeColorCheck(warped,averageColors)
+        fcs=trapez.optimizeColorCheck(warped,averageColors)
         endc=timer()
-        factor=colorPercent["factor"]
-        whiteSelectivity=colorPercent["whiteSelectivity"]
-        minSelectivity=colorPercent["minSelectivity"]
-        blackSelectivity=colorPercent["blackSelectivity"]
-        print("%.3fs for color check optimization factor: %5.1f selectivity min %5.1f,white: %5.1f black: %5.1f" % ((endc-startc),factor,minSelectivity,whiteSelectivity,blackSelectivity))
+        fcs.showStatsDebug(endc-startc)
         warpedHeight, warpedWidth = warped.shape[:2]
         idealImage=trapez.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapez.diffBoardImage(warped,idealImage)
         for tSquare in trapez.genSquares():
-            percent="%.0f" % (colorPercent[tSquare.an]) 
+            percent="%.0f" % (fcs.colorPercent[tSquare.an]) 
             trapez.drawRCenteredText(diffImage, percent, tSquare.rcx,tSquare.rcy,(0,255,0))
         #video.showImage(warped,title,keyWait=15000)
         video.writeImage(diffImage,imgPath+title+"-colors.jpg")
@@ -408,11 +404,11 @@ def plotColorHistory(colorHistory):
     plt.legend()    
     plt.show()
 
-test_RankAndFile()    
-test_Rotation()     
-test_Transform() 
-test_RelativeToTrapezXY()  
-test_SortedTSquares()
-test_Stats() 
-test_ColorDistribution()
+#test_RankAndFile()    
+#test_Rotation()     
+#test_Transform() 
+#test_RelativeToTrapezXY()  
+#test_SortedTSquares()
+#test_Stats() 
+#test_ColorDistribution()
 test_ChessTrapezoid()
