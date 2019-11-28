@@ -101,7 +101,7 @@ lambdas=[
 
 env=Environment()
 parser = argparse.ArgumentParser(description='Color Distribution Detection')
-parser.add_argument('--input', help='Path to input image.', default=env.testMedia+'chessboard012.jpg')
+parser.add_argument('--input', help='Path to input image.', default=env.testMedia+'chessBoard012.jpg')
 args = parser.parse_args()
 video=Video()
     
