@@ -243,10 +243,14 @@ class ChessTrapezoid:
         colorPercent['stats']=stats    
         for fieldState in byFieldState.keys():  
             # https://stackoverflow.com/questions/54019108/how-to-count-the-pixels-of-a-certain-color-with-opencv
-            averageColor=averageColors[fieldState]
+            if fieldState in [FieldState.WHITE_BLACK, FieldState.WHITE_EMPTY,FieldState.WHITE_WHITE]:
+                averageColor=averageColors[FieldState.WHITE_EMPTY]
+            else:
+                averageColor=averageColors[FieldState.BLACK_EMPTY]    
             fields=byFieldState[fieldState]
             lower,upper=averageColor.colorRange(rangeFactor)
-            print ("%25s (%2d): %s -> %s - %s" % (fieldState.title(),len(fields),averageColor,lower,upper))
+            if ChessTrapezoid.colorDebug:
+                print ("%25s (%2d): %s -> %s - %s" % (fieldState.title(),len(fields),averageColor,lower,upper))
             for tsquare in fields:
                 squareImage=tsquare.getSquareImage(image)
                 asExpected=cv2.inRange(squareImage,lower,upper)
