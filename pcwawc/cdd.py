@@ -16,9 +16,9 @@ class CDDA:
     """ Color Distribution Analysis """
     windowName='Color Distribution'
     
-    def __init__(self,video,image, roiLambda,xsteps=3, ysteps=10,rois=7,safetyX=12,safetyY=5):
+    def __init__(self,video,roiLambda,xsteps=3, ysteps=10,rois=7,safetyX=12,safetyY=5):
         self.video=video
-        self.image=image       
+        self.image=None    
         self.board=Board()
         self.roiLambda=roiLambda
         self.xsteps=xsteps
@@ -27,6 +27,9 @@ class CDDA:
         self.safetyY=safetyY
         self.rois=rois
         self.boardDetector=BoardDetector(self.board,video)
+        
+    def newImage(self,image):   
+        self.image=image
         self.boardDetector.divideInFields(image)
               
     def showField1(self,field,image):
@@ -71,7 +74,15 @@ class CDDA:
         print ("analysis took %.3fs" % (end-start))
         self.showFields(cdImage)
         self.showColorStats()
-        cv.imshow(CDDA.windowName, cdImage)
+        self.preView(cdImage,CDDA.windowName)
+        
+    def preView(self,image,title,height=640):
+        h, w = image.shape[:2]
+        preview=cv.resize(image,(int(w*height/h),height))
+        self.video.showImage(preview,title)
+        
+    def onClick(self,event, x, y, flags, param):
+        print ("mouseevent %s at %d,%d" %(event,x,y)) 
         
     def showColorStats(self):
         sortedFields= cdda.boardDetector.sortByFieldState()
@@ -93,10 +104,6 @@ parser = argparse.ArgumentParser(description='Color Distribution Detection')
 parser.add_argument('--input', help='Path to input image.', default=env.testMedia+'chessboard012.jpg')
 args = parser.parse_args()
 video=Video()
-src=video.readImage(args.input)
-if src is None:
-    print('Could not open or find the image:', args.input)
-    exit(0)
     
 class Tracker:
     trackers={}
@@ -118,7 +125,7 @@ class Tracker:
         if tracker.onChange is not None:
             tracker.onChange()
               
-cdda=CDDA(video,src,lambdas[0])    
+cdda=CDDA(video,lambdas[0])    
 source_window=args.input
 # Showing the result
 cv.namedWindow(CDDA.windowName)
@@ -128,7 +135,7 @@ lambdaIndex=0
 def histogram():
     start=timer()
     histogram=PlotLib("Chessboard Colors",PlotLib.A4(turned=True))
-    rgb=cv.cvtColor(src,cv.COLOR_BGR2RGB)
+    rgb=cv.cvtColor(cdda.image,cv.COLOR_BGR2RGB)
     histogram.addPlot(rgb,'chessboard012')
     video=cdda.video
     sortedFields= cdda.boardDetector.sortByFieldState()
@@ -162,6 +169,20 @@ sy    =Tracker('safetyY %' ,source_window, cdda.safetyY,20, onChange)
 mode  =Tracker('mode'      ,source_window, lambdaIndex, len(lambdas)-1, onChange)
 hist  =Tracker('histogram' ,source_window, 0,1,onChange)
 
-cv.imshow(source_window, src)
-cdda.show()
-cv.waitKey()
+frames=0
+video.capture(args.input)
+
+
+while True:
+    ret, image, quitWanted = video.readFrame(show=False)
+    if not ret:
+        break;
+    if quitWanted:
+            break
+    cdda.newImage(image)  
+    cdda.preView(image,source_window)  
+    if frames==0:
+        cdda.show()
+        cv.setMouseCallback(CDDA.windowName, cdda.onClick)
+    onChange()
+    frames+=1    

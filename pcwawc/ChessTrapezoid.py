@@ -7,6 +7,7 @@ import cv2
 import chess
 from pcwawc.Video import Video
 from pcwawc.RunningStats import MinMaxStats, MovingAverage
+from timeit import default_timer as timer
 
 class Transformation(IntEnum):
     """ Transformation kind"""
@@ -233,6 +234,36 @@ class ChessTrapezoid:
                 print("%15s (%2d): %s" % (fieldState.title(),countedFields,averageColor))
         return self.averageColors      
     
+    def optimizeColorCheck(self,image,averageColors,debug=False):
+        optimalSelectivity=-100
+        for factor in [x*0.05 for x in range(20,41)]:
+            """ optimize the factor for the color check"""
+            startc=timer()
+            colorPercentCandidate=self.checkColors(image,averageColors,factor)
+            endc=timer()
+            stats=colorPercentCandidate["stats"]
+            if debug:
+                print ("color check %.3f s with factor %.2f" % ((endc-startc),factor))
+                for fieldState in FieldState:
+                    print("%20s: %s" %(fieldState.title(),stats[fieldState].formatMinMax(formatR="%2d: %4.1f ± %4.1f",formatM=" %4.1f - %4.1f")))
+            whiteEmptyMin=stats[FieldState.WHITE_EMPTY].min
+            whiteFilledMax=max(stats[FieldState.WHITE_BLACK].max,stats[FieldState.WHITE_WHITE].max)
+            whiteSelectivity=whiteEmptyMin-whiteFilledMax
+            blackEmptyMin=stats[FieldState.BLACK_EMPTY].min
+            blackFilledMax=max(stats[FieldState.BLACK_BLACK].max,stats[FieldState.BLACK_WHITE].max)
+            blackSelectivity=blackEmptyMin-blackFilledMax
+            minSelectivity=min(whiteSelectivity,blackSelectivity)
+            if minSelectivity>optimalSelectivity:
+                optimalSelectivity=minSelectivity
+                colorPercent=colorPercentCandidate
+                colorPercent["factor"]=factor
+                colorPercent["whiteSelectivity"]=whiteSelectivity
+                colorPercent["minSelectivity"]=minSelectivity
+                colorPercent["blackSelectivity"]=blackSelectivity
+                if debug:
+                    print ("selectivity %5.1f white: %5.1f black: %5.1f " % (minSelectivity,whiteSelectivity,blackSelectivity))
+        return colorPercent       
+        
     def checkColors(self,image,averageColors,rangeFactor=1.0):
         """ check the colors against the expectation """
         byFieldState=self.byFieldState()

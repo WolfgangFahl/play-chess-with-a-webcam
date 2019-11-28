@@ -36,6 +36,8 @@ class BoardDetector:
             field.height=fieldHeight
             field.pcx = pcx
             field.pcy = pcy
+            field.maxX= width
+            field.maxY= height
     
     def sortByFieldState(self):            
         # get a dict of fields sorted by field state

@@ -88,7 +88,8 @@ class FieldROI:
     # analyze the given region of interest for the given image    
     def analyze(self,image):
         for pixel in self.pixelList():
-            c1,c2,c3=image[pixel[0],pixel[1]]
+            x,y=pixel
+            c1,c2,c3=image[y,x]
             self.colorStats.push(c1,c2,c3)
      
     def pixelList(self):
@@ -104,7 +105,13 @@ class FieldROI:
         """ interpolate the given relative coordinate """         
         f=self.field   
         # interpolate the pixel
-        pixel=(int(f.pcx+f.width*(rx-0.5)+0.5),int(f.pcy+f.height*(ry-0.5)+0.5))  
+        x=int(f.pcx+f.width*(rx-0.5)+0.5)
+        y=int(f.pcy+f.height*(ry-0.5)+0.5)
+        if x>=self.field.maxX:
+            x=self.field.maxX-1
+        if y>=self.field.maxY:
+            y=self.field.maxY-1
+        pixel=(x,y)
         return pixel      
             
 
