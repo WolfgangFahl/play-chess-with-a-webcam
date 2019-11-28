@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 import chess
 import getpass
-from pcwawc.detectstate import DetectState
+from pcwawc.detectstate import DetectState, DetectColorState
 
 testEnv = Environment4Test()
 speedup=5 # times 
@@ -124,8 +124,6 @@ def test_Stats():
     assert avgcolor.color==(110.00,55.00,210.00 )
     assert avgcolor.stds==(5.00,10.00,10.00)      
     
-    
-    
 def test_ColorDistribution():
     imgPath="/tmp/"
     for imageInfo in testEnv.imageInfos:
@@ -200,7 +198,7 @@ def test_ChessTrapezoid():
     tk=testEnv.testMedia+'../../Chess-Testmedia/'
     videos=testEnv.testMedia+'../games/videos/'
     testVideos=[
-        TestVideo(75,10000,1,[[660,303], [1263, 257], [1338, 864],[663,909]],180,
+        TestVideo(1000,10000,1,[[427, 44], [1425, 52], [1406, 1023], [431, 1029]],270,
             ans=["e2","e4"]),
         TestVideo(334,334,testEnv.testMedia + 'scholarsmate.avi',[(140,5),(506,10),(507,377),(137,374)],270,
             ans=None), # ans=["e2","e4"]),
@@ -217,6 +215,8 @@ def test_ChessTrapezoid():
         TestVideo(45,45,videos+"chessgame_2019-11-23_133629.avi",[[0,0],[607,0], [607, 607], [0, 607]],0,
            ans=None), # ["e2","e4"])
         TestVideo(244,244,videos+"chessgame_2019-11-26_145653.avi",[[0,0],[925,0], [925, 925], [0, 925]],0,
+           ans=None), # ["e2","e4"])
+        TestVideo(250,250,videos+"chessgame_2019-11-28_172745.avi",[[0,0],[983,0], [983, 983], [0, 983]],0,
            ans=None) # ["e2","e4"])
     ]
     # select a testVideo
@@ -228,7 +228,7 @@ def test_ChessTrapezoid():
         #testVideo=testVideos[0]
         #debugMoveDetected=False
         #debugChangeHistory=False
-        testVideo=testVideos[3]
+        testVideo=testVideos[10]
         debugChangeHistory=False
         debugMoveDetected=False
         ChessTrapezoid.debug=False
@@ -238,6 +238,7 @@ def test_ChessTrapezoid():
     #SquareChange.meanFrameCount=12
     SquareChange.treshold=0.1
     detectState=DetectState(validDiffSumTreshold=1.4,invalidDiffSumTreshold=4.8,diffSumDeltaTreshold=0.2)
+    detectColorState=DetectColorState(trapezoid)
     if debugMoveDetected:
         detectState.onPieceMoveDetected=onPieceMoveDetected
     ChessTSquare.showDebugChange=["e2","e4","e7","e5"]
@@ -259,7 +260,7 @@ def test_ChessTrapezoid():
         startc=timer()  
         warped=trapezoid.warpedBoardImage(bgr)
         warpedHeight, warpedWidth = warped.shape[:2]
-        trapezoid.analyzeColors(warped)
+        averageColors=trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
         preMoveImage=trapezoid.preMoveBoard(warpedWidth,warpedHeight)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
@@ -270,6 +271,7 @@ def test_ChessTrapezoid():
         endc=timer()
         print('%dx%d frame %5d in %.3f s with %2d ✅ %5.1f Δ %5.1f ΣΔ %4d ✅/%4d ❌' 
               % (w,h,frame,endc-startc,squareChanges["valid"],squareChanges["diffSum"],squareChanges["diffSumDelta"],squareChanges["validFrames"],squareChanges["invalidFrames"]))    
+        detectColorState.check(warped,averageColors,drawDebug=True)
         colorHistory[frame]=trapezoid.averageColors.copy()
         
         #mask=trapezoid.getEmptyImage(bgr)
@@ -412,5 +414,5 @@ def plotColorHistory(colorHistory):
 #test_RelativeToTrapezXY()  
 #test_SortedTSquares()
 #test_Stats() 
-test_ColorDistribution()
-#test_ChessTrapezoid()
+#test_ColorDistribution()
+test_ChessTrapezoid()

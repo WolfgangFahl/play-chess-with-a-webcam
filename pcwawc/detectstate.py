@@ -9,6 +9,7 @@ but we don't for the time being
 
 @author: wf
 '''
+from timeit import default_timer as timer
 
 class DetectState(object):
     '''
@@ -48,5 +49,31 @@ class DetectState(object):
         self.invalidFrames=0    
         
     def validEnd(self): 
-        self.validFrames=0       
+        self.validFrames=0      
         
+class DetectColorState(object):
+    """ detect state from Color Distribution """
+    
+    def __init__(self,trapez):
+        self.frames=0
+        self.trapez=trapez
+        
+    def check(self,warped,averageColors,drawDebug=False):
+        startco=timer()
+        colorPercent=self.trapez.optimizeColorCheck(warped,averageColors)
+        endco=timer()
+        if drawDebug:
+            self.drawDebug(warped,colorPercent)
+        factor=colorPercent["factor"]
+        whiteSelectivity=colorPercent["whiteSelectivity"]
+        minSelectivity=colorPercent["minSelectivity"]
+        blackSelectivity=colorPercent["blackSelectivity"]
+        print("%.3fs for color check optimization factor: %5.1f selectivity min %5.1f,white: %5.1f black: %5.1f" % ((endco-startco),factor,minSelectivity,whiteSelectivity,blackSelectivity))
+        valid=minSelectivity>0
+        if not valid:
+            pass
+    
+    def drawDebug(self,image,colorPercent):
+        for tSquare in self.trapez.genSquares():
+            percent="%.0f" % (colorPercent[tSquare.an]) 
+            self.trapez.drawRCenteredText(image, percent, tSquare.rcx,tSquare.rcy,(0,255,0))        
