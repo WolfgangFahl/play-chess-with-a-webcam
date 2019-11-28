@@ -37,7 +37,14 @@ class MinMaxMixin(object):
         if value>self.max:
             self.max=value
         if value<self.min:
-            self.min=value         
+            self.min=value   
+            
+    def __str__(self):        
+        return self.formatMinMax()        
+            
+    def formatMinMax(self,formatM=" %.1f - %.1f"):
+        text=formatM % (self.min,self.max)
+        return text              
 
 # see https://stackoverflow.com/a/17637351/1497139
 # see also https://gist.github.com/alexalemi/2151722
@@ -99,7 +106,8 @@ class MinMaxStats(RunningStats,MinMaxMixin):
         
     def formatMinMax(self,formatR="%d: %.1f ± %.1f",formatM=" %.1f - %.1f"):
         text=super().format(formatR)
-        text+=formatM % (self.min, self.max)
+        if self.n>0:
+            text+=super().formatMinMax(formatM)
         return text    
         
     

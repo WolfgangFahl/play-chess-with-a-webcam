@@ -6,7 +6,7 @@ from enum import IntEnum
 import cv2
 import chess
 from pcwawc.Video import Video
-from pcwawc.RunningStats import RunningStats,MinMaxStats, MovingAverage
+from pcwawc.RunningStats import MinMaxStats, MovingAverage
 
 class Transformation(IntEnum):
     """ Transformation kind"""

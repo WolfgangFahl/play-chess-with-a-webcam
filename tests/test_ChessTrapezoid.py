@@ -12,6 +12,7 @@ import os
 import numpy as np
 import pytest
 import chess
+import cv2
 import getpass
 from pcwawc.detectstate import DetectState
 
@@ -122,9 +123,20 @@ def test_Stats():
         print ("means %.2f %.2f %.2f " % (gmean,bmean,rmean))
         print ("stds  %.2f %.2f %.2f " % (gstds,bstds,rstds))
     assert avgcolor.color==(110.00,55.00,210.00 )
-    assert avgcolor.stds==(5.00,10.00,10.00)      
+    assert avgcolor.stds==(5.00,10.00,10.00)   
+    
+def optimizeColorCheck(title,trapez,image,averageColors):
+    startc=timer()
+    colorPercent=trapez.checkColors(image,averageColors,1.5)
+    endc=timer()
+    stats=colorPercent["stats"]
+    print ("color check %.3fs for %s" % ((endc-startc),title))
+    for fieldState in FieldState:
+        print("%20s: %s" %(fieldState.title(),stats[fieldState].formatMinMax(formatR="%2d: %4.1f ± %4.1f",formatM=" %4.1f - %4.1f")))
+    return colorPercent           
     
 def test_ColorDistribution():
+    imgPath="/tmp/"
     for imageInfo in testEnv.imageInfos:
         start = timer()
         image,video,warp=testEnv.prepareFromImageInfo(imageInfo)  
@@ -133,15 +145,18 @@ def test_ColorDistribution():
         warped=trapez.warpedBoardImage(image)
         end = timer()
         height, width = warped.shape[:2]
-        print("%.3fs for loading image %s: %4d x %4d" % ((end-start),title,width,height))
+        video.writeImage(warped,imgPath+title+"-warped.jpg")
+        #startd = timer()
+        #denoised=trapez.getEmptyImage(warped, 3)
+        #cv2.fastNlMeansDenoisingColored(warped,denoised)
+        #endd = timer()
+        #print("%.3fs for loading %.3fs for denoising image %s: %4d x %4d" % ((end-start),(endd-startd),title,width,height))
+        #video.writeImage(denoised,imgPath+title+"-denoised.jpg")
+        
         trapez.updatePieces(imageInfo["fen"])
         #ChessTrapezoid.colorDebug=True
         averageColors=trapez.analyzeColors(warped)
-        colorPercent=trapez.checkColors(warped,averageColors,1.1)
-        stats=colorPercent["stats"]
-        for fieldState in FieldState:
-            print("%20s: %s" %(fieldState.title(),stats[fieldState].formatMinMax(formatR="%2d: %4.1f ± %4.1f",formatM=" %4.1f - %4.1f")))
-        
+        colorPercent=optimizeColorCheck(title,trapez,warped,averageColors)
         warpedHeight, warpedWidth = warped.shape[:2]
         idealImage=trapez.idealColoredBoard(warpedWidth,warpedHeight)
         diffImage=trapez.diffBoardImage(warped,idealImage)
@@ -149,7 +164,7 @@ def test_ColorDistribution():
             percent="%.0f" % (colorPercent[tSquare.an]) 
             trapez.drawRCenteredText(diffImage, percent, tSquare.rcx,tSquare.rcy,(0,255,0))
         #video.showImage(warped,title,keyWait=15000)
-        video.writeImage(diffImage,"/tmp/"+title+"-colors.jpg")
+        video.writeImage(diffImage,imgPath+title+"-colors.jpg")
             
 
 class TestVideo:
