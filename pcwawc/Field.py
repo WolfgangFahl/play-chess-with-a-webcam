@@ -107,10 +107,12 @@ class FieldROI:
         # interpolate the pixel
         x=int(f.pcx+f.width*(rx-0.5)+0.5)
         y=int(f.pcy+f.height*(ry-0.5)+0.5)
-        if x>=self.field.maxX:
-            x=self.field.maxX-1
-        if y>=self.field.maxY:
-            y=self.field.maxY-1
+        if self.field.maxX is not None:
+            if x>=self.field.maxX:
+                x=self.field.maxX-1
+        if self.field.maxY is not None:        
+            if y>=self.field.maxY:
+                y=self.field.maxY-1
         pixel=(x,y)
         return pixel      
             
@@ -157,6 +159,8 @@ class Field:
         self.pcy = None
         self.width=None
         self.height=None
+        self.maxX=None
+        self.maxY=None
         self.distance = None
         self.step = None
         self.hsvStats = None
