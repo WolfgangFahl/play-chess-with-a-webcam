@@ -11,7 +11,6 @@ but we don't for the time being
 '''
 from timeit import default_timer as timer
 from pcwawc.ChessTrapezoid import FieldState, FieldColorStats
-from tensorflow_core.python.ops.metrics_impl import sensitivity_at_specificity
 
 class DetectState(object):
     '''
