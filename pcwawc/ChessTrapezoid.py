@@ -361,7 +361,7 @@ class Color:
     debug=False
     
     def __init__(self,image):
-        """ pick the an average color from the given image"""
+        """ pick the average color from the given image"""
         #https://stackoverflow.com/a/43112217/1497139 
         (means, stds) = cv2.meanStdDev(image)
         pixels,nonzero=Color.countNonZero(image)
