@@ -29,20 +29,21 @@ class Histogram:
         self.time=end-start
         
     def plot(self):    
-        plt.subplot(221), plt.imshow(self.rgb), plt.axis('off')
+        fig,(ax1,ax2)=plt.subplots(1,2)
+        fig.suptitle('color histogram', fontsize=20)
+        ax1.imshow(self.rgb), ax1.axis('off')
         for i,col in enumerate(Histogram.color):
-            plt.subplot(222)
-            plt.plot(self.hist[i],color = col)
-            plt.xlim([0,256])
+            ax2.plot(self.hist[i],color = col)
+            #ax2.xlim([0,256])
         plt.show()
 
 def main(argv):
-    default_file = '../../testMedia/chessBoard012.jpg'
+    default_file = '../../testMedia/chessBoard013.jpg'
     filename = argv[0] if len(argv) > 0 else default_file
     image = cv2.imread(filename)
-    cv2.imshow('chessboard', image)
+    #cv2.imshow('chessboard', image)
     # refresh
-    cv2.waitKey(10)
+    #cv2.waitKey(10)
     h=Histogram(image)
     h.plot()
 
