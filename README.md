@@ -4,7 +4,7 @@
 [![GitHub issues](https://img.shields.io/github/issues-closed/WolfgangFahl/play-chess-with-a-webcam.svg)](https://github.com/WolfgangFahl/play-chess-with-a-webcam/issues/?q=is%3Aissue+is%3Aclosed)
 [![GitHub](https://img.shields.io/github/license/WolfgangFahl/play-chess-with-a-webcam.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-[![chessboard](http://wiki.bitplan.com/images/wiki/f/f9/PlayChessWithAWebCam2019-10-26.png)](http://wiki.bitplan.com/index.php/PlayChessWithAWebCam)
+[![chessboard](http://wiki.bitplan.com/images/wiki/f/f9/PlayChessWithAWebCam2019-10-26.png)](http://wiki.bitplan.com/index.php/PlayChessWithAWebCam) [![Join the chat at https://gitter.im/play-chess-with-a-webcam/community](https://badges.gitter.im/play-chess-with-a-webcam/community.svg)](https://gitter.im/play-chess-with-a-webcam/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ### Documentation
 * [BITPlan Wiki](http://wiki.bitplan.com/index.php/PlayChessWithAWebCam)
