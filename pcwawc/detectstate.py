@@ -78,16 +78,17 @@ class DetectColorState(object):
             for tSquare in self.trapez.genSquares():
                 state=self.squareState(self.preMoveStats,tSquare, self.fieldColorStats.colorPercent[tSquare.an])
     
-        
-    def inRange(self,stats,fs,percent,selectivity):
-        minValue=stats[fs].min-selectivity
-        maxValue=stats[fs].max+selectivity
+    def inRange(self,stats,fs,percent):
+        """ check if the given percent value is in the range for the given fieldStats"""
+        minValue=stats[fs].min
+        maxValue=stats[fs].max
         return percent>=minValue and percent<=maxValue
         
     def squareState(self,fieldColorStats,tSquare,percent):
+        """ determine the state of the given field tSquare with the given percent of pixels that fit the expectation """
         fieldState=tSquare.fieldState
         selectivity=fieldColorStats.minSelectivity
-        state=self.inRange(fieldColorStats.stats,fieldState,percent,selectivity) 
+        state=self.inRange(fieldColorStats.stats,fieldState,percent) 
         return state     
     
     def drawDebug(self):
