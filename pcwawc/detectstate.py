@@ -11,6 +11,7 @@ but we don't for the time being
 '''
 from timeit import default_timer as timer
 from pcwawc.ChessTrapezoid import FieldState, FieldColorStats
+from tensorflow_core.python.ops.metrics_impl import sensitivity_at_specificity
 
 class DetectState(object):
     '''
@@ -72,26 +73,28 @@ class DetectColorState(object):
             self.fieldColorStats.showStatsDebug(endco-startco)
             self.drawDebug()
         valid=self.fieldColorStats.minSelectivity>0
-        if valid and self.preMoveStats is None:
+        if valid:
             self.preMoveStats=self.fieldColorStats
         if not valid and self.preMoveStats is not None:
             for tSquare in self.trapez.genSquares():
                 state=self.squareState(self.preMoveStats,tSquare, self.fieldColorStats.colorPercent[tSquare.an])
     
         
-    def inRange(self,stats,fs,percent):
-        minValue=stats[fs].min
-        maxValue=stats[fs].max
+    def inRange(self,stats,fs,percent,selectivity):
+        minValue=stats[fs].min-selectivity
+        maxValue=stats[fs].max+selectivity
         return percent>=minValue and percent<=maxValue
         
     def squareState(self,fieldColorStats,tSquare,percent):
-        state=self.inRange(fieldColorStats.stats,tSquare.fieldState,percent) 
+        fieldState=tSquare.fieldState
+        selectivity=fieldColorStats.minSelectivity
+        state=self.inRange(fieldColorStats.stats,fieldState,percent,selectivity) 
         return state     
     
     def drawDebug(self):
         if self.preMoveStats is not None:
             for tSquare in self.trapez.genSquares():
-                state=self.squareState(self.preMoveStats,tSquare,self.fieldColorStats.colorPercent[tSquare.an])
+                state=self.squareState(self.fieldColorStats,tSquare,self.fieldColorStats.colorPercent[tSquare.an])
                 percent="%.0f" % (self.fieldColorStats.colorPercent[tSquare.an]) 
                 color=(0,255,0) if state else (0,0,255)
                 self.trapez.drawRCenteredText(self.image, percent, tSquare.rcx,tSquare.rcy,color)  
