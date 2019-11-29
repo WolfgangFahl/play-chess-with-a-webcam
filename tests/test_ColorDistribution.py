@@ -17,7 +17,12 @@ def test_Stats():
     values=[(23,3),(24,7),(25,13),(26,18),(27,23),(28,17),(29,8),(30,6),(31,5)]
     stats=Stats(values)
     #print (vars(stats))
-    assert "{'n': 9, 'sum': 100, 'prod': 2694, 'sqsum': 363.64, 'mean': 26.94, 'variance': 3.6364, 'stdv': 1.9069347130932406}" == vars(stats)
+    assert stats.n==9
+    assert stats.sum==100
+    assert stats.prod==2694
+    assert stats.mean==26.94
+    assert stats.variance==3.6364
+    assert stats.stdv==1.9069347130932406
     
 def test_Histogram():
     imgPath="/tmp/"
