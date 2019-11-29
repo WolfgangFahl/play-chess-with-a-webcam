@@ -10,7 +10,7 @@ but we don't for the time being
 @author: wf
 '''
 from timeit import default_timer as timer
-from pcwawc.ChessTrapezoid import FieldState
+from pcwawc.ChessTrapezoid import FieldState, FieldColorStats
 
 class DetectState(object):
     '''
@@ -59,6 +59,7 @@ class DetectColorState(object):
     def __init__(self,trapez):
         self.frames=0
         self.trapez=trapez
+        self.preMoveStats=None
         
     def check(self,image,averageColors,drawDebug=False):
         self.frames+=1
@@ -71,21 +72,28 @@ class DetectColorState(object):
             self.fieldColorStats.showStatsDebug(endco-startco)
             self.drawDebug()
         valid=self.fieldColorStats.minSelectivity>0
-        if not valid:
+        if valid and self.preMoveStats is None:
+            self.preMoveStats=self.fieldColorStats
+        if not valid and self.preMoveStats is not None:
             for tSquare in self.trapez.genSquares():
-                if drawDebug:
-                    self.fieldColorStats.showFieldStateDebug(tSquare.fieldState)
-                state=self.squareState(tSquare, self.fieldColorStats.colorPercent[tSquare.an])
+                state=self.squareState(self.preMoveStats,tSquare, self.fieldColorStats.colorPercent[tSquare.an])
+    
         
-    def squareState(self,tSquare,percent):
+    def inRange(self,stats,fs,percent):
+        minValue=stats[fs].min
+        maxValue=stats[fs].max
+        return percent>=minValue and percent<=maxValue
         
-        #if tSquare.fieldState in FieldState.
-        return True     
+    def squareState(self,fieldColorStats,tSquare,percent):
+        state=self.inRange(fieldColorStats.stats,tSquare.fieldState,percent) 
+        return state     
     
     def drawDebug(self):
-        for tSquare in self.trapez.genSquares():
-            state=self.squareState(tSquare, self.fieldColorStats.colorPercent[tSquare.an])
-            percent="%.0f" % (self.fieldColorStats.colorPercent[tSquare.an]) 
-            self.trapez.drawRCenteredText(self.image, percent, tSquare.rcx,tSquare.rcy,(0,255,0))  
-        filepath="%s/colorState-%04d.jpg" % (DetectColorState.imgPath,self.frames)    
-        self.trapez.video.writeImage(self.image,filepath)          
+        if self.preMoveStats is not None:
+            for tSquare in self.trapez.genSquares():
+                state=self.squareState(self.preMoveStats,tSquare,self.fieldColorStats.colorPercent[tSquare.an])
+                percent="%.0f" % (self.fieldColorStats.colorPercent[tSquare.an]) 
+                color=(0,255,0) if state else (0,0,255)
+                self.trapez.drawRCenteredText(self.image, percent, tSquare.rcx,tSquare.rcy,color)  
+            filepath="%s/colorState-%04d.jpg" % (DetectColorState.imgPath,self.frames)    
+            self.trapez.video.writeImage(self.image,filepath)          
