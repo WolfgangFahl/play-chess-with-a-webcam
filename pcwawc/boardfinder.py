@@ -35,6 +35,7 @@ class BoardFinder(object):
     
     @staticmethod    
     def sortPoints(xylist):  
+        """ sort points clockwise see https://stackoverflow.com/a/59115565/1497139"""
         cx, cy = BoardFinder.centerXY(xylist)
         xy_sorted = sorted(xylist, key = lambda x: math.atan2((x[1]-cy),(x[0]-cx)))
         return xy_sorted

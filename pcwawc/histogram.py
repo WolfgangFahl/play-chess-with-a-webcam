@@ -31,15 +31,16 @@ class Histogram:
     """ Image Histogram """
     color = ('blue','green','red')
     
-    def __init__(self,image):
+    def __init__(self,image,histSize = 256,histRange = (0, 256)):
+        """ construct me from the given image hist Size and histRange """
         self.hist={}
         self.stats={}
         self.image=image
         self.rgb=cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
         
         start=timer()
-        histSize = 256
-        histRange = (0, 256)  # the upper boundary is exclusive
+        
+        # the upper boundary is exclusive
         for channel in range(len(Histogram.color)):
             self.hist[channel] = cv2.calcHist([image], [channel], None, [histSize], histRange, accumulate=False)
             histindexed=list(enumerate(np.reshape(self.hist[channel],histSize)))
@@ -64,8 +65,9 @@ class Histogram:
     def save(self,filepath):
         fig=self.plot()
         fig.savefig(filepath)    
+        plt.close(fig)
         
     def show(self):
-        self.plot()        
+        fig=self.plot()        
         plt.show()
-        
+        plt.close(fig)
