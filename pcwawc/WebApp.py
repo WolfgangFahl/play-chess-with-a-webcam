@@ -4,7 +4,7 @@ from pcwawc.Board import Board
 from pcwawc.BoardDetector import BoardDetector
 from pcwawc.Environment import Environment
 from pcwawc.Video import Video
-from pcwawc.Game import WebCamGame, Warp
+from pcwawc.game import WebCamGame, Warp
 from flask import render_template, send_from_directory, Response, jsonify
 from datetime import datetime
 

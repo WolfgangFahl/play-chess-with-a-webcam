@@ -4,7 +4,7 @@
 from pcwawc.Board import Board
 from pcwawc.Environment import Environment
 from pcwawc.Video import Video
-from pcwawc.Game import Warp
+from pcwawc.game import Warp
 from timeit import default_timer as timer
 import os
 
