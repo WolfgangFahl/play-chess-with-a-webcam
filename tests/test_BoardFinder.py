@@ -1,9 +1,7 @@
 #!/usr/bin/python
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.boardfinder import BoardFinder
-from pcwawc.Environment import Environment
 from pcwawc.Environment4Test import Environment4Test
-from pcwawc.histogram import Histogram
 from timeit import default_timer as timer
 
 testEnv = Environment4Test()
@@ -22,29 +20,7 @@ def test_findBoard():
         if BoardFinder.debug:
             finder.showDebug(title)
             finder.showPolygonDebug(title)
-        foundPolygons=finder.toPolygons()
-        for chesspattern in foundPolygons.keys():
-            rows,cols=chesspattern
-            polygons=foundPolygons[chesspattern]
-            for filterColor in (True,False):
-                imageCopy=image.copy()
-                masked=finder.maskPolygon(imageCopy, polygons, filterColor)
-                if BoardFinder.debug:
-                    prefix="masked-O-" if filterColor else "masked-X-"
-                    finder.writeDebug(masked,title, prefix, chesspattern)
-                histogram=Histogram(masked,histRange=(1,256))
-                if BoardFinder.debug:
-                    Environment.checkDir(finder.debugImagePath)  
-                    prefix=prefix+"histogram"
-                    filepath=finder.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,rows,cols)
-                    histogram.save(filepath)  
-                imageCopy=image.copy()
-                colorMask=histogram.colorMask(imageCopy, 1.5)
-                colorFiltered=video.maskImage(imageCopy,colorMask)
-                if BoardFinder.debug:
-                    prefix="colorFiltered-O-" if filterColor else "colorFiltered-X-"
-                    finder.writeDebug(colorFiltered, title, prefix, chesspattern)
-                
+        finder.expand(image,title)               
     endt=timer()
     if BoardFinder.debug:
         print ("found %d chessboards in %.1f s" % (len(testEnv.imageInfos),(endt-startt)))

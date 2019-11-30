@@ -5,6 +5,7 @@
 import cv2
 from timeit import default_timer as timer
 from pcwawc.Environment import Environment
+from pcwawc.histogram import Histogram
 from pcwawc.Video import Video
 import numpy as np
 import math
@@ -142,6 +143,30 @@ class BoardFinder(object):
         #    cv2.waitKey(1000)       
         masked=self.video.maskImage(image,mask)
         return masked
+    
+    def expand(self,image,title):
+        foundPolygons=self.toPolygons()
+        for chesspattern in foundPolygons.keys():
+            rows,cols=chesspattern
+            polygons=foundPolygons[chesspattern]
+            for filterColor in (True,False):
+                imageCopy=image.copy()
+                masked=self.maskPolygon(imageCopy, polygons, filterColor)
+                if BoardFinder.debug:
+                    prefix="masked-O-" if filterColor else "masked-X-"
+                    self.writeDebug(masked,title, prefix, chesspattern)
+                histogram=Histogram(masked,histRange=(1,256))
+                if BoardFinder.debug:
+                    Environment.checkDir(self.debugImagePath)  
+                    prefix=prefix+"histogram"
+                    filepath=self.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,rows,cols)
+                    histogram.save(filepath)  
+                imageCopy=image.copy()
+                colorMask=histogram.colorMask(imageCopy, 1.5)
+                colorFiltered=self.video.maskImage(imageCopy,colorMask)
+                if BoardFinder.debug:
+                    prefix="colorFiltered-O-" if filterColor else "colorFiltered-X-"
+                    self.writeDebug(colorFiltered, title, prefix, chesspattern)
         
     def drawPolygon(self,image,pos,polygon,whiteColor,blackColor):    
         posColor=self.fieldColor(pos)
