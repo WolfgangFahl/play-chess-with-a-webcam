@@ -33,10 +33,16 @@ def test_findBoard():
                     prefix="masked-O-" if filterColor else "masked-X-"
                     finder.writeDebug(masked,title, prefix, chesspattern)
                 histogram=Histogram(masked,histRange=(1,256))
-                Environment.checkDir(finder.debugImagePath)  
-                prefix=prefix+"histogram"
-                filepath=finder.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,rows,cols)
-                histogram.save(filepath)  
+                if BoardFinder.debug:
+                    Environment.checkDir(finder.debugImagePath)  
+                    prefix=prefix+"histogram"
+                    filepath=finder.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,rows,cols)
+                    histogram.save(filepath)  
+                imageCopy=image.copy()
+                colorFiltered=histogram.colorFiltered(imageCopy, 1.5)
+                if BoardFinder.debug:
+                    prefix="colorFiltered-O-" if filterColor else "colorFiltered-X-"
+                    finder.writeDebug(colorFiltered, title, prefix, chesspattern)
                 
     endt=timer()
     if BoardFinder.debug:

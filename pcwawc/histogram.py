@@ -29,7 +29,7 @@ class Stats:
 
 class Histogram:
     """ Image Histogram """
-    color = ('blue','green','red')
+    colors = ('blue','green','red')
     
     def __init__(self,image,histSize = 256,histRange = (0, 256)):
         """ construct me from the given image hist Size and histRange """
@@ -41,23 +41,42 @@ class Histogram:
         start=timer()
         
         # the upper boundary is exclusive
-        for channel in range(len(Histogram.color)):
+        for channel in range(len(Histogram.colors)):
             self.hist[channel] = cv2.calcHist([image], [channel], None, [histSize], histRange, accumulate=False)
             histindexed=list(enumerate(np.reshape(self.hist[channel],histSize)))
             self.stats[channel] = Stats(histindexed)
+        bstats,gstats,rstats=self.stats[0],self.stats[1],self.stats[2]
+        self.color=(bstats.mean,gstats.mean,rstats.mean)
+        self.stdv=(bstats.stdv,gstats.stdv,rstats.stdv)  
         end=timer()
         self.time=end-start
         
+    def fix(self,value):
+        return 0 if value<0 else 255 if value>255 else value    
+        
+    def colorRange(self,rangeFactor):
+        b,g,r=self.color
+        bs,gs,rs=self.stdv
+        rf=rangeFactor
+        lower = np.array([self.fix(b-bs*rf), self.fix(g-gs*rf) ,self.fix(r-rs*rf)], dtype = 'uint8')
+        upper = np.array([self.fix(b+bs*rf), self.fix(g+gs*rf) ,self.fix(r+rs*rf)], dtype = 'uint8')
+        return lower,upper    
+    
+    def colorFiltered(self,image,rangeFactor):
+        lower,upper=self.colorRange(rangeFactor)
+        colorFiltered=cv2.inRange(image,lower,upper)
+        return colorFiltered
+        
     def showDebug(self):
         print("calculation took %.4f s" % (self.time))   
-        for channel in range(len(Histogram.color)):
+        for channel in range(len(Histogram.colors)):
             print (vars(self.stats[channel])) 
         
     def plot(self):    
         fig,(ax1,ax2)=plt.subplots(1,2)
         fig.suptitle('color histogram', fontsize=20)
         ax1.imshow(self.rgb), ax1.axis('off')
-        for i,col in enumerate(Histogram.color):
+        for i,col in enumerate(Histogram.colors):
             ax2.plot(self.hist[i],color = col)
             #ax2.xlim([0,256])
         return fig    
