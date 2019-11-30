@@ -128,11 +128,6 @@ class ChessTrapezoid:
         x,y=self.relativeToIdealXY(rx, ry)    
         self.video.drawCenteredText(image, text, x, y,fontBGRColor=color)
 
-    def maskImage(self,image,mask):
-        """ return the masked image that filters the trapezoid view"""
-        masked=cv2.bitwise_and(image,image,mask=mask)
-        return masked
-
     def updatePieces(self,fen):
         """ update the piece positions according to the given FEN"""
         self.board=chess.Board(fen)
@@ -209,7 +204,7 @@ class ChessTrapezoid:
         for fieldState in byFieldState.keys():
             mask=self.video.getEmptyImage(warped)
             self.drawFieldStates(mask,[fieldState],Transformation.IDEAL,1)
-            masked=self.maskImage(image,mask)
+            masked=self.video.maskImage(image,mask)
             countedFields=len(byFieldState[fieldState])
             averageColor=Color(masked)
             self.averageColors[fieldState]=averageColor

@@ -16,7 +16,7 @@ class Environment:
         
     @staticmethod    
     def checkDir(path):    
-        print (path)
+        #print (path)
         if not os.path.isdir(path):
             try:
                 os.mkdir(path)

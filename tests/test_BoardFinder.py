@@ -11,16 +11,24 @@ def test_findBoard():
     BoardFinder.debug=True
     startt=timer()
     for imageInfo in testEnv.imageInfos:
+        title=imageInfo["title"]
         fen=imageInfo["fen"]
         image,video,warp=testEnv.prepareFromImageInfo(imageInfo)      
         finder = BoardFinder(image)
         found=finder.find(limit=1,searchWidth=360)
         assert(len(found)>0)
         if BoardFinder.debug:
-            title=imageInfo["title"]
             finder.showDebug(title)
             finder.showPolygonDebug(title)
-                
+        foundPolygons=finder.toPolygons()
+        for chesspattern in foundPolygons.keys():
+            polygons=foundPolygons[chesspattern]
+            for filterColor in (True,False):
+                imageCopy=image.copy()
+                masked=finder.maskPolygon(imageCopy, polygons, filterColor)
+                if BoardFinder.debug:
+                    prefix="masked-O-" if filterColor else "masked-X-"
+                    finder.writeDebug(masked,title, prefix, chesspattern)
     endt=timer()
     if BoardFinder.debug:
         print ("found %d chessboards in %.1f s" % (len(testEnv.imageInfos),(endt-startt)))

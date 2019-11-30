@@ -258,7 +258,11 @@ class Video:
         emptyImage=self.getEmptyImage4WidthAndHeight(w, h, channels)
         return emptyImage
     
-
+    def maskImage(self,image,mask):
+        """ return the masked image that filters with the given mask"""
+        masked=cv2.bitwise_and(image,image,mask=mask)
+        return masked
+    
     # was: http://www.robindavid.fr/opencv-tutorial/chapter5-line-edge-and-contours-detection.html
     # is: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghlines/py_houghlines.html
     # https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html
