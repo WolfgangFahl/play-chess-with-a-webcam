@@ -23,6 +23,8 @@ def test_Stats():
     assert stats.mean==26.94
     assert stats.variance==3.6364
     assert stats.stdv==1.9069347130932406
+    assert stats.min==23
+    assert stats.max==31
     
 def test_Histogram():
     imgPath="/tmp/"
@@ -38,5 +40,5 @@ def test_Histogram():
         histogram.showDebug()
         histogram.save(imgPath+title+"-histogram.jpg")
     
-#test_Stats()    
-test_Histogram()
+test_Stats()    
+#test_Histogram()

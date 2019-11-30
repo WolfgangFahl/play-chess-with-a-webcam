@@ -8,11 +8,14 @@ from timeit import default_timer as timer
 from matplotlib import pyplot as plt
 import numpy as np
 import math
+import sys
 
 class Stats:
     """ Calculate Histogram statistics see https://math.stackexchange.com/questions/857566/how-to-get-the-standard-deviation-of-a-given-histogram-image """
     def __init__(self,histindexed):
         self.n=len(histindexed)
+        self.max=-sys.maxsize
+        self.min=sys.maxsize
         self.sum=0
         self.prod=0
         self.sqsum=0
@@ -21,6 +24,9 @@ class Stats:
             self.prod+=x*y
         self.mean=self.prod/self.sum
         for x,y in histindexed:
+            if y>0:
+                self.min=min(self.min,x)    
+                self.max=max(self.max,x)
             dx=x-self.mean
             self.sqsum+=y*dx*dx
         # σ²
@@ -47,14 +53,25 @@ class Histogram:
             self.stats[channel] = Stats(histindexed)
         bstats,gstats,rstats=self.stats[0],self.stats[1],self.stats[2]
         self.color=(bstats.mean,gstats.mean,rstats.mean)
-        self.stdv=(bstats.stdv,gstats.stdv,rstats.stdv)  
+        self.mincolor=(bstats.min,gstats.min,rstats.min)
+        self.maxcolor=(bstats.max,gstats.max,rstats.max)
+        self.maxdelta=(
+            self.delta(bstats.min,bstats.mean,bstats.max),
+            self.delta(gstats.min,gstats.mean,gstats.max),
+            self.delta(rstats.min,rstats.mean,rstats.max)
+        )
+        self.stdv=(bstats.stdv,gstats.stdv,rstats.stdv)
         end=timer()
         self.time=end-start
+        
+    def delta(self,minv,meanv,maxv):
+        d=max(meanv-minv,maxv-meanv)
+        return d    
         
     def fix(self,value):
         return 0 if value<0 else 255 if value>255 else value    
         
-    def colorRange(self,rangeFactor):
+    def colorRangeWitFactor(self,rangeFactor):
         b,g,r=self.color
         bs,gs,rs=self.stdv
         rf=rangeFactor
@@ -62,10 +79,11 @@ class Histogram:
         upper = np.array([self.fix(b+bs*rf), self.fix(g+gs*rf) ,self.fix(r+rs*rf)], dtype = 'uint8')
         return lower,upper    
     
-    def colorFiltered(self,image,rangeFactor):
-        lower,upper=self.colorRange(rangeFactor)
-        colorFiltered=cv2.inRange(image,lower,upper)
-        return colorFiltered
+    def colorMask(self,image,rangeFactor):
+        #lower,upper=self.colorRange(rangeFactor)
+        lower,upper=self.mincolor,self.maxcolor
+        colorMask=cv2.inRange(image,lower,upper)
+        return colorMask
         
     def showDebug(self):
         print("calculation took %.4f s" % (self.time))   

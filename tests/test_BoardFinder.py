@@ -16,7 +16,7 @@ def test_findBoard():
         title=imageInfo["title"]
         fen=imageInfo["fen"]
         image,video,warp=testEnv.prepareFromImageInfo(imageInfo)      
-        finder = BoardFinder(image)
+        finder = BoardFinder(image,video=video)
         found=finder.find(limit=1,searchWidth=360)
         assert(len(found)>0)
         if BoardFinder.debug:
@@ -39,7 +39,8 @@ def test_findBoard():
                     filepath=finder.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,rows,cols)
                     histogram.save(filepath)  
                 imageCopy=image.copy()
-                colorFiltered=histogram.colorFiltered(imageCopy, 1.5)
+                colorMask=histogram.colorMask(imageCopy, 1.5)
+                colorFiltered=video.maskImage(imageCopy,colorMask)
                 if BoardFinder.debug:
                     prefix="colorFiltered-O-" if filterColor else "colorFiltered-X-"
                     finder.writeDebug(colorFiltered, title, prefix, chesspattern)
