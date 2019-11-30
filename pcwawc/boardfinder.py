@@ -144,34 +144,52 @@ class BoardFinder(object):
         masked=self.video.maskImage(image,mask)
         return masked
     
+    def getHistograms(self,image,title,chesspattern,polygons):
+        histograms={}
+        for filterColor in (True,False):
+            imageCopy=image.copy()
+            masked=self.maskPolygon(imageCopy, polygons, filterColor)
+            if BoardFinder.debug:
+                prefix="masked-O-" if filterColor else "masked-X-"
+                self.writeDebug(masked,title, prefix, chesspattern)
+            histograms[filterColor]=Histogram(masked,histRange=(1,256))
+        return histograms    
+    
+    def getColorFiltered(self,image,histograms,title,chesspattern):
+        colorFiltered={}
+        for filterColor in (True,False):
+            histogram=histograms[filterColor]
+            imageCopy=image.copy()
+            colorMask=histogram.colorMask(imageCopy, 1.5)
+            colorFiltered[filterColor]=self.video.maskImage(imageCopy,colorMask)
+            if BoardFinder.debug:
+                prefix="colorFiltered-O-" if filterColor else "colorFiltered-X-"
+                self.writeDebug(colorFiltered[filterColor], title, prefix, chesspattern)
+        return colorFiltered        
+           
     def expand(self,image,title):
         foundPolygons=self.toPolygons()
         for chesspattern in foundPolygons.keys():
-            rows,cols=chesspattern
             polygons=foundPolygons[chesspattern]
-            for filterColor in (True,False):
-                imageCopy=image.copy()
-                masked=self.maskPolygon(imageCopy, polygons, filterColor)
-                if BoardFinder.debug:
-                    prefix="masked-O-" if filterColor else "masked-X-"
-                    self.writeDebug(masked,title, prefix, chesspattern)
-                histogram=Histogram(masked,histRange=(1,256))
-                if BoardFinder.debug:
-                    Environment.checkDir(self.debugImagePath)  
-                    prefix=prefix+"histogram"
-                    filepath=self.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,rows,cols)
-                    histogram.save(filepath)  
-                imageCopy=image.copy()
-                colorMask=histogram.colorMask(imageCopy, 1.5)
-                colorFiltered=self.video.maskImage(imageCopy,colorMask)
-                if BoardFinder.debug:
-                    prefix="colorFiltered-O-" if filterColor else "colorFiltered-X-"
-                    self.writeDebug(colorFiltered, title, prefix, chesspattern)
+            self.histograms=self.getHistograms(image, title, chesspattern, polygons)
+            if BoardFinder.debug:
+                self.showHistogramDebug(self.histograms,title,chesspattern)
+            self.colorFiltered=self.getColorFiltered(image,self.histograms,title,chesspattern)                 
         
     def drawPolygon(self,image,pos,polygon,whiteColor,blackColor):    
         posColor=self.fieldColor(pos)
         color=blackColor if posColor else whiteColor
         cv2.fillConvexPoly(image,polygon,color)
+        
+    def showHistogramDebug(self,histograms,title,chesspattern):
+        rows,cols=chesspattern    
+        Environment.checkDir(self.debugImagePath)  
+        fig,axes=histograms[True].preparePlot(2,2)
+        histograms[True].plotRow(axes[0,0],axes[0,1])
+        histograms[False].plotRow(axes[1,0],axes[1,1])
+        prefix="histogram"
+        filepath=self.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,rows,cols)
+        histograms[False].savefig(fig,filepath)    
         
     def showPolygonDebug(self,title):
         for chesspattern,corners in self.found.items():

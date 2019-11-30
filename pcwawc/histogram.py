@@ -89,18 +89,28 @@ class Histogram:
         print("calculation took %.4f s" % (self.time))   
         for channel in range(len(Histogram.colors)):
             print (vars(self.stats[channel])) 
-        
-    def plot(self):    
-        fig,(ax1,ax2)=plt.subplots(1,2)
-        fig.suptitle('color histogram', fontsize=20)
+    
+    def plotRow(self,ax1,ax2):  
         ax1.imshow(self.rgb), ax1.axis('off')
         for i,col in enumerate(Histogram.colors):
             ax2.plot(self.hist[i],color = col)
             #ax2.xlim([0,256])
+            
+    def preparePlot(self,rows,cols,title='color histogram',fontsize=20):        
+        fig,axes=plt.subplots(rows,cols)
+        fig.suptitle(title, fontsize=fontsize)
+        return fig,axes
+            
+    def plot(self):    
+        fig,(ax1,ax2)=self.preparePlot(1,2)
+        self.plotRow(ax1,ax2)
         return fig    
             
     def save(self,filepath):
         fig=self.plot()
+        self.savefig(fig,filepath)
+        
+    def savefig(self,fig,filepath):    
         fig.savefig(filepath)    
         plt.close(fig)
         
