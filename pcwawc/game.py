@@ -66,7 +66,10 @@ class WebCamGame(JsonAbleMixin):
             if file.endswith(".json"):
                 filePath = os.path.join(path, file)
                 webCamGame = WebCamGame.readJson(filePath, '')
-                webCamGames[webCamGame.gameid] = webCamGame
+                if isinstance(webCamGame,WebCamGame):
+                    webCamGames[webCamGame.gameid] = webCamGame
+                else:
+                    raise Exception("invalid json file %s" % filePath)    
         return webCamGames               
         
            

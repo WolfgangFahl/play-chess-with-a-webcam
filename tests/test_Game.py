@@ -1,5 +1,6 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.game import Game, WebCamGame
+from pcwawc.game import Game
+from pcwawc.game import WebCamGame
 from pcwawc.Environment import Environment
 from pcwawc.WebApp import WebApp
 from pcwawc.webchesscam import WebChessCamArgs
