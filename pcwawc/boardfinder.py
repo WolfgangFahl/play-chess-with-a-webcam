@@ -7,6 +7,7 @@ from timeit import default_timer as timer
 from pcwawc.Environment import Environment
 from pcwawc.Video import Video
 import numpy as np
+import math
 
 # Board Finder
 class BoardFinder(object):
@@ -25,6 +26,18 @@ class BoardFinder(object):
         self.image=image
         self.debugImagePath=debugImagePath
         self.height, self.width = self.image.shape[:2]
+        
+    @staticmethod    
+    def centerXY(xylist):
+        x, y = zip(*xylist)
+        l = len(x)
+        return sum(x) / l, sum(y) / l  
+    
+    @staticmethod    
+    def sortPoints(xylist):  
+        cx, cy = BoardFinder.centerXY(xylist)
+        xy_sorted = sorted(xylist, key = lambda x: math.atan2((x[1]-cy),(x[0]-cx)))
+        return xy_sorted
        
     def find(self,limit=1,searchWidth=640):
         """ start finding the chessboard with the given limit and the given maximum width of the search image """
@@ -98,9 +111,11 @@ class BoardFinder(object):
         for col in range(cols-1):
                 for row in range (rows-1):
                     x1,y1=cps[col,row]      # top left
-                    x4,y4=cps[col+1,row]    # left bottom
+                    x2,y2=cps[col+1,row]    # left bottom
                     x3,y3=cps[col+1,row+1]  # right bottom
-                    x2,y2=cps[col,row+1]    # top right
+                    x4,y4=cps[col,row+1]    # top right
+                    clockwise=BoardFinder.sortPoints([(x1,y1),(x2,y2),(x3,y3),(x4,y4)])
+                    (x1,y1),(x2,y2),(x3,y3),(x4,y4)=clockwise
                     # https://stackoverflow.com/questions/19190484/what-is-the-opencv-findchessboardcorners-convention
                     polygon=np.array([
                         self.safeXY(x1,y1,+m,+m),

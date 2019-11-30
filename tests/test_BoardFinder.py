@@ -32,5 +32,13 @@ def test_findBoard():
     endt=timer()
     if BoardFinder.debug:
         print ("found %d chessboards in %.1f s" % (len(testEnv.imageInfos),(endt-startt)))
-        
+    
+def test_SortPoints():
+    points=[(0,0),(0,1),(1,1),(1,0)]
+    center=BoardFinder.centerXY(points)
+    assert center==(0.5,0.5)
+    sortedPoints=BoardFinder.sortPoints(points)
+    assert sortedPoints==[(0, 0), (1, 0), (1, 1), (0, 1)]
+            
+test_SortPoints()        
 test_findBoard()
