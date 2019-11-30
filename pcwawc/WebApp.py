@@ -168,7 +168,7 @@ class WebApp:
                 self.video.capture(self.args.input)
             filename = 'chessboard_%s.jpg' % (self.video.fileTimeStamp())
             # make sure the path exists
-            self.webCamGame.checkDir(path)
+            Environment.checkDir(path)
             self.video.still2File(path + filename, postProcess=self.warpAndRotate, close=False)
             msg = "still image <a href='/photo/%s'>%s</a> taken from input %s" % (filename, filename, self.args.input)
             return self.index(msg)
@@ -181,7 +181,7 @@ class WebApp:
                 self.video.capture(self.args.input)
             self.videofilename = 'chessgame_%s.avi' % (self.video.fileTimeStamp())
             # make sure the path exists
-            self.webCamGame.checkDir(path)
+            Environment.checkDir(path)
             self.videopath=path+self.videofilename
             msg="started recording"
         else:

@@ -25,7 +25,7 @@ class YamlAbleMixin(object):
                     print (result)
                 return result
         else:
-           return None
+            return None
 
     # write me to my yaml file
     def writeYaml(self, name):

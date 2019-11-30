@@ -5,9 +5,8 @@ from pcwawc.JsonAbleMixin import JsonAbleMixin
 from pcwawc.YamlAbleMixin import YamlAbleMixin
 from time import strftime
 import numpy as  np
-import os
 import chess
-
+import os
 
 class Game(JsonAbleMixin):
     """ keeps track of a games state in a JavaScript compatible way to exchange game State information
@@ -37,24 +36,14 @@ class WebCamGame(JsonAbleMixin):
         self.warp = Warp()
         
     def checkEnvironment(self, env):
-        self.checkDir(env.games)    
+        Environment.checkDir(env.games)    
         
-    def checkDir(self, path):    
-        print (path)
-        if not os.path.isdir(path):
-            try:
-                os.mkdir(path)
-            except OSError:
-                print ("Creation of the directory %s failed" % path)
-            else:
-                print ("Successfully created the directory %s " % path)
- 
     def save(self, path="games"):
         env = Environment()
         savepath = str(env.projectPath) + "/" + path
-        self.checkDir(savepath)
+        Environment.checkDir(savepath)
         savedir = savepath + "/" + self.gameid
-        self.checkDir(savedir)
+        Environment.checkDir(savedir)
         jsonFile = savedir + "/" + self.gameid + "-webcamgame"
         self.writeJson(jsonFile)
         gameJsonFile = savedir + "/" + self.gameid

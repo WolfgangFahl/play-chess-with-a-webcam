@@ -16,7 +16,9 @@ def test_findBoard():
         finder = BoardFinder(image)
         found=finder.find(limit=1,searchWidth=360)
         assert(len(found)>0)
+        if BoardFinder.debug:
+            finder.showDebug(imageInfo["title"])
     endt=timer()
     if BoardFinder.debug:
-            print ("found %d chessboards in %.1f s" % (len(testEnv.imageInfos),(endt-startt)))
+        print ("found %d chessboards in %.1f s" % (len(testEnv.imageInfos),(endt-startt)))
 test_findBoard()
