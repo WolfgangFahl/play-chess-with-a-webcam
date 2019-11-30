@@ -6,8 +6,6 @@ import cv2
 from timeit import default_timer as timer
 from pcwawc.Environment import Environment
 import numpy as np
-from tables.table import Cols
-from numpy.lib.tests.test_type_check import TestImag
 
 # Board Finder
 class BoardFinder(object):
