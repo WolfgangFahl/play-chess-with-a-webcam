@@ -139,7 +139,7 @@ def test_ColorDistribution():
         height, width = warped.shape[:2]
         video.writeImage(warped,imgPath+title+"-warped.jpg")
         #startd = timer()
-        #denoised=trapez.getEmptyImage(warped, 3)
+        #denoised=video.getEmptyImage(warped, 3)
         #cv2.fastNlMeansDenoisingColored(warped,denoised)
         #endd = timer()
         #print("%.3fs for loading %.3fs for denoising image %s: %4d x %4d" % ((end-start),(endd-startd),title,width,height))
@@ -270,7 +270,7 @@ def test_ChessTrapezoid():
         detectColorState.check(warped,averageColors,drawDebug=True)
         colorHistory[frame]=trapezoid.averageColors.copy()
         
-        #mask=trapezoid.getEmptyImage(bgr)
+        #mask=video.getEmptyImage(bgr)
         #trapezoid.drawFieldStates(mask,[FieldState.BLACK_EMPTY,FieldState.WHITE_EMPTY])
         #masked=trapezoid.maskImage(bgr,mask)
         #warped=trapezoid.warpedBoard(masked)

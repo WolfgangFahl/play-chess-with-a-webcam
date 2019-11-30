@@ -111,21 +111,6 @@ class ChessTrapezoid:
         for square in chess.SQUARES:
             tsquare=self.tsquares[square]
             yield tsquare
-            
-    def getEmptyImage(self,image,channels=1):
-        """ prepare a trapezoid/polygon mask to focus on the square chess field seen as a trapezoid"""
-        h, w = image.shape[:2]
-        emptyImage=self.getEmtpyImage4WidthAndHeight(w, h, channels)
-        return emptyImage
-    
-    def getEmtpyImage4WidthAndHeight(self,w,h,channels):    
-        """ get an empty image with the given width height and channels"""
-        emptyImage = np.zeros((h,w,channels), np.uint8)
-        return emptyImage
-
-    def drawPolygon(self,image,polygon,color):
-        """ draw the given polygon onto the given image with the given color"""
-        cv2.fillConvexPoly(image,polygon,color)
                
     def drawCircle(self,image,center,radius,color,thickness=-1):
         """ draw a circle onto the given image at the given center point with the given radius, color and thickness. """
@@ -190,14 +175,14 @@ class ChessTrapezoid:
 
     def idealColoredBoard(self,w,h,transformation=Transformation.IDEAL):
         """ draw an 'ideal' colored board according to a given set of parameters e.g. fieldColor, pieceColor, pieceRadius"""
-        idealImage=self.getEmtpyImage4WidthAndHeight(w,h,3)
+        idealImage=self.video.getEmptyImage4WidthAndHeight(w,h,3)
         for tsquare in self.genSquares():
             tsquare.drawState(idealImage,transformation,3)
         return idealImage
    
     def preMoveBoard(self,w,h):
         """ get an image of the board as it was before any move """
-        refImage=self.getEmtpyImage4WidthAndHeight(w,h,3)
+        refImage=self.video.getEmptyImage4WidthAndHeight(w,h,3)
         for tsquare in self.genSquares():
             tsquare.addPreMoveImage(refImage)
         return refImage;
@@ -222,7 +207,7 @@ class ChessTrapezoid:
         warped=self.warpedBoardImage(image)
         byFieldState=self.byFieldState()
         for fieldState in byFieldState.keys():
-            mask=self.getEmptyImage(warped)
+            mask=self.video.getEmptyImage(warped)
             self.drawFieldStates(mask,[fieldState],Transformation.IDEAL,1)
             masked=self.maskImage(image,mask)
             countedFields=len(byFieldState[fieldState])
@@ -540,7 +525,7 @@ class ChessTSquare:
                     squareImageColor=Color.black
         
         if not (channels==1 and self.piece is not None): 
-            self.trapez.drawPolygon(image,self.getPolygon(transformation),squareImageColor)
+            self.trapez.video.drawPolygon(image,self.getPolygon(transformation),squareImageColor)
         
         
         if self.piece is not None:

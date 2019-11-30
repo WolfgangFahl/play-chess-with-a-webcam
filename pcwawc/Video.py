@@ -238,7 +238,7 @@ class Video:
     def createBlank(self, width, height, rgb_color=(0, 0, 0)):
         """Create new image(numpy array) filled with certain color in RGB"""
         # Create black blank image
-        image = np.zeros((height, width, 3), np.uint8)
+        image = self.getEmptyImage4WidthAndHeight(width, height, 3)
 
         # Since OpenCV uses BGR, convert the color first
         color = tuple(reversed(rgb_color))
@@ -246,6 +246,18 @@ class Video:
         image[:] = color
 
         return image
+    
+    def getEmptyImage4WidthAndHeight(self,w,h,channels):    
+        """ get an empty image with the given width height and channels"""
+        emptyImage = np.zeros((h,w,channels), np.uint8)
+        return emptyImage
+    
+    def getEmptyImage(self,image,channels=1):
+        """ prepare a trapezoid/polygon mask to focus on the square chess field seen as a trapezoid"""
+        h, w = image.shape[:2]
+        emptyImage=self.getEmptyImage4WidthAndHeight(w, h, channels)
+        return emptyImage
+    
 
     # was: http://www.robindavid.fr/opencv-tutorial/chapter5-line-edge-and-contours-detection.html
     # is: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghlines/py_houghlines.html
@@ -286,6 +298,10 @@ class Video:
 
     def drawRectangle(self, image, pt1, pt2, color=(0, 255, 0), thickness=1):
         cv2.rectangle(image, pt1, pt2, color, thickness)
+
+    def drawPolygon(self,image,polygon,color):
+        """ draw the given polygon onto the given image with the given color"""
+        cv2.fillConvexPoly(image,polygon,color)
 
     #  https://docs.opencv.org/4.1.2/d9/db0/tutorial_hough_lines.html
     def drawLines(self, image, lines):
