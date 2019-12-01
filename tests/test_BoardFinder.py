@@ -2,6 +2,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.boardfinder import BoardFinder,Corners
 from pcwawc.Environment4Test import Environment4Test
+from pcwawc.ChessTrapezoid import Trapez2Square
 from timeit import default_timer as timer
 import chess
 testEnv = Environment4Test()
@@ -41,6 +42,14 @@ def test_SortPoints():
     assert center==(0.5,0.5)
     sortedPoints=BoardFinder.sortPoints(points)
     assert sortedPoints==[(0, 0), (1, 0), (1, 1), (0, 1)]
+    
+def test_Trapez2Square():
+    t2s=Trapez2Square((100,100),(200,100),(100,0),(0,0))
+    assert t2s.relativeToTrapezXY(0,0)==(100.0,100.0)
+    assert t2s.relativeToTrapezXY(1,0)==(200.0,100.0)
+    assert t2s.relativeToTrapezXY(1,1)==(100.0,  0.0)
+    assert t2s.relativeToTrapezXY(0,1)==(  0.0,  0.0)
             
 test_SortPoints()        
+test_Trapez2Square()
 test_findBoard()

@@ -18,10 +18,7 @@ class Transformation(IntEnum):
     
 class Trapez2Square:
     """ transform a trapez to a square and back as needed"""
-    def __init__(self):
-        pass    
-    
-    def setup(self,topLeft,topRight,bottomRight,bottomLeft):
+    def __init__(self,topLeft,topRight,bottomRight,bottomLeft):
         """ construct me from the given corner points"""
         self.tl,self.tr,self.br,self.bl=topLeft,topRight,bottomRight,bottomLeft
         self.polygon=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
@@ -60,18 +57,17 @@ class ChessTrapezoid(Trapez2Square):
     DiffSumMovingAverageLength=5
   
     def __init__(self,trapezPoints,idealSize=640,rotation=0,video=None):
-        super().__init__() 
+        topLeft,topRight,bottomRight,bottomLeft=trapezPoints
+        super().__init__(topLeft,topRight,bottomRight,bottomLeft) 
         self.rotation=rotation
         #trapezPoints=[topLeft,topRight,bottomRight,bottomLeft]
         shifts=self.rotation//90
         for shift in range(shifts):
             left=trapezPoints.pop(0)
             trapezPoints.append(left)
-        topLeft,topRight,bottomRight,bottomLeft=trapezPoints
-        self.setup(topLeft,topRight,bottomRight,bottomLeft,idealSize,video)
+        self.setup(idealSize,video)
         
-    def setup(self,topLeft,topRight,bottomRight,bottomLeft,idealSize=640,video=None):    
-        super().setup(topLeft,topRight,bottomRight,bottomLeft)
+    def setup(self,idealSize=640,video=None):    
         # video access (for debugging and partly hiding open cv details)
         if video is None:
             self.video=Video()
