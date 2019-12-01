@@ -9,6 +9,7 @@ from pcwawc.histogram import Histogram
 from pcwawc.Video import Video
 import numpy as np
 import math
+import chess
 
 class Corners(object):
     """ Chess board corners """
@@ -106,6 +107,8 @@ class BoardFinder(object):
             video=Video()
         self.video=video    
         self.image=image
+        # guess the topleft color
+        self.topleft=chess.WHITE
         self.height, self.width = self.image.shape[:2]
         
     @staticmethod    
@@ -160,7 +163,8 @@ class BoardFinder(object):
     
     def fieldColor(self,pos):
         row,col=pos
-        color = (col + row) % 2 == 0
+        oddeven=1 if self.topleft==chess.WHITE else 0
+        color=chess.WHITE if (col+row) % 2 == oddeven else chess.BLACK
         return color
     
     def maskPolygon(self,image,corners,filterColor):
@@ -177,6 +181,7 @@ class BoardFinder(object):
         return masked
     
     def getHistograms(self,image,title,corners):
+        """ get the two histograms for the given corners we don't no what the color of the topleft corner is so we start with a guess"""
         histograms={}
         for filterColor in (True,False):
             imageCopy=image.copy()
@@ -185,17 +190,26 @@ class BoardFinder(object):
                 prefix="masked-O-" if filterColor else "masked-X-"
                 corners.writeDebug(masked,title, prefix)
             histograms[filterColor]=Histogram(masked,histRange=(1,256))
+  
+        # do we need to fix our guess?
+        # is the mean color of black (being filtered) higher then when white is filtered?          
+        if histograms[chess.BLACK].color>histograms[chess.WHITE].color:
+            self.topleft=chess.BLACK
+            # swap entries
+            tmp=histograms[chess.BLACK]
+            histograms[chess.BLACK]=histograms[chess.WHITE]
+            histograms[chess.WHITE]=tmp
         return histograms    
     
     def getColorFiltered(self,image,histograms,title,corners):
         colorFiltered={}
-        for filterColor in (True,False):
+        for filterColor in (chess.WHITE,chess.BLACK):
             histogram=histograms[filterColor]
             imageCopy=image.copy()
             colorMask=histogram.colorMask(imageCopy, 1.5)
             colorFiltered[filterColor]=self.video.maskImage(imageCopy,colorMask)
             if BoardFinder.debug:
-                prefix="colorFiltered-O-" if filterColor else "colorFiltered-X-"
+                prefix="colorFiltered-white-" if filterColor==chess.WHITE else "colorFiltered-black-"
                 corners.writeDebug(colorFiltered[filterColor], title, prefix)
         return colorFiltered        
            

@@ -26,6 +26,7 @@ def test_findBoard():
             corners.showDebug(image,title)
             
         histograms=finder.getHistograms(image, title, corners)
+        
         if BoardFinder.debug:
             finder.showHistogramDebug(histograms,title,corners)
             finder.showPolygonDebug(image,title,corners)
