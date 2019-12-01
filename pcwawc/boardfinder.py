@@ -10,6 +10,7 @@ from pcwawc.Video import Video
 import numpy as np
 import math
 import chess
+from _operator import pos
 
 class Corners(object):
     """ Chess board corners """
@@ -31,6 +32,14 @@ class Corners(object):
         for rows in range(7,2,-2):
             for cols in range(7,rows-2,-2):  
                 yield (rows,cols) 
+                
+    @staticmethod
+    def sortFirst(val):
+        return val[0][0]            
+                
+    def sort(self):
+        #self.corners.sort()
+        pass            
     
     def findPattern(self,image):
         """ try finding the chess board corners in the given image with the given pattern """
@@ -73,13 +82,21 @@ class Corners(object):
                         self.safeXY(x2,y2,-m,+m),
                         self.safeXY(x3,y3,-m,-m),
                         self.safeXY(x4,y4,+m,-m)],dtype=np.int32)
-                    polygons[(row,col)]=polygon
+                    polygons[(col,self.rows-2-row)]=polygon
         return polygons 
     
     def calcPolygons(self,*safetyMargins):
         """ calculate polygons for the given safety margins """
         for safetyMargin in safetyMargins:
             self.polygons[safetyMargin]=self.asPolygons(safetyMargin)
+            
+    def calcTrapez(self):
+        polygons0=self.polygons[0]
+        self.topLeft=polygons0[(0,0)][0]
+        self.topRight=polygons0[self.cols-2,0][1]
+        self.bottomRight=polygons0[self.cols-2,self.rows-2][2]
+        self.bottomLeft=polygons0[0,self.rows-2][3]
+        pass
             
     def showDebug(self,image,title):
         """ 'show' the debug picture of the chessboard corners by drawing the corners and writing the result to the given testImagePath"""
@@ -135,6 +152,7 @@ class BoardFinder(object):
         chesspattern=next(iter(found))
         corners=found[chesspattern]
         corners.calcPolygons(0,Corners.safetyMargin)
+        corners.calcTrapez()
         return corners
        
     def findCorners(self,limit=1,searchWidth=640):
@@ -155,6 +173,7 @@ class BoardFinder(object):
         for chesspattern in Corners.genChessPatterns():
             corners=Corners(chesspattern)
             if corners.findPattern(gray) and corners.findPattern(fullSizeGray):
+                corners.sort()
                 self.found[chesspattern]=corners
             if len(self.found)>=limit:
                     break
@@ -222,6 +241,11 @@ class BoardFinder(object):
         posColor=self.fieldColor(pos)
         color=blackColor if posColor else whiteColor
         cv2.fillConvexPoly(image,polygon,color)
+        if BoardFinder.debug:
+            row,col=pos
+            text="%d,%d" % (row,col)
+            x,y=BoardFinder.centerXY(polygon)
+            self.video.drawCenteredText(image, text, int(x), int(y), fontBGRColor=(255,0,0))
         
     def showPolygonDebug(self,image,title,corners):
         imagecopy=image.copy()
