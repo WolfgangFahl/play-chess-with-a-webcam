@@ -16,7 +16,8 @@ def test_findBoard():
         image,video,warp=testEnv.prepareFromImageInfo(imageInfo)      
         finder = BoardFinder(image,video=video)
         found=finder.find(limit=1,searchWidth=360)
-        assert(len(found)>0)
+        # we expected to find a board
+        assert(len(found)==1)
         if BoardFinder.debug:
             finder.showDebug(title)
             finder.showPolygonDebug(title)

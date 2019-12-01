@@ -10,6 +10,32 @@ from pcwawc.Video import Video
 import numpy as np
 import math
 
+class Corners(object):
+    """ Chess board corners """
+    
+    debug=False
+    
+    def __init__(self,pattern):
+        """ initialize me with the given rows and columns"""
+        self.pattern=pattern
+        self.rows,self.cols=pattern
+        
+    @staticmethod
+    def genChessPatterns():
+        for rows in range(7,2,-2):
+            for cols in range(7,rows-1,-2):  
+                yield (rows,cols) 
+    
+    def findPattern(self,image):
+        """ try finding the chess board corners in the given image with the given pattern """
+        h,w = image.shape[:2]
+        start=timer()
+        ret, self.corners = cv2.findChessboardCorners(image, self.pattern, None)
+        end=timer()
+        if Corners.debug:
+            print ("%dx%d in %dx%d after %.3f s: %s" % (self.rows,self.cols,w,h,(end-start),"✔" if ret else "❌"))
+        return ret    
+   
 # Board Finder
 class BoardFinder(object):
     """ find a chess board in the given image """
@@ -56,42 +82,22 @@ class BoardFinder(object):
         gray = cv2.cvtColor(self.searchimage, cv2.COLOR_BGR2GRAY)
         fullSizeGray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         self.found={}
-        for rows in range(7,2,-1):
-            for cols in range(7,rows-1,-1):
-                chesspattern=(rows,cols)       
-                corners=self.findPattern(gray, chesspattern)
-                if corners is not None:
-                    fullSizeCorners=self.findPattern(fullSizeGray,chesspattern)
-                    if fullSizeCorners is not None:
-                        self.found[chesspattern]=fullSizeCorners
-                if len(self.found)>=limit:
-                    break
+        for chesspattern in Corners.genChessPatterns():
+            corners=Corners(chesspattern)
+            if corners.findPattern(gray) and corners.findPattern(fullSizeGray):
+                self.found[chesspattern]=corners
             if len(self.found)>=limit:
-                    break                     
+                    break
         endt=timer()
         if BoardFinder.debug:
             print ("found %d patterns in %.1f s" % (len(self.found),(endt-startt)))
         return self.found
-
-    def findPattern(self,image,pattern):
-        """ try finding the chess board corners in the given image with the given pattern """
-        h,w = image.shape[:2]
-        start=timer()
-        ret, corners = cv2.findChessboardCorners(image, pattern, None)
-        end=timer()
-        if BoardFinder.debug:
-            rows,cols=pattern
-            print ("%dx%d in %dx%d after %.3f s: %s" % (rows,cols,w,h,(end-start),"✔" if ret else "❌"))
-        if ret == True:
-            return corners
-        else:
-            return None
         
     def toPolygons(self,safetyMargin=5):
         foundPolygons={}
         for chesspattern in self.found.keys():
             corners=self.found[chesspattern]
-            foundPolygons[chesspattern]=self.asPolygons(chesspattern,corners,safetyMargin)
+            foundPolygons[chesspattern]=self.asPolygons(chesspattern,corners.corners,safetyMargin)
         return foundPolygons
     
     def safeXY(self,x,y,dx,dy):
@@ -194,7 +200,7 @@ class BoardFinder(object):
     def showPolygonDebug(self,title):
         for chesspattern,corners in self.found.items():
             imagecopy=self.image.copy()
-            polygons=self.asPolygons(chesspattern, corners)
+            polygons=self.asPolygons(chesspattern, corners.corners)
             for pos,polygon in polygons.items():
                 self.drawPolygon(imagecopy, pos, polygon, BoardFinder.lightGrey,BoardFinder.darkGrey)
             self.writeDebug(imagecopy,title, "polygons", chesspattern)     
@@ -204,7 +210,7 @@ class BoardFinder(object):
         for chesspattern in self.found.keys():
             corners=self.found[chesspattern]
             imageCopy=self.image.copy()
-            cv2.drawChessboardCorners(imageCopy, chesspattern, corners, patternWasFound=True)
+            cv2.drawChessboardCorners(imageCopy, chesspattern, corners.corners, patternWasFound=True)
             #cv2.imshow('corners', self.image)
             #cv2.waitKey(50)
             self.writeDebug(imageCopy,title,"corners",chesspattern)
