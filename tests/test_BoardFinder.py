@@ -16,20 +16,20 @@ def test_findBoard():
         fen=imageInfo["fen"]
         image,video,warp=testEnv.prepareFromImageInfo(imageInfo)      
         finder = BoardFinder(image,video=video)
-        found=finder.find(limit=1,searchWidth=360)
-        # we expected to find a board
-        assert(len(found)==1)
-        chesspattern=next(iter(found))
-        corners=found[chesspattern]
+        corners=finder.findOuterCorners(searchWidth=360)
         if fen==chess.STARTING_BOARD_FEN:
             assert corners.rows<=corners.cols
         else:
             assert corners.rows==corners.cols    
         
         if BoardFinder.debug:
-            finder.showDebug(title)
-            finder.showPolygonDebug(title)
-        finder.expand(image,title)               
+            corners.showDebug(image,title)
+            
+        histograms=finder.getHistograms(image, title, corners)
+        if BoardFinder.debug:
+            finder.showHistogramDebug(histograms,title,corners)
+            finder.showPolygonDebug(image,title,corners)
+        finder.expand(image,title,histograms,corners)               
     endt=timer()
     if BoardFinder.debug:
         print ("found %d chessboards in %.1f s" % (len(testEnv.imageInfos),(endt-startt)))

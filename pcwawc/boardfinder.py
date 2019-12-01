@@ -14,11 +14,15 @@ class Corners(object):
     """ Chess board corners """
     
     debug=False
+    """ pixel margin for masked polygons"""
+    safetyMargin=5
     
     def __init__(self,pattern):
         """ initialize me with the given rows and columns"""
         self.pattern=pattern
         self.rows,self.cols=pattern
+        # prepare the dict for my polygons
+        self.polygons={}
         
     @staticmethod
     def genChessPatterns():
@@ -46,8 +50,8 @@ class Corners(object):
         if x<0: x=0
         return (x,y)
     
-    def asPolygons(self,safetyMargin=0):   
-        """ get the polygons for the given list of corner points"""  
+    def asPolygons(self,safetyMargin):   
+        """ get the polygons for my corner points"""  
         # reshape the array 
         cps=np.reshape(self.corners,(self.cols,self.rows,2))
         polygons={}
@@ -68,6 +72,23 @@ class Corners(object):
                         self.safeXY(x4,y4,+m,-m)],dtype=np.int32)
                     polygons[(row,col)]=polygon
         return polygons 
+    
+    def calcPolygons(self,*safetyMargins):
+        """ calculate polygons for the given safety margins """
+        for safetyMargin in safetyMargins:
+            self.polygons[safetyMargin]=self.asPolygons(safetyMargin)
+            
+    def showDebug(self,image,title):
+        """ 'show' the debug picture of the chessboard corners by drawing the corners and writing the result to the given testImagePath"""
+        imageCopy=image.copy()
+        cv2.drawChessboardCorners(imageCopy, self.pattern, self.corners, patternWasFound=True)
+        #cv2.imshow('corners', self.image)
+        #cv2.waitKey(50)
+        self.writeDebug(imageCopy,title,"corners")
+        
+    def writeDebug(self,image,title,prefix):        
+        Environment.checkDir(BoardFinder.debugImagePath)    
+        cv2.imwrite(BoardFinder.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,self.rows,self.cols),image)        
    
 # Board Finder
 class BoardFinder(object):
@@ -77,14 +98,14 @@ class BoardFinder(object):
     white=(255,255,255)
     darkGrey=(256//3,256//3,256/3)
     lightGrey=(256*2//3,256*2//3,256*2//3)
+    debugImagePath="/tmp/pcwawc/"
    
-    def __init__(self, image, video=None,debugImagePath="/tmp/pcwawc/"):
+    def __init__(self, image, video=None):
         """ construct me from the given input image"""
         if video is None:
             video=Video()
         self.video=video    
         self.image=image
-        self.debugImagePath=debugImagePath
         self.height, self.width = self.image.shape[:2]
         
     @staticmethod    
@@ -99,8 +120,19 @@ class BoardFinder(object):
         cx, cy = BoardFinder.centerXY(xylist)
         xy_sorted = sorted(xylist, key = lambda x: math.atan2((x[1]-cy),(x[0]-cx)))
         return xy_sorted
+    
+    def findOuterCorners(self,searchWidth=640):
+        """ find my outer corners as limited by the OpenCV findChessBoard algorithm - to be later expanded"""
+        found=self.findCorners(limit=1,searchWidth=searchWidth)
+        # we expected to find a board
+        if len(found)!=1:
+            raise Exception("no corners found")
+        chesspattern=next(iter(found))
+        corners=found[chesspattern]
+        corners.calcPolygons(0,Corners.safetyMargin)
+        return corners
        
-    def find(self,limit=1,searchWidth=640):
+    def findCorners(self,limit=1,searchWidth=640):
         """ start finding the chessboard with the given limit and the given maximum width of the search image """
         startt=timer()
         sw=self.width
@@ -125,21 +157,15 @@ class BoardFinder(object):
         if BoardFinder.debug:
             print ("found %d patterns in %.1f s" % (len(self.found),(endt-startt)))
         return self.found
-        
-    def toPolygons(self,safetyMargin=5):
-        foundPolygons={}
-        for chesspattern in self.found.keys():
-            corners=self.found[chesspattern]
-            foundPolygons[chesspattern]=corners.asPolygons(safetyMargin)
-        return foundPolygons
     
     def fieldColor(self,pos):
         row,col=pos
         color = (col + row) % 2 == 0
         return color
     
-    def maskPolygon(self,image,polygons,filterColor):
+    def maskPolygon(self,image,corners,filterColor):
         mask=self.video.getEmptyImage(image)
+        polygons=corners.polygons[Corners.safetyMargin]
         for pos,polygon in polygons.items():
             posColor=self.fieldColor(pos)
             if not posColor==filterColor:
@@ -150,18 +176,18 @@ class BoardFinder(object):
         masked=self.video.maskImage(image,mask)
         return masked
     
-    def getHistograms(self,image,title,chesspattern,polygons):
+    def getHistograms(self,image,title,corners):
         histograms={}
         for filterColor in (True,False):
             imageCopy=image.copy()
-            masked=self.maskPolygon(imageCopy, polygons, filterColor)
+            masked=self.maskPolygon(imageCopy, corners, filterColor)
             if BoardFinder.debug:
                 prefix="masked-O-" if filterColor else "masked-X-"
-                self.writeDebug(masked,title, prefix, chesspattern)
+                corners.writeDebug(masked,title, prefix)
             histograms[filterColor]=Histogram(masked,histRange=(1,256))
         return histograms    
     
-    def getColorFiltered(self,image,histograms,title,chesspattern):
+    def getColorFiltered(self,image,histograms,title,corners):
         colorFiltered={}
         for filterColor in (True,False):
             histogram=histograms[filterColor]
@@ -170,52 +196,31 @@ class BoardFinder(object):
             colorFiltered[filterColor]=self.video.maskImage(imageCopy,colorMask)
             if BoardFinder.debug:
                 prefix="colorFiltered-O-" if filterColor else "colorFiltered-X-"
-                self.writeDebug(colorFiltered[filterColor], title, prefix, chesspattern)
+                corners.writeDebug(colorFiltered[filterColor], title, prefix)
         return colorFiltered        
            
-    def expand(self,image,title):
-        foundPolygons=self.toPolygons()
-        for chesspattern in foundPolygons.keys():
-            polygons=foundPolygons[chesspattern]
-            self.histograms=self.getHistograms(image, title, chesspattern, polygons)
-            if BoardFinder.debug:
-                self.showHistogramDebug(self.histograms,title,chesspattern)
-            self.colorFiltered=self.getColorFiltered(image,self.histograms,title,chesspattern)                 
+    def expand(self,image,title,histograms,corners):
+        self.colorFiltered=self.getColorFiltered(image,histograms,title,corners)                 
         
     def drawPolygon(self,image,pos,polygon,whiteColor,blackColor):    
         posColor=self.fieldColor(pos)
         color=blackColor if posColor else whiteColor
         cv2.fillConvexPoly(image,polygon,color)
         
-    def showHistogramDebug(self,histograms,title,chesspattern):
-        rows,cols=chesspattern    
+    def showPolygonDebug(self,image,title,corners):
+        imagecopy=image.copy()
+        polygons=corners.polygons[0]
+        for pos,polygon in polygons.items():
+            self.drawPolygon(imagecopy, pos, polygon, BoardFinder.lightGrey,BoardFinder.darkGrey)
+        corners.writeDebug(imagecopy,title, "polygons")          
+        
+    def showHistogramDebug(self,histograms,title,corners): 
         Environment.checkDir(self.debugImagePath)  
         fig,axes=histograms[True].preparePlot(2,2)
         histograms[True].plotRow(axes[0,0],axes[0,1])
         histograms[False].plotRow(axes[1,0],axes[1,1])
         prefix="histogram"
-        filepath=self.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,rows,cols)
-        histograms[False].savefig(fig,filepath)    
-        
-    def showPolygonDebug(self,title):
-        for chesspattern,corners in self.found.items():
-            imagecopy=self.image.copy()
-            polygons=corners.asPolygons()
-            for pos,polygon in polygons.items():
-                self.drawPolygon(imagecopy, pos, polygon, BoardFinder.lightGrey,BoardFinder.darkGrey)
-            self.writeDebug(imagecopy,title, "polygons", chesspattern)     
-               
-    def showDebug(self,title):
-        """ 'show' the debug picture of the chessboard corners by drawing the corners and writing the result to the given testImagePath"""
-        for chesspattern in self.found.keys():
-            corners=self.found[chesspattern]
-            imageCopy=self.image.copy()
-            cv2.drawChessboardCorners(imageCopy, chesspattern, corners.corners, patternWasFound=True)
-            #cv2.imshow('corners', self.image)
-            #cv2.waitKey(50)
-            self.writeDebug(imageCopy,title,"corners",chesspattern)
+        filepath=self.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,corners.rows,corners.cols)
+        histograms[False].savefig(fig,filepath)       
             
-    def writeDebug(self,image,title,prefix,chesspattern):        
-        Environment.checkDir(self.debugImagePath)    
-        rows,cols=chesspattern   
-        cv2.imwrite(self.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,rows,cols),image)       
+        
