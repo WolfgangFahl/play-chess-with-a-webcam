@@ -28,13 +28,46 @@ class Corners(object):
     
     def findPattern(self,image):
         """ try finding the chess board corners in the given image with the given pattern """
-        h,w = image.shape[:2]
+        self.h,self.w = image.shape[:2]
+    
         start=timer()
         ret, self.corners = cv2.findChessboardCorners(image, self.pattern, None)
         end=timer()
         if Corners.debug:
-            print ("%dx%d in %dx%d after %.3f s: %s" % (self.rows,self.cols,w,h,(end-start),"✔" if ret else "❌"))
-        return ret    
+            print ("%dx%d in %dx%d after %.3f s: %s" % (self.rows,self.cols,self.w,self.h,(end-start),"✔" if ret else "❌"))
+        return ret
+    
+    def safeXY(self,x,y,dx,dy):
+        x=x+dx;
+        y=y+dy
+        if y>=self.h: y=self.h-1
+        if y<0: y=0
+        if x>=self.w: x=self.w-1
+        if x<0: x=0
+        return (x,y)
+    
+    def asPolygons(self,safetyMargin=0):   
+        """ get the polygons for the given list of corner points"""  
+        # reshape the array 
+        cps=np.reshape(self.corners,(self.cols,self.rows,2))
+        polygons={}
+        m=safetyMargin
+        for col in range(self.cols-1):
+                for row in range (self.rows-1):
+                    x1,y1=cps[col,row]      # top left
+                    x2,y2=cps[col+1,row]    # left bottom
+                    x3,y3=cps[col+1,row+1]  # right bottom
+                    x4,y4=cps[col,row+1]    # top right
+                    clockwise=BoardFinder.sortPoints([(x1,y1),(x2,y2),(x3,y3),(x4,y4)])
+                    (x1,y1),(x2,y2),(x3,y3),(x4,y4)=clockwise
+                    # https://stackoverflow.com/questions/19190484/what-is-the-opencv-findchessboardcorners-convention
+                    polygon=np.array([
+                        self.safeXY(x1,y1,+m,+m),
+                        self.safeXY(x2,y2,-m,+m),
+                        self.safeXY(x3,y3,-m,-m),
+                        self.safeXY(x4,y4,+m,-m)],dtype=np.int32)
+                    polygons[(row,col)]=polygon
+        return polygons 
    
 # Board Finder
 class BoardFinder(object):
@@ -97,41 +130,8 @@ class BoardFinder(object):
         foundPolygons={}
         for chesspattern in self.found.keys():
             corners=self.found[chesspattern]
-            foundPolygons[chesspattern]=self.asPolygons(chesspattern,corners.corners,safetyMargin)
+            foundPolygons[chesspattern]=corners.asPolygons(safetyMargin)
         return foundPolygons
-    
-    def safeXY(self,x,y,dx,dy):
-        x=x+dx;
-        y=y+dy
-        if y>=self.height: y=self.height-1
-        if y<0: y=0
-        if x>=self.width: x=self.width-1
-        if x<0: x=0
-        return (x,y)
-    
-    def asPolygons(self,chesspattern,corners,safetyMargin=0):   
-        """ get the polygons for the given list of corner points"""  
-        rows,cols=chesspattern
-        # reshape the array 
-        cps=np.reshape(corners,(cols,rows,2))
-        polygons={}
-        m=safetyMargin
-        for col in range(cols-1):
-                for row in range (rows-1):
-                    x1,y1=cps[col,row]      # top left
-                    x2,y2=cps[col+1,row]    # left bottom
-                    x3,y3=cps[col+1,row+1]  # right bottom
-                    x4,y4=cps[col,row+1]    # top right
-                    clockwise=BoardFinder.sortPoints([(x1,y1),(x2,y2),(x3,y3),(x4,y4)])
-                    (x1,y1),(x2,y2),(x3,y3),(x4,y4)=clockwise
-                    # https://stackoverflow.com/questions/19190484/what-is-the-opencv-findchessboardcorners-convention
-                    polygon=np.array([
-                        self.safeXY(x1,y1,+m,+m),
-                        self.safeXY(x2,y2,-m,+m),
-                        self.safeXY(x3,y3,-m,-m),
-                        self.safeXY(x4,y4,+m,-m)],dtype=np.int32)
-                    polygons[(row,col)]=polygon
-        return polygons 
     
     def fieldColor(self,pos):
         row,col=pos
@@ -200,7 +200,7 @@ class BoardFinder(object):
     def showPolygonDebug(self,title):
         for chesspattern,corners in self.found.items():
             imagecopy=self.image.copy()
-            polygons=self.asPolygons(chesspattern, corners.corners)
+            polygons=corners.asPolygons()
             for pos,polygon in polygons.items():
                 self.drawPolygon(imagecopy, pos, polygon, BoardFinder.lightGrey,BoardFinder.darkGrey)
             self.writeDebug(imagecopy,title, "polygons", chesspattern)     

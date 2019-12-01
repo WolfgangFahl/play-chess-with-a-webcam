@@ -1,14 +1,15 @@
 #!/usr/bin/python
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.boardfinder import BoardFinder
+from pcwawc.boardfinder import BoardFinder,Corners
 from pcwawc.Environment4Test import Environment4Test
 from timeit import default_timer as timer
-
+import chess
 testEnv = Environment4Test()
 
 # test finding a chess board
 def test_findBoard():
     BoardFinder.debug=True
+    Corners.debug=True
     startt=timer()
     for imageInfo in testEnv.imageInfos:
         title=imageInfo["title"]
@@ -18,6 +19,13 @@ def test_findBoard():
         found=finder.find(limit=1,searchWidth=360)
         # we expected to find a board
         assert(len(found)==1)
+        chesspattern=next(iter(found))
+        corners=found[chesspattern]
+        if fen==chess.STARTING_BOARD_FEN:
+            assert corners.rows<=corners.cols
+        else:
+            assert corners.rows==corners.cols    
+        
         if BoardFinder.debug:
             finder.showDebug(title)
             finder.showPolygonDebug(title)
