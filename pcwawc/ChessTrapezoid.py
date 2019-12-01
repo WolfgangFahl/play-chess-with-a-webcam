@@ -15,7 +15,39 @@ class Transformation(IntEnum):
     IDEAL=1 # e.g. 640x640
     ORIGINAL=2 # whatever the image size is
     
-class ChessTrapezoid:
+    
+class Trapez2Square:
+    """ transform a trapez to a square and back as needed"""
+    def __init__(self):
+        pass    
+    
+    def setup(self,topLeft,topRight,bottomRight,bottomLeft):
+        """ construct me from the given corner points"""
+        self.tl,self.tr,self.br,self.bl=topLeft,topRight,bottomRight,bottomLeft
+        self.polygon=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
+        # prepare the perspective transformation
+        # https://stackoverflow.com/questions/27585355/python-open-cv-perspectivetransform
+        # https://stackoverflow.com/a/41768610/1497139
+        # the destination
+        self.pts_dst = np.asarray([topLeft,topRight,bottomRight,bottomLeft],dtype=np.float32)
+        # the normed square described as a polygon in clockwise direction with an origin at top left
+        self.pts_normedSquare = np.asarray([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],dtype=np.float32)
+        self.transform=cv2.getPerspectiveTransform(self.pts_normedSquare,self.pts_dst)
+        
+    def relativeToTrapezXY(self,rx,ry):
+        """ convert a relative 0-1 based coordinate to a coordinate in the trapez"""
+        # see https://math.stackexchange.com/questions/2084647/obtain-two-dimensional-linear-space-on-trapezoid-shape
+        # https://stackoverflow.com/a/33303869/1497139
+        rxry = np.asarray([[rx, ry]],dtype=np.float32)
+        # target array - values are irrelevant because the will be overridden
+        xya=cv2.perspectiveTransform(np.array([rxry]),self.transform)
+        # example result:
+        # ndarray: [[[20. 40.]]]
+        xy=xya[0][0]
+        x,y=xy[0],xy[1]
+        return x,y    
+    
+class ChessTrapezoid(Trapez2Square):
     """ Chess board Trapezoid (UK) / Trapezium (US) / Trapez (DE)  as seen via a webcam image """
 
     debug=False
@@ -28,6 +60,7 @@ class ChessTrapezoid:
     DiffSumMovingAverageLength=5
   
     def __init__(self,trapezPoints,idealSize=640,rotation=0,video=None):
+        super().__init__() 
         self.rotation=rotation
         #trapezPoints=[topLeft,topRight,bottomRight,bottomLeft]
         shifts=self.rotation//90
@@ -38,24 +71,14 @@ class ChessTrapezoid:
         self.setup(topLeft,topRight,bottomRight,bottomLeft,idealSize,video)
         
     def setup(self,topLeft,topRight,bottomRight,bottomLeft,idealSize=640,video=None):    
-        """ construct me from the given corner points"""
-        self.tl,self.tr,self.br,self.bl=topLeft,topRight,bottomRight,bottomLeft
-        self.polygon=np.array([topLeft,topRight,bottomRight,bottomLeft],dtype=np.int32)
+        super().setup(topLeft,topRight,bottomRight,bottomLeft)
         # video access (for debugging and partly hiding open cv details)
         if video is None:
             self.video=Video()
-        # prepare the perspective transformation
-        # https://stackoverflow.com/questions/27585355/python-open-cv-perspectivetransform
-        # https://stackoverflow.com/a/41768610/1497139
-        # the destination
-        pts_dst = np.asarray([topLeft,topRight,bottomRight,bottomLeft],dtype=np.float32)
-        # the normed square described as a polygon in clockwise direction with an origin at top left
-        self.pts_normedSquare = np.asarray([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],dtype=np.float32)
-        self.transform=cv2.getPerspectiveTransform(self.pts_normedSquare,pts_dst)
         self.idealSize=idealSize
         s=idealSize
         self.pts_IdealSquare = np.asarray([[0.0, 0.0], [s, 0.0], [s, s], [0.0, s]],dtype=np.float32)
-        self.inverseTransform=cv2.getPerspectiveTransform(pts_dst,self.pts_IdealSquare)
+        self.inverseTransform=cv2.getPerspectiveTransform(self.pts_dst,self.pts_IdealSquare)
         self.rotation=0
         # dict for average Colors
         self.averageColors={}
@@ -72,19 +95,6 @@ class ChessTrapezoid:
         x=int(rx*self.idealSize)
         y=int(ry*self.idealSize)
         return x,y        
-    
-    def relativeToTrapezXY(self,rx,ry):
-        """ convert a relative 0-1 based coordinate to a coordinate in the trapez"""
-        # see https://math.stackexchange.com/questions/2084647/obtain-two-dimensional-linear-space-on-trapezoid-shape
-        # https://stackoverflow.com/a/33303869/1497139
-        rxry = np.asarray([[rx, ry]],dtype=np.float32)
-        # target array - values are irrelevant because the will be overridden
-        xya=cv2.perspectiveTransform(np.array([rxry]),self.transform)
-        # example result:
-        # ndarray: [[[20. 40.]]]
-        xy=xya[0][0]
-        x,y=xy[0],xy[1]
-        return x,y
 
     def tSquareAt(self,row,col,rotation=0):
         """ get the trapezoid chessboard square for the given row and column"""

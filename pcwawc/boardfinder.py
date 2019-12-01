@@ -27,8 +27,9 @@ class Corners(object):
         
     @staticmethod
     def genChessPatterns():
+        """ generate the patterns 7x7, 5x7, 3x7, 5x5, 5x3, 3x3 """
         for rows in range(7,2,-2):
-            for cols in range(7,rows-1,-2):  
+            for cols in range(7,rows-2,-2):  
                 yield (rows,cols) 
     
     def findPattern(self,image):
@@ -43,6 +44,7 @@ class Corners(object):
         return ret
     
     def safeXY(self,x,y,dx,dy):
+        """ return the given x,y tuple shifted by dx,dy making sure the result is not out of my width and height bounds"""
         x=x+dx;
         y=y+dy
         if y>=self.h: y=self.h-1
