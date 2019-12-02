@@ -30,10 +30,15 @@ def test_findBoard():
         histograms=finder.getHistograms(image, title, corners)
         
         if BoardFinder.debug:
-            finder.showHistogramDebug(histograms,title,corners)
+            # wait for background histogram to be available -- see a few lines below
+            #finder.showHistogramDebug(histograms,title,corners)
             finder.showPolygonDebug(image,title,corners)
-        finder.expand(image,title,histograms,corners)               
-    endt=timer()
+            
+        finder.expand(image,title,histograms,corners)     
+                  
+        if BoardFinder.debug:
+            finder.showHistogramDebug(histograms,title,corners)
+        endt=timer()
     if BoardFinder.debug:
         print ("found %d chessboards in %.1f s" % (len(testEnv.imageInfos),(endt-startt)))
     

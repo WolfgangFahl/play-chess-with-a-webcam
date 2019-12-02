@@ -302,7 +302,10 @@ class BoardFinder(object):
         backGroundFilter=cv2.bitwise_not(cv2.bitwise_or(colorMask[chess.WHITE],colorMask[chess.BLACK]))
         imageCopy=image.copy()  
         colorFiltered["background"]=self.video.maskImage(imageCopy,backGroundFilter)
-        corners.writeDebug(colorFiltered["background"],title,"colorFiltered-background-")   
+        if BoardFinder.debug:
+            corners.writeDebug(colorFiltered["background"],title,"colorFiltered-background-")   
+            # side effect - add background histogram
+            histograms["background"]=Histogram(colorFiltered["background"],histRange=(1,256))
         return colorFiltered
            
     def expand(self,image,title,histograms,corners):
@@ -348,10 +351,12 @@ class BoardFinder(object):
         corners.writeDebug(imagecopy,title, "polygons")          
         
     def showHistogramDebug(self,histograms,title,corners): 
+        """ 'show' the debug information for the given histograms by writing a plotted histogram image to the debugImagePath """
         Environment.checkDir(self.debugImagePath)  
-        fig,axes=histograms[True].preparePlot(2,2)
+        fig,axes=histograms[True].preparePlot(3,2)
         histograms[True].plotRow(axes[0,0],axes[0,1])
         histograms[False].plotRow(axes[1,0],axes[1,1])
+        histograms["background"].plotRow(axes[2,0],axes[2,1])
         prefix="histogram"
         filepath=self.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,corners.rows,corners.cols)
         histograms[False].savefig(fig,filepath)       
