@@ -158,8 +158,8 @@ class Corners(object):
         
     def writeDebug(self,image,title,prefix):        
         Environment.checkDir(BoardFinder.debugImagePath)    
-        cv2.imwrite(BoardFinder.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,self.rows,self.cols),image)        
-   
+        cv2.imwrite(BoardFinder.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,self.rows,self.cols),image)    
+           
 # Board Finder
 class BoardFinder(object):
     """ find a chess board in the given image """
@@ -285,15 +285,21 @@ class BoardFinder(object):
         return histograms    
     
     def getColorFiltered(self,image,histograms,title,corners):
+        """ get color filtered images based on the given histograms """
         colorFiltered={}
+        colorMask={}
         for filterColor in (chess.WHITE,chess.BLACK):
             histogram=histograms[filterColor]
             imageCopy=image.copy()
-            colorMask=histogram.colorMask(imageCopy, 1.5)
-            colorFiltered[filterColor]=self.video.maskImage(imageCopy,colorMask)
+            colorMask[filterColor]=histogram.colorMask(imageCopy, 1.5)
+            colorFiltered[filterColor]=self.video.maskImage(imageCopy,colorMask[filterColor])
             if BoardFinder.debug:
                 prefix="colorFiltered-white-" if filterColor==chess.WHITE else "colorFiltered-black-"
                 corners.writeDebug(colorFiltered[filterColor], title, prefix)
+        backGroundFilter=cv2.bitwise_not(cv2.bitwise_or(colorMask[chess.WHITE],colorMask[chess.BLACK]))
+        imageCopy=image.copy()  
+        colorFiltered["background"]=self.video.maskImage(imageCopy,backGroundFilter)
+        corners.writeDebug(colorFiltered["background"],title,"colorFiltered-background-")   
         return colorFiltered
            
     def expand(self,image,title,histograms,corners):
@@ -310,13 +316,14 @@ class BoardFinder(object):
         masked10x10=white10x10+masked8x8
         if BoardFinder.debug:
             corners.writeDebug(masked10x10,title,"trapez-white")
-        gray8x8,fullSizeGray8x8=self.preparefindCorners(masked10x10)
-        corners8x8=Corners((9,9),self.video)
-        if corners8x8.findPattern(fullSizeGray8x8):
-            if BoardFinder.debug:
-                print("Successfully found 8x8 for %s"+title)
-                corners8x8.showDebug(self.image,title)     
-        self.colorFiltered=self.getColorFiltered(image,histograms,title,corners)                 
+        # 9x9 test fails due to a few pixels which are in the way
+        # commented out to speed up
+        #gray8x8,fullSizeGray8x8=self.preparefindCorners(masked10x10)
+        #corners8x8=Corners((9,9),self.video)
+        #if corners8x8.findPattern(fullSizeGray8x8):
+        #    if BoardFinder.debug:
+        #        print("Successfully found 8x8 for %s"+title)
+        self.colorFiltered=self.getColorFiltered(masked8x8,histograms,title,corners)                 
         
     def drawPolygon(self,image,pos,polygon,whiteColor,blackColor):    
         posColor=self.fieldColor(pos)
