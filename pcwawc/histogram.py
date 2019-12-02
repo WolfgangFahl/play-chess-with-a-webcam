@@ -34,6 +34,12 @@ class Stats:
         self.stdv=math.sqrt(self.variance)
         self.maxdelta=max(self.mean-self.min,self.max-self.mean)
         self.factor=self.maxdelta/self.stdv
+        
+    def range(self,relFactor=1.0):
+        """ return a range relative to ower min max range to widen e.g. by 10% use factor 1.1"""
+        lower=self.mean-self.stdv*self.factor*relFactor
+        upper=self.mean+self.stdv*self.factor*relFactor
+        return lower,upper    
    
 class Histogram:
     """ Image Histogram """
@@ -65,7 +71,15 @@ class Histogram:
         self.time=end-start
         
     def fix(self,value):
-        return 0 if value<0 else 255 if value>255 else value    
+        return 0 if value<0 else 255 if value>255 else value   
+    
+    def range(self,relFactor=1.0): 
+        bstats,gstats,rstats=self.stats[0],self.stats[1],self.stats[2]
+        bl,bu=bstats.range(relFactor)
+        gl,gu=gstats.range(relFactor)
+        rl,ru=rstats.range(relFactor)
+        #return np.array([bl,gl,rl],dtype = 'uint8'),np.array([bu,gu,ru],dtype='uint8')
+        return (bl,gl,rl),(bu,gu,ru)
         
     def colorRangeWithFactor(self,rangeFactor):
         b,g,r=self.color

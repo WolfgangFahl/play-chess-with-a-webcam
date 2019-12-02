@@ -294,7 +294,11 @@ class BoardFinder(object):
         for filterColor in (chess.WHITE,chess.BLACK):
             histogram=histograms[filterColor]
             imageCopy=image.copy()
-            colorMask[filterColor]=histogram.colorMask(imageCopy, 1.5)
+            lowerColor,upperColor=histogram.range(1.15)
+            #lower,upper=histogram.mincolor, histogram.maxcolor
+            #if 1==3: print (lower,upper)
+            colorMask[filterColor]=cv2.inRange(imageCopy,lowerColor,upperColor)
+            #colorMask[filterColor]=histogram.colorMask(imageCopy, 1.5)
             colorFiltered[filterColor]=self.video.maskImage(imageCopy,colorMask[filterColor])
             if BoardFinder.debug:
                 prefix="colorFiltered-white-" if filterColor==chess.WHITE else "colorFiltered-black-"

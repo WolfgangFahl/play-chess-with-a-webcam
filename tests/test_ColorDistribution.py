@@ -27,6 +27,7 @@ def test_Stats():
     assert stats.max==31
     assert stats.maxdelta==4.059999999999999
     assert stats.factor==2.129071316455438
+    assert stats.range(1.5)==(20.85, 33.03)
 
     
 def test_Histogram():
@@ -44,4 +45,4 @@ def test_Histogram():
         histogram.save(imgPath+title+"-histogram.jpg")
     
 test_Stats()    
-test_Histogram()
+#test_Histogram()
