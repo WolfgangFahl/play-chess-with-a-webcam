@@ -195,7 +195,7 @@ class BoardFinder(object):
     
     def findOuterCorners(self,searchWidth=640):
         """ find my outer corners as limited by the OpenCV findChessBoard algorithm - to be later expanded"""
-        found=self.findCorners(limit=1,searchWidth=searchWidth)
+        found=self.findCorners(self.image,limit=1,searchWidth=searchWidth)
         # we expected to find a board
         if len(found)!=1:
             raise Exception("no corners found")
@@ -204,21 +204,25 @@ class BoardFinder(object):
         corners.calcPolygons(0,Corners.safetyMargin)
         corners.calcTrapez()
         return corners
-       
-    def findCorners(self,limit=1,searchWidth=640):
-        """ start finding the chessboard with the given limit and the given maximum width of the search image """
-        startt=timer()
+    
+    def preparefindCorners(self,image,searchWidth=640):
         sw=self.width
         sh=self.height
         if sw>searchWidth:
             sw=searchWidth
             sh=self.height*sw//self.width
-        self.searchimage=cv2.resize(self.image,(sw,sh))
+        searchimage=cv2.resize(self.image,(sw,sh))
         if BoardFinder.debug:
             print("BoardFinder for %dx%d image resized to %dx%d" % (self.width, self.height,sw,sh))
 
-        gray = cv2.cvtColor(self.searchimage, cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(searchimage, cv2.COLOR_BGR2GRAY)
         fullSizeGray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        return gray,fullSizeGray
+        
+    def findCorners(self,image,limit=1,searchWidth=640):
+        """ start finding the chessboard with the given limit and the given maximum width of the search image """
+        startt=timer()
+        gray,fullSizeGray=self.preparefindCorners(image, searchWidth)
         self.found={}
         for chesspattern in Corners.genChessPatterns():
             corners=Corners(chesspattern,self.video)
@@ -237,6 +241,13 @@ class BoardFinder(object):
         oddeven=1 if self.topleft==chess.WHITE else 0
         color=chess.WHITE if (col+row) % 2 == oddeven else chess.BLACK
         return color
+    
+    def maskPolygon(self,image,polygon):
+        """ mask the given image with the given polygon """
+        mask=self.video.getEmptyImage(image)
+        cv2.fillConvexPoly(mask,polygon,BoardFinder.white)
+        masked=self.video.maskImage(image,mask)
+        return masked
     
     def maskCornerPolygons(self,image,corners,filterColor):
         """ mask the polygons derived from the given corner points"""
@@ -289,10 +300,22 @@ class BoardFinder(object):
         if BoardFinder.debug:
             corners.showTrapezDebug(image, title, corners)
         # create a mask for the 
-        mask=self.video.getEmptyImage(image)
-        cv2.fillConvexPoly(mask,corners.trapez8x8,(255,255,255))
-        masked=self.video.maskImage(image,mask)
-        corners.writeDebug(masked,title,"trapez-masked")
+        masked8x8=self.maskPolygon(image,corners.trapez8x8)
+        if BoardFinder.debug:
+            corners.writeDebug(masked8x8,title,"trapez-masked")
+        # draw a 10x10 sized white trapez
+        white10x10=self.video.getEmptyImage(image)
+        cv2.fillConvexPoly(white10x10,corners.trapez10x10,BoardFinder.white)
+        cv2.fillConvexPoly(white10x10,corners.trapez8x8,BoardFinder.black)
+        masked10x10=white10x10+masked8x8
+        if BoardFinder.debug:
+            corners.writeDebug(masked10x10,title,"trapez-white")
+        gray8x8,fullSizeGray8x8=self.preparefindCorners(masked10x10)
+        corners8x8=Corners((9,9),self.video)
+        if corners8x8.findPattern(fullSizeGray8x8):
+            if BoardFinder.debug:
+                print("Successfully found 8x8 for %s"+title)
+                corners8x8.showDebug(self.image,title)     
         self.colorFiltered=self.getColorFiltered(image,histograms,title,corners)                 
         
     def drawPolygon(self,image,pos,polygon,whiteColor,blackColor):    
