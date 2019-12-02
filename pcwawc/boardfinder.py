@@ -102,6 +102,7 @@ class Corners(object):
             self.polygons[safetyMargin]=self.asPolygons(safetyMargin)
             
     def calcTrapez(self):
+        """ calculate the relevant quadrilaterals """
         corners=self.corners
         l=len(self.corners)
         rowend=self.rows-1
@@ -110,6 +111,9 @@ class Corners(object):
         self.bottomRight=corners[l-1]
         self.bottomLeft=corners[l-1-rowend]
         self.trapez2Square=Trapez2Square(self.topLeft,self.topRight,self.bottomRight,self.bottomLeft)
+        self.trapez8x8=self.trapezColRows(8,8)
+        self.trapez10x10=self.trapezColRows(10,10)
+        self.trapez=self.trapez2Square.relativeTrapezToTrapezXY(0,0,1,1)
         pass
     
     def trapezColRows(self,cols,rows):
@@ -118,6 +122,17 @@ class Corners(object):
         relDeltaCols=(cols/(self.cols-1)-1)/2
         trapez=self.trapez2Square.relativeTrapezToTrapezXY(-relDeltaRows,-relDeltaCols,1+relDeltaRows,1+relDeltaCols)
         return trapez
+    
+    def showTrapezDebug(self,image,title,corners):    
+        overlay=image.copy()
+        # draw polytons from outer to inner
+        cv2.fillConvexPoly(overlay,self.trapez10x10,(0,165,255)) # orange
+        cv2.fillConvexPoly(overlay,self.trapez8x8,(128,128,128)) # grey
+        cv2.fillConvexPoly(overlay,self.trapez,(225,105,65))     # royal blue
+        alpha = 0.8  # Transparency factor.
+        # overlay the 
+        imageAlpha = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
+        corners.writeDebug(imageAlpha,title,"trapez")
             
     def showDebug(self,image,title):
         """ 'show' the debug picture of the chessboard corners by drawing the corners and writing the result to the given testImagePath"""
@@ -265,23 +280,11 @@ class BoardFinder(object):
             if BoardFinder.debug:
                 prefix="colorFiltered-white-" if filterColor==chess.WHITE else "colorFiltered-black-"
                 corners.writeDebug(colorFiltered[filterColor], title, prefix)
-        return colorFiltered    
-    
-        
+        return colorFiltered
            
     def expand(self,image,title,histograms,corners):
-        trapez8x8=corners.trapezColRows(8,8)
-        trapez10x10=corners.trapezColRows(10,10)
-        trapez=corners.trapez2Square.relativeTrapezToTrapezXY(0,0,1,1)
         if BoardFinder.debug:
-            overlay=image.copy()
-            cv2.fillConvexPoly(overlay,trapez10x10,(0,128,255))
-            cv2.fillConvexPoly(overlay,trapez8x8,(128,128,128))
-            cv2.fillConvexPoly(overlay,trapez,(255,0,0))
-            alpha = 0.8  # Transparency factor.
-            # overlay the 
-            imageAlpha = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
-            corners.writeDebug(imageAlpha,title,"trapez")
+            corners.showTrapezDebug(image, title, corners)
             
         self.colorFiltered=self.getColorFiltered(image,histograms,title,corners)                 
         
