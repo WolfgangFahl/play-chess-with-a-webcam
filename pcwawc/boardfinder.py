@@ -42,6 +42,7 @@ class Corners(object):
         return x,y
                 
     def sort(self):
+        """ sort the corners - this step is currently not implemented so the corners stay rotated"""
         if Corners.debugSorting:
             print ("trying to sort %d points" % (len(self.corners)))
         cornerssorted=sorted(self.corners,key=Corners.sortXY)
@@ -124,6 +125,7 @@ class Corners(object):
         return trapez
     
     def showTrapezDebug(self,image,title,corners):    
+        """ 'show' a debug picture with the extrapolated quadrilaterals by writing an image to the debugImagePath """
         overlay=image.copy()
         # draw polytons from outer to inner
         cv2.fillConvexPoly(overlay,self.trapez10x10,(0,165,255)) # orange
@@ -236,7 +238,8 @@ class BoardFinder(object):
         color=chess.WHITE if (col+row) % 2 == oddeven else chess.BLACK
         return color
     
-    def maskPolygon(self,image,corners,filterColor):
+    def maskCornerPolygons(self,image,corners,filterColor):
+        """ mask the polygons derived from the given corner points"""
         mask=self.video.getEmptyImage(image)
         polygons=corners.polygons[Corners.safetyMargin]
         for pos,polygon in polygons.items():
@@ -254,7 +257,7 @@ class BoardFinder(object):
         histograms={}
         for filterColor in (True,False):
             imageCopy=image.copy()
-            masked=self.maskPolygon(imageCopy, corners, filterColor)
+            masked=self.maskCornerPolygons(imageCopy, corners, filterColor)
             if BoardFinder.debug:
                 prefix="masked-O-" if filterColor else "masked-X-"
                 corners.writeDebug(masked,title, prefix)
@@ -285,7 +288,11 @@ class BoardFinder(object):
     def expand(self,image,title,histograms,corners):
         if BoardFinder.debug:
             corners.showTrapezDebug(image, title, corners)
-            
+        # create a mask for the 
+        mask=self.video.getEmptyImage(image)
+        cv2.fillConvexPoly(mask,corners.trapez8x8,(255,255,255))
+        masked=self.video.maskImage(image,mask)
+        corners.writeDebug(masked,title,"trapez-masked")
         self.colorFiltered=self.getColorFiltered(image,histograms,title,corners)                 
         
     def drawPolygon(self,image,pos,polygon,whiteColor,blackColor):    
