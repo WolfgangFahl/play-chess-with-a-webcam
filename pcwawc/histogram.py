@@ -31,8 +31,10 @@ class Stats:
             self.sqsum+=y*dx*dx
         # σ²
         self.variance=self.sqsum/self.sum
-        self.stdv=math.sqrt(self.variance)    
-
+        self.stdv=math.sqrt(self.variance)
+        self.maxdelta=max(self.mean-self.min,self.max-self.mean)
+        self.factor=self.maxdelta/self.stdv
+   
 class Histogram:
     """ Image Histogram """
     colors = ('blue','green','red')
@@ -55,23 +57,17 @@ class Histogram:
         self.color=(bstats.mean,gstats.mean,rstats.mean)
         self.mincolor=(bstats.min,gstats.min,rstats.min)
         self.maxcolor=(bstats.max,gstats.max,rstats.max)
-        self.maxdelta=(
-            self.delta(bstats.min,bstats.mean,bstats.max),
-            self.delta(gstats.min,gstats.mean,gstats.max),
-            self.delta(rstats.min,rstats.mean,rstats.max)
-        )
+        self.maxdelta=(bstats.maxdelta,gstats.maxdelta,rstats.maxdelta)
+        # here we are using the color information! This should make the difference!
+        self.factor=(bstats.factor,gstats.factor,rstats.factor)
         self.stdv=(bstats.stdv,gstats.stdv,rstats.stdv)
         end=timer()
         self.time=end-start
         
-    def delta(self,minv,meanv,maxv):
-        d=max(meanv-minv,maxv-meanv)
-        return d    
-        
     def fix(self,value):
         return 0 if value<0 else 255 if value>255 else value    
         
-    def colorRangeWitFactor(self,rangeFactor):
+    def colorRangeWithFactor(self,rangeFactor):
         b,g,r=self.color
         bs,gs,rs=self.stdv
         rf=rangeFactor
@@ -80,6 +76,7 @@ class Histogram:
         return lower,upper    
     
     def colorMask(self,image,rangeFactor):
+        """ create a color mask for this histogram and apply it to the given image"""
         #lower,upper=self.colorRange(rangeFactor)
         lower,upper=self.mincolor,self.maxcolor
         colorMask=cv2.inRange(image,lower,upper)
