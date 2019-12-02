@@ -237,8 +237,11 @@ class BoardFinder(object):
         return self.found
     
     def fieldColor(self,pos):
+        """ determine the field color at the given position"""
         row,col=pos
+        # the color of the topleft field might be different then A8=WHITE when we have a rotated image
         oddeven=1 if self.topleft==chess.WHITE else 0
+        # calculate the chessboard color of the given position based on the topleft color
         color=chess.WHITE if (col+row) % 2 == oddeven else chess.BLACK
         return color
     
@@ -303,6 +306,7 @@ class BoardFinder(object):
         return colorFiltered
            
     def expand(self,image,title,histograms,corners):
+        """ expand the image finding to 8x8 with the given histograms and corners that are e.g. 7x7,7x5,5x5, ..."""
         if BoardFinder.debug:
             corners.showTrapezDebug(image, title, corners)
         # create a mask for the 
