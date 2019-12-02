@@ -44,6 +44,9 @@ class Trapez2Square:
         x,y=xy[0],xy[1]
         return x,y    
     
+    def relativeTrapezToTrapezXY(self,rx1,ry1,rx2,ry2):
+        return np.asarray([self.relativeToTrapezXY(rx1,ry1),self.relativeToTrapezXY(rx2,ry1),self.relativeToTrapezXY(rx2,ry2),self.relativeToTrapezXY(rx1,ry2)],dtype=np.int32)
+    
 class ChessTrapezoid(Trapez2Square):
     """ Chess board Trapezoid (UK) / Trapezium (US) / Trapez (DE)  as seen via a webcam image """
 

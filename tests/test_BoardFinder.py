@@ -11,6 +11,7 @@ testEnv = Environment4Test()
 def test_findBoard():
     BoardFinder.debug=True
     Corners.debug=True
+    Corners.debugSorting=True
     startt=timer()
     for imageInfo in testEnv.imageInfos:
         title=imageInfo["title"]

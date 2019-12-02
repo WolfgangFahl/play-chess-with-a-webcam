@@ -6,6 +6,7 @@ import cv2
 from timeit import default_timer as timer
 from pcwawc.Environment import Environment
 from pcwawc.histogram import Histogram
+from pcwawc.ChessTrapezoid import Trapez2Square
 from pcwawc.Video import Video
 import numpy as np
 import math
@@ -16,13 +17,15 @@ class Corners(object):
     """ Chess board corners """
     
     debug=False
+    debugSorting=False
     """ pixel margin for masked polygons"""
     safetyMargin=5
     
-    def __init__(self,pattern):
+    def __init__(self,pattern,video):
         """ initialize me with the given rows and columns"""
         self.pattern=pattern
         self.rows,self.cols=pattern
+        self.video=video
         # prepare the dict for my polygons
         self.polygons={}
         
@@ -39,10 +42,10 @@ class Corners(object):
         return x,y
                 
     def sort(self):
-        if Corners.debug:
+        if Corners.debugSorting:
             print ("trying to sort %d points" % (len(self.corners)))
         cornerssorted=sorted(self.corners,key=Corners.sortXY)
-        if Corners.debug:
+        if Corners.debugSorting:
             print(cornerssorted)
         #self.corners = np.empty(shape=(len(self.corners),2),dtype=np.float32)
         #for i,val in enumerate(cornerssorted):
@@ -99,17 +102,39 @@ class Corners(object):
             self.polygons[safetyMargin]=self.asPolygons(safetyMargin)
             
     def calcTrapez(self):
-        polygons0=self.polygons[0]
-        self.topLeft=polygons0[(0,0)][0]
-        self.topRight=polygons0[self.cols-2,0][1]
-        self.bottomRight=polygons0[self.cols-2,self.rows-2][2]
-        self.bottomLeft=polygons0[0,self.rows-2][3]
+        corners=self.corners
+        l=len(self.corners)
+        rowend=self.rows-1
+        self.topLeft=corners[0]
+        self.topRight=corners[rowend]
+        self.bottomRight=corners[l-1]
+        self.bottomLeft=corners[l-1-rowend]
+        self.trapez2Square=Trapez2Square(self.topLeft,self.topRight,self.bottomRight,self.bottomLeft)
         pass
+    
+    def trapezColRows(self,cols,rows):
+        """ return an expanded trapez with the given number of columns and rows"""
+        relDeltaRows=(rows/(self.rows-1)-1)/2
+        relDeltaCols=(cols/(self.cols-1)-1)/2
+        trapez=self.trapez2Square.relativeTrapezToTrapezXY(-relDeltaRows,-relDeltaCols,1+relDeltaRows,1+relDeltaCols)
+        return trapez
             
     def showDebug(self,image,title):
         """ 'show' the debug picture of the chessboard corners by drawing the corners and writing the result to the given testImagePath"""
         imageCopy=image.copy()
         cv2.drawChessboardCorners(imageCopy, self.pattern, self.corners, patternWasFound=True)
+        if Corners.debugSorting:
+            index=0
+            for point in self.topLeft,self.topRight,self.bottomRight,self.bottomLeft:
+                text="%d" % (index)
+                x,y=point[0]
+                self.video.drawCenteredText(imageCopy, text, int(x), int(y), fontScale=1,fontBGRColor=(0,0,0))
+                index+=1
+        #if Corners.debugSorting:        
+        #    for index,corner in enumerate(self.corners):
+        #        x,y=corner[0]
+        #        text="%d" % (index)
+        #        self.video.drawCenteredText(imageCopy, text, int(x), int(y), fontScale=0.5,fontBGRColor=(128,128,128))  
         #cv2.imshow('corners', self.image)
         #cv2.waitKey(50)
         self.writeDebug(imageCopy,title,"corners")
@@ -179,7 +204,7 @@ class BoardFinder(object):
         fullSizeGray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         self.found={}
         for chesspattern in Corners.genChessPatterns():
-            corners=Corners(chesspattern)
+            corners=Corners(chesspattern,self.video)
             if corners.findPattern(gray) and corners.findPattern(fullSizeGray):
                 corners.sort()
                 self.found[chesspattern]=corners
@@ -240,26 +265,42 @@ class BoardFinder(object):
             if BoardFinder.debug:
                 prefix="colorFiltered-white-" if filterColor==chess.WHITE else "colorFiltered-black-"
                 corners.writeDebug(colorFiltered[filterColor], title, prefix)
-        return colorFiltered        
+        return colorFiltered    
+    
+        
            
     def expand(self,image,title,histograms,corners):
+        trapez8x8=corners.trapezColRows(8,8)
+        trapez10x10=corners.trapezColRows(10,10)
+        trapez=corners.trapez2Square.relativeTrapezToTrapezXY(0,0,1,1)
+        if BoardFinder.debug:
+            overlay=image.copy()
+            cv2.fillConvexPoly(overlay,trapez10x10,(0,128,255))
+            cv2.fillConvexPoly(overlay,trapez8x8,(128,128,128))
+            cv2.fillConvexPoly(overlay,trapez,(255,0,0))
+            alpha = 0.8  # Transparency factor.
+            # overlay the 
+            imageAlpha = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
+            corners.writeDebug(imageAlpha,title,"trapez")
+            
         self.colorFiltered=self.getColorFiltered(image,histograms,title,corners)                 
         
     def drawPolygon(self,image,pos,polygon,whiteColor,blackColor):    
         posColor=self.fieldColor(pos)
         color=blackColor if posColor else whiteColor
         cv2.fillConvexPoly(image,polygon,color)
-        if BoardFinder.debug:
-            row,col=pos
-            text="%d,%d" % (row,col)
-            x,y=BoardFinder.centerXY(polygon)
-            self.video.drawCenteredText(image, text, int(x), int(y), fontBGRColor=(255,0,0))
         
     def showPolygonDebug(self,image,title,corners):
+        """ draw polygons for debugging on a copy of the given image with the given corners and write result to the debugImagePath with the given title"""
         imagecopy=image.copy()
         polygons=corners.polygons[0]
         for pos,polygon in polygons.items():
             self.drawPolygon(imagecopy, pos, polygon, BoardFinder.lightGrey,BoardFinder.darkGrey)
+            if Corners.debugSorting:
+                row,col=pos
+                text="%d,%d" % (row,col)
+                x,y=BoardFinder.centerXY(polygon)
+                self.video.drawCenteredText(imagecopy, text, int(x), int(y), fontBGRColor=(255,0,0))      
         corners.writeDebug(imagecopy,title, "polygons")          
         
     def showHistogramDebug(self,histograms,title,corners): 
