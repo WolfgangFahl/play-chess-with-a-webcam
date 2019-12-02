@@ -34,11 +34,19 @@ class Corners(object):
                 yield (rows,cols) 
                 
     @staticmethod
-    def sortFirst(val):
-        return val[0][0]            
+    def sortXY(xy):
+        x,y=xy[0]
+        return x,y
                 
     def sort(self):
-        #self.corners.sort()
+        if Corners.debug:
+            print ("trying to sort %d points" % (len(self.corners)))
+        cornerssorted=sorted(self.corners,key=Corners.sortXY)
+        if Corners.debug:
+            print(cornerssorted)
+        #self.corners = np.empty(shape=(len(self.corners),2),dtype=np.float32)
+        #for i,val in enumerate(cornerssorted):
+        #    self.corners[i]=val
         pass            
     
     def findPattern(self,image):
