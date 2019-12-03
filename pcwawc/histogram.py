@@ -34,8 +34,9 @@ class Stats:
         self.stdv=math.sqrt(self.variance)
         self.maxdelta=max(self.mean-self.min,self.max-self.mean)
         self.factor=0 if self.stdv==0 else self.maxdelta/self.stdv
+        pass
         
-    def range(self,minValue=0,maxValue=255,relFactor=1.0):
+    def range(self,relFactor=1.0,minValue=0,maxValue=255):
         """ return a range relative to my min max range to widen e.g. by 10% use factor 1.1"""
         lower=self.mean-self.stdv*self.factor*relFactor
         if lower<minValue: lower=minValue
