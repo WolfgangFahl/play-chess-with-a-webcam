@@ -22,7 +22,7 @@ class Stats:
         for x,y in histindexed:
             self.sum+=y
             self.prod+=x*y
-        self.mean=self.prod/self.sum
+        self.mean=0 if self.sum==0 else self.prod/self.sum
         for x,y in histindexed:
             if y>0:
                 self.min=min(self.min,x)    
@@ -30,15 +30,17 @@ class Stats:
             dx=x-self.mean
             self.sqsum+=y*dx*dx
         # σ²
-        self.variance=self.sqsum/self.sum
+        self.variance=0 if self.sqsum==0 else self.sqsum/self.sum
         self.stdv=math.sqrt(self.variance)
         self.maxdelta=max(self.mean-self.min,self.max-self.mean)
-        self.factor=self.maxdelta/self.stdv
+        self.factor=0 if self.stdv==0 else self.maxdelta/self.stdv
         
-    def range(self,relFactor=1.0):
-        """ return a range relative to ower min max range to widen e.g. by 10% use factor 1.1"""
+    def range(self,minValue=0,maxValue=255,relFactor=1.0):
+        """ return a range relative to my min max range to widen e.g. by 10% use factor 1.1"""
         lower=self.mean-self.stdv*self.factor*relFactor
+        if lower<minValue: lower=minValue
         upper=self.mean+self.stdv*self.factor*relFactor
+        if upper>maxValue: upper=maxValue    
         return lower,upper    
    
 class Histogram:
@@ -50,10 +52,8 @@ class Histogram:
         self.hist={}
         self.stats={}
         self.image=image
-        self.rgb=cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
         
         start=timer()
-        
         # the upper boundary is exclusive
         for channel in range(len(Histogram.colors)):
             self.hist[channel] = cv2.calcHist([image], [channel], None, [histSize], histRange, accumulate=False)
@@ -102,6 +102,7 @@ class Histogram:
             print (vars(self.stats[channel])) 
     
     def plotRow(self,ax1,ax2):  
+        self.rgb=cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
         ax1.imshow(self.rgb), ax1.axis('off')
         for i,col in enumerate(Histogram.colors):
             ax2.plot(self.hist[i],color = col)

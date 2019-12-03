@@ -294,14 +294,22 @@ class BoardFinder(object):
         for filterColor in (chess.WHITE,chess.BLACK):
             histogram=histograms[filterColor]
             imageCopy=image.copy()
-            lowerColor,upperColor=histogram.range(1.15)
+            lowerColor,upperColor=histogram.range(1.0)
+            # if we would know that the empty fields would be the extreme colors we could do the following:
+            #if filterColor==chess.WHITE:
+            #    upperColor=(255,255,255)
+            #else:
+            #    lowerColor=(0,0,0)    
             #lower,upper=histogram.mincolor, histogram.maxcolor
-            #if 1==3: print (lower,upper)
             colorMask[filterColor]=cv2.inRange(imageCopy,lowerColor,upperColor)
             #colorMask[filterColor]=histogram.colorMask(imageCopy, 1.5)
             colorFiltered[filterColor]=self.video.maskImage(imageCopy,colorMask[filterColor])
             if BoardFinder.debug:
-                prefix="colorFiltered-white-" if filterColor==chess.WHITE else "colorFiltered-black-"
+                colorName="white" if filterColor==chess.WHITE else "black"
+                bl,gl,rl=lowerColor
+                bu,gu,ru=upperColor
+                print ("bgr %s: %3d-%3d, %3d-%3d, %3d-%3d" % (colorName,bl,bu,gl,gu,rl,ru))
+                prefix="colorFiltered-%s-" % (colorName)
                 corners.writeDebug(colorFiltered[filterColor], title, prefix)
         backGroundFilter=cv2.bitwise_not(cv2.bitwise_or(colorMask[chess.WHITE],colorMask[chess.BLACK]))
         imageCopy=image.copy()  
