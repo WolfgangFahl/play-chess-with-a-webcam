@@ -83,7 +83,7 @@ class WebApp:
         if self.video.frame is not None:
             try: 
                 finder = BoardFinder(self.video.frame,video=self.video)
-                corners=finder.findOuterCorners(searchWidth=360)
+                corners=finder.findOuterCorners()
                 title = 'corners_%s.jpg' % (self.video.fileTimeStamp())
                 histograms=finder.getHistograms(self.video.frame, title, corners)    
                 finder.expand(self.video.frame,title,histograms,corners)
