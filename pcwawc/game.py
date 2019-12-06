@@ -84,11 +84,13 @@ class Warp(YamlAbleMixin, JsonAbleMixin):
         self.updatePoints()
 
     def rotate(self, angle):
+        """ rotate me by the given angle"""
         self.rotation = self.rotation + angle
         if self.rotation >= 360:
             self.rotation = self.rotation % 360
 
     def updatePoints(self):
+        """ update my points"""
         pointLen = len(self.pointList)
         if pointLen == 0:
             self.points = None

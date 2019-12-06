@@ -316,8 +316,8 @@ class BoardFinder(object):
         colorFiltered["background"]=self.video.maskImage(imageCopy,backGroundFilter)
         if BoardFinder.debug:
             corners.writeDebug(colorFiltered["background"],title,"colorFiltered-background-")   
-            # side effect - add background histogram
-            histograms["background"]=Histogram(colorFiltered["background"],histRange=(1,256))
+        # side effect - add background histogram
+        histograms["background"]=Histogram(colorFiltered["background"],histRange=(1,256))
         return colorFiltered
            
     def expand(self,image,title,histograms,corners):

@@ -64,6 +64,10 @@ def photoDownload(filename):
 def chessDebug():
     return webApp.chessDebug()
 
+@app.route("/chess/findboard", methods=['GET'])
+def chessFindBoard():
+    return webApp.chessFindBoard()
+
 @app.route("/chess/rotatevideo90", methods=['GET'])
 def videoRotate90():
     return webApp.videoRotate90()

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.Board import Board
+from pcwawc.boardfinder import BoardFinder, Corners
 from pcwawc.BoardDetector import BoardDetector
 from pcwawc.Environment import Environment
 from pcwawc.Video import Video
@@ -68,11 +69,36 @@ class WebApp:
     def setDebug(self, debug):
         WebApp.debug = debug
         BoardDetector.debug = WebApp.debug
+        BoardFinder.debug=WebApp.debug
+        Corners.debug=WebApp.debug
 
     # toggle the debug flag
     def chessDebug(self):
         self.setDebug(not WebApp.debug)
         msg = "debug " + ('on' if WebApp.debug else 'off')
+        return self.index(msg)
+    
+    # automatically find the chess board
+    def chessFindBoard(self):
+        if self.video.frame is not None:
+            try: 
+                finder = BoardFinder(self.video.frame,video=self.video)
+                corners=finder.findOuterCorners(searchWidth=360)
+                title = 'corners_%s.jpg' % (self.video.fileTimeStamp())
+                histograms=finder.getHistograms(self.video.frame, title, corners)    
+                finder.expand(self.video.frame,title,histograms,corners)
+                if self.debug:
+                    corners.showDebug(self.video.frame,title)
+                    finder.showPolygonDebug(self.video.frame,title,corners)
+                    finder.showHistogramDebug(histograms,title,corners)
+                msg="%dx%d found" % (corners.rows,corners.cols)
+                trapez=corners.trapez8x8
+                self.warp.pointList=trapez
+                self.warp.updatePoints()
+            except Exception as e:
+                msg=str(e)  
+        else: 
+            msg ="can't find chess board - video is not active"
         return self.index(msg)
 
     def chessTakeback(self):
