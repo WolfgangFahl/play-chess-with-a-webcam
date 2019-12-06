@@ -330,8 +330,8 @@ class Video:
         if center is None:
             center = (w // 2, h // 2)
 
-        # perform the rotation
-        M = cv2.getRotationMatrix2D(center, angle, scale)
+        # perform the rotation (clockwise)
+        M = cv2.getRotationMatrix2D(center, -angle, scale)
         rotated = cv2.warpAffine(image, M, (w, h))
 
         # return the rotated image
