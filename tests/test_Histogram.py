@@ -2,6 +2,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.PlotLib import PlotLib, PlotType
 from pcwawc.Environment4Test import Environment4Test
+from pcwawc.Environment import Environment
 from pcwawc.WebApp import WebApp
 from pcwawc.webchesscam import  WebChessCamArgs
 import cv2
@@ -15,7 +16,8 @@ def test_Histogram():
         bgr=testEnv.loadFromImageInfo(webApp,imageInfo)
         rgb=cv2.cvtColor(bgr,cv2.COLOR_BGR2RGB)
         histogram.addPlot(rgb,imageInfo['title'])
-    histogram.createHistogramPDF('/tmp/chessboardColors',plotType=PlotType.HISTOGRAMM,infos={'Title': 'Chessboard Histogram'})
+    Environment.checkDir(Environment.debugImagePath)
+    histogram.createHistogramPDF(Environment.debugImagePath+'chessboardColors',plotType=PlotType.HISTOGRAMM,infos={'Title': 'Chessboard Histogram'})
 
 def test_A4():
     a4=PlotLib.A4()

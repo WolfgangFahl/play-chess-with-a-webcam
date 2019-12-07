@@ -7,6 +7,7 @@ Created on 2019-11-29
 @author: wf
 '''
 from pcwawc.Environment4Test import Environment4Test
+from pcwawc.Environment import Environment
 from pcwawc.histogram import Histogram, Stats
 from pcwawc.ChessTrapezoid import ChessTrapezoid
 import chess
@@ -32,7 +33,6 @@ def test_Stats():
 
     
 def test_Histogram():
-    imgPath="/tmp/"
     for imageInfo in testEnv.imageInfos:
         fen=imageInfo["fen"]
         if not fen==chess.STARTING_BOARD_FEN:
@@ -43,7 +43,7 @@ def test_Histogram():
         warped=trapez.warpedBoardImage(image)
         histogram=Histogram(warped)
         histogram.showDebug()
-        histogram.save(imgPath+title+"-histogram.jpg")
+        histogram.save(Environment.debugImagePath+title+"-histogram.jpg")
     
 test_Stats()    
 test_Histogram()

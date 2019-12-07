@@ -157,8 +157,8 @@ class Corners(object):
         self.writeDebug(imageCopy,title,"corners")
         
     def writeDebug(self,image,title,prefix):        
-        Environment.checkDir(BoardFinder.debugImagePath)    
-        cv2.imwrite(BoardFinder.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,self.rows,self.cols),image)    
+        Environment.checkDir(Environment.debugImagePath)    
+        cv2.imwrite(Environment.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,self.rows,self.cols),image)    
            
 # Board Finder
 class BoardFinder(object):
@@ -168,7 +168,7 @@ class BoardFinder(object):
     white=(255,255,255)
     darkGrey=(256//3,256//3,256/3)
     lightGrey=(256*2//3,256*2//3,256*2//3)
-    debugImagePath="/tmp/pcwawc/"
+
    
     def __init__(self, image, video=None):
         """ construct me from the given input image"""
@@ -364,13 +364,13 @@ class BoardFinder(object):
         
     def showHistogramDebug(self,histograms,title,corners): 
         """ 'show' the debug information for the given histograms by writing a plotted histogram image to the debugImagePath """
-        Environment.checkDir(self.debugImagePath)  
+        Environment.checkDir(Environment.debugImagePath)  
         fig,axes=histograms[True].preparePlot(3,2)
         histograms[True].plotRow(axes[0,0],axes[0,1])
         histograms[False].plotRow(axes[1,0],axes[1,1])
         histograms["background"].plotRow(axes[2,0],axes[2,1])
         prefix="histogram"
-        filepath=self.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,corners.rows,corners.cols)
+        filepath=Environment.debugImagePath+'%s-%s-%dx%d.jpg' % (title,prefix,corners.rows,corners.cols)
         histograms[False].savefig(fig,filepath)       
             
         

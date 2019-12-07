@@ -11,6 +11,7 @@ but we don't for the time being
 '''
 from timeit import default_timer as timer
 from pcwawc.ChessTrapezoid import FieldState, FieldColorStats
+from pcwawc.Environment import Environment
 
 class DetectState(object):
     '''
@@ -54,12 +55,14 @@ class DetectState(object):
         
 class DetectColorState(object):
     """ detect state from Color Distribution """
-    imgPath="/tmp/"
     
     def __init__(self,trapez):
         self.frames=0
         self.trapez=trapez
         self.preMoveStats=None
+        self.imagePath=Environment.debugImagePath+"states/"
+        Environment.checkDir(self.imagePath)
+        
         
     def check(self,image,averageColors,drawDebug=False):
         self.frames+=1
@@ -98,5 +101,5 @@ class DetectColorState(object):
                 percent="%.0f" % (self.fieldColorStats.colorPercent[tSquare.an]) 
                 color=(0,255,0) if state else (0,0,255)
                 self.trapez.drawRCenteredText(self.image, percent, tSquare.rcx,tSquare.rcy,color)  
-            filepath="%s/colorState-%04d.jpg" % (DetectColorState.imgPath,self.frames)    
+            filepath="%s/colorState-%04d.jpg" % (self.imagePath,self.frames)    
             self.trapez.video.writeImage(self.image,filepath)          

@@ -5,6 +5,7 @@ import os
 
 class Environment:
     """ Runtime Environment """
+    debugImagePath="/tmp/pcwawc/"
 
     def __init__(self):
         """ get the directory in which the testMedia resides """
