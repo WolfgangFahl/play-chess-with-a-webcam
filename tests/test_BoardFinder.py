@@ -89,7 +89,7 @@ def test_MovingBoard():
                 print ("%3d/%3d: %s" % (found,frames,ex))
     video.close()  
             
-#test_SortPoints()        
-#test_Trapez2Square()
+test_SortPoints()        
+test_Trapez2Square()
 test_MovingBoard()
-#test_findBoard()
+test_findBoard()
