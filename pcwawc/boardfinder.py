@@ -236,6 +236,13 @@ class BoardFinder(object):
             print ("found %d patterns in %.1f s" % (len(self.found),(endt-startt)))
         return self.found
     
+    def findChessBoard(self,image,title):
+        """ find a chess board in the given image and return the trapez polygon for it """
+        corners=self.findOuterCorners()
+        histograms=self.getHistograms(image, title, corners)
+        self.expand(image,title,histograms,corners)
+        return corners
+    
     def fieldColor(self,pos):
         """ determine the field color at the given position"""
         row,col=pos

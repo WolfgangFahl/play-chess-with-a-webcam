@@ -59,37 +59,39 @@ def test_Trapez2Square():
     
 def test_MovingBoard():
     video=Video()
-    video.open(testEnv.testMedia + 'baxter.avi')
-    ret=True
-    speedup=5
-    frames=0
-    found=0
-    while ret:
-        ret, image, quitWanted = video.readFrame(show=False)
-        if frames%speedup==0:
-            video.showImage(image,"baxter")
-        frames+=1
-        if quitWanted:
-            break
-        if ret:
-            try:        
-                title="corners-baxter-"+video.fileTimeStamp()
-                startt=timer()
-                finder = BoardFinder(image,video=video)
-                corners=finder.findOuterCorners()
-                histograms=finder.getHistograms(image, title, corners)
-                finder.expand(image,title,histograms,corners)
-                trapez=corners.trapez8x8
-                video.drawTrapezoid(image,trapez.tolist(),(255,0,0))
-                video.showImage(image,"baxter")
-                endt=timer()
-                found+=1
-                print("%3d/%3d: %dx%d in %.1f s" % (found,frames,corners.rows,corners.cols,(endt-startt)))
-            except Exception as ex:
-                print ("%3d/%3d: %s" % (found,frames,ex))
-    video.close()  
-            
-test_SortPoints()        
-test_Trapez2Square()
+    testvideos=['emptyBoard001.avi','baxter.avi']
+    expected=[52,153]
+    for testindex,testvideo in enumerate(testvideos):
+        video.open(testEnv.testMedia + testvideo)
+        ret=True
+        speedup=5
+        frames=0
+        found=0
+        while ret:
+            ret, image, quitWanted = video.readFrame(show=False)
+            frames+=1
+            if quitWanted:
+                break
+            if ret:
+                try:        
+                    title="corners-baxter-"+video.fileTimeStamp()
+                    startt=timer()
+                    finder = BoardFinder(image,video=video)
+                    corners=finder.findChessBoard(image,title)
+                    warped=video.warp(image.copy(), corners.trapez8x8)
+                    video.drawTrapezoid(image,corners.trapez8x8.tolist(),(255,0,0))
+                    video.showImage(warped,"warped")
+                    endt=timer()
+                    found+=1
+                    print("%3d/%3d: %dx%d in %.1f s" % (found,frames,corners.rows,corners.cols,(endt-startt)))
+                except Exception as ex:
+                    print ("%3d/%3d: %s" % (found,frames,ex))
+            if frames%speedup==0:
+                video.showImage(image,"original")        
+        video.close()  
+        assert found==expected[testindex]
+                
+#test_SortPoints()        
+#test_Trapez2Square()
+#test_findBoard()
 test_MovingBoard()
-test_findBoard()

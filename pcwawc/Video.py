@@ -341,7 +341,7 @@ class Video:
         return rotated
 
     def warp(self, image, pts, squared=True):
-        """apply the four point tranform to obtain a birds eye view of the given image """
+        """apply the four point transform to obtain a birds eye view of the given image """
         warped = perspective.four_point_transform(image, pts)
         if squared:
             height, width = warped.shape[:2]
