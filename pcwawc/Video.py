@@ -289,8 +289,11 @@ class Video:
         return lines
 
     def drawTrapezoid(self, image, points, color):
-        # loop over the points and draw them on the image
+        """ loop over the given points and draw them on the image """
         prev = None
+        # if there is exactly four points then close the loop
+        if len(points)==4:
+            points.append(points[0])
         for (x, y) in points:
             cv2.circle(image, (x, y), 10, color, -1)
             if prev is not None:

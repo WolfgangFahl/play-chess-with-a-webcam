@@ -3,6 +3,7 @@
 from pcwawc.boardfinder import BoardFinder,Corners
 from pcwawc.Environment4Test import Environment4Test
 from pcwawc.ChessTrapezoid import Trapez2Square
+from pcwawc.Video import Video
 from timeit import default_timer as timer
 import chess
 testEnv = Environment4Test()
@@ -55,7 +56,40 @@ def test_Trapez2Square():
     assert t2s.relativeToTrapezXY(1,0)==(200.0,100.0)
     assert t2s.relativeToTrapezXY(1,1)==(100.0,  0.0)
     assert t2s.relativeToTrapezXY(0,1)==(  0.0,  0.0)
+    
+def test_MovingBoard():
+    video=Video()
+    video.open(testEnv.testMedia + 'baxter.avi')
+    ret=True
+    speedup=5
+    frames=0
+    found=0
+    while ret:
+        ret, image, quitWanted = video.readFrame(show=False)
+        if frames%speedup==0:
+            video.showImage(image,"baxter")
+        frames+=1
+        if quitWanted:
+            break
+        if ret:
+            try:        
+                title="corners-baxter-"+video.fileTimeStamp()
+                startt=timer()
+                finder = BoardFinder(image,video=video)
+                corners=finder.findOuterCorners()
+                histograms=finder.getHistograms(image, title, corners)
+                finder.expand(image,title,histograms,corners)
+                trapez=corners.trapez8x8
+                video.drawTrapezoid(image,trapez.tolist(),(255,0,0))
+                video.showImage(image,"baxter")
+                endt=timer()
+                found+=1
+                print("%3d/%3d: %dx%d in %.1f s" % (found,frames,corners.rows,corners.cols,(endt-startt)))
+            except Exception as ex:
+                print ("%3d/%3d: %s" % (found,frames,ex))
+    video.close()  
             
-test_SortPoints()        
-test_Trapez2Square()
-test_findBoard()
+#test_SortPoints()        
+#test_Trapez2Square()
+test_MovingBoard()
+#test_findBoard()
