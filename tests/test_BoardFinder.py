@@ -60,7 +60,7 @@ def test_Trapez2Square():
 def test_MovingBoard():
     video=Video()
     testvideos=['emptyBoard001.avi','baxter.avi']
-    expected=[52,153]
+    expected=[51,155]
     for testindex,testvideo in enumerate(testvideos):
         video.open(testEnv.testMedia + testvideo)
         ret=True
