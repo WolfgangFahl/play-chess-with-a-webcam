@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.Board import Board
-from pcwawc.Board import RejectedMove
 from pcwawc.Field import FieldState
 import chess
 
@@ -10,12 +9,8 @@ import chess
 def checkMovesEndPosition(moves, expectedFen):
     board = Board()
     for move in moves:
-        try:
-            san = board.performMove(move)
-            print (san)
-        except RejectedMove as e:
-            print(e)
-            pass
+        san = board.performMove(move)
+        print (san)
     checkEndPosition(board, expectedFen)
 
 

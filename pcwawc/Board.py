@@ -7,16 +7,6 @@ import io
 from chess import Move
 from pcwawc.Field import Field
 
-
-class RejectedMove(Exception):
-
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
-
 class Board(object):
     """This class is used to hold the state of a chessboard with pieces positions and the current player's color which player needs to play. It uses the python-chess library by default"""
     debug = True
