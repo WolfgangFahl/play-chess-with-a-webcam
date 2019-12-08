@@ -3,9 +3,9 @@
 import math
 import sys
 from collections import deque
-from zope.interface import interface,implements
+from zope.interface import Interface,implementer
 
-class IStats(interface):
+class IStats(Interface):
     """ statistics interface """
     def push(self,value):
         """ push a value to the statistics """
@@ -15,7 +15,8 @@ class IStats(interface):
         """ get the mean value"""
         pass
 
-class MovingAverage(implements(IStats)):
+@implementer(IStats)
+class MovingAverage():
     """ calculate a moving average """
     def __init__(self,maxlen):
         self.maxlen=maxlen
@@ -60,7 +61,8 @@ class MinMaxMixin(object):
 # see https://stackoverflow.com/a/17637351/1497139
 # see also https://gist.github.com/alexalemi/2151722
 # see also https://www.johndcook.com/blog/standard_deviation/
-class RunningStats(implements(IStats)):
+@implementer(IStats)
+class RunningStats():
     """ calculate mean, variance and standard deviation in one pass using Welford's algorithm """
 
     def __init__(self):
@@ -121,8 +123,8 @@ class MinMaxStats(RunningStats,MinMaxMixin):
             text+=super().formatMinMax(formatM)
         return text    
         
-    
-class ColorStats(implements(IStats)):
+@implementer(IStats)    
+class ColorStats():
     """ calculate the RunningStats for 3 color channels like RGB or HSV simultaneously"""
 
     def __init__(self):
