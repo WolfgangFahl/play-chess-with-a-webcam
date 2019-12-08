@@ -21,7 +21,14 @@ EOF
 for src in $(find "$l_src" -name "*.py")
 do
   srcfile=$(basename $src)
-  cat $src | gawk -v srcfile="$srcfile" -v githuburl="$l_githuburl" '
+  module=$(basename $srcfile .py)
+  if [ $module != "__init__" ]
+  then
+    echo "package $module {"
+    cat $src | gawk -v srcfile="$srcfile" -v githuburl="$l_githuburl" '
+/#<uml>/ { inuml=1;next}
+/#<\/uml>/ { inuml=0;next }
+inuml { print }
 /class .*:/ {
   finishClass()
   classLine=$0
@@ -73,6 +80,8 @@ END {
   finishClass()
 }
 '
+    echo "}"
+  fi
 done
 cat << EOF
   skinparam titleFontSize 18
@@ -100,4 +109,4 @@ cat << EOF
 EOF
 }
 
-umldoc $scriptdir/../pcwawc "Play Chess With A WebCam github repository" https://github.com/WolfgangFahl/play-chess-with-a-webcam/tree/master/src
+umldoc $scriptdir/../pcwawc "Play Chess With A WebCam github repository" https://github.com/WolfgangFahl/play-chess-with-a-webcam/tree/master/pcwawc

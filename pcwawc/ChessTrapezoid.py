@@ -60,14 +60,14 @@ class ChessTrapezoid(Trapez2Square):
     DiffSumMovingAverageLength=5
   
     def __init__(self,trapezPoints,idealSize=640,rotation=0,video=None):
-        topLeft,topRight,bottomRight,bottomLeft=trapezPoints
-        super().__init__(topLeft,topRight,bottomRight,bottomLeft) 
         self.rotation=rotation
         #trapezPoints=[topLeft,topRight,bottomRight,bottomLeft]
         shifts=self.rotation//90
         for shift in range(shifts):
             left=trapezPoints.pop(0)
             trapezPoints.append(left)
+        topLeft,topRight,bottomRight,bottomLeft=trapezPoints
+        super().__init__(topLeft,topRight,bottomRight,bottomLeft)     
         self.setup(idealSize,video)
         
     def setup(self,idealSize=640,video=None):    
@@ -225,6 +225,7 @@ class ChessTrapezoid(Trapez2Square):
     
     def optimizeColorCheck(self,image,averageColors,debug=False):
         optimalSelectivity=-100
+        colorStats=None
         for factor in [x*0.05 for x in range(20,41)]:
             """ optimize the factor for the color check"""
             startc=timer()

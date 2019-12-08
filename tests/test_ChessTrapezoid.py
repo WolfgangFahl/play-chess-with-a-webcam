@@ -221,10 +221,10 @@ def test_ChessTrapezoid():
         debugMoveDetected=False
         debugChangeHistory=False
     else:
-        #testVideo=testVideos[0]
+        testVideo=testVideos[1]
         #debugMoveDetected=False
         #debugChangeHistory=False
-        testVideo=testVideos[10]
+        #testVideo=testVideos[10]
         debugChangeHistory=False
         debugMoveDetected=False
         ChessTrapezoid.debug=False
