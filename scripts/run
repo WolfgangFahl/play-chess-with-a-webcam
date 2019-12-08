@@ -5,5 +5,7 @@ if [ $? -eq 0 ]
 then
   export PYTHONPATH=""
 fi
+export PYTHONPATH=".:$PYTHONPATH"
 scriptdir=$(dirname $0)
-python3 $scriptdir/../pcwawc/ChessCam.py $@
+srcdir=$scriptdir/../pcwawc
+python3 $srcdir/videoanalyze.py $@

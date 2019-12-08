@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 #<uml>
 #BoardFinder -- Corners

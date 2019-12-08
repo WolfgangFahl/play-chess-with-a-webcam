@@ -1,7 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
 # Global imports
+from pcwawc.args import Args
 from flask import Flask, request
 from flask_autoindex import AutoIndex
 from flask_restful import Api
@@ -151,19 +152,15 @@ def home():
 # default arguments for Web Chess Camera
 
 
-class WebChessCamArgs:
+class WebChessCamArgs(Args):
     """This class parses command line arguments and generates a usage."""
 
     def __init__(self, argv):
-        self.parser = argparse.ArgumentParser(description='WebChessCam')
+        super().__init__(description='WebChessCam')
         self.parser.add_argument('--port',
                                  type=int,
                                  default="5003",
                                  help="port to run server at")
-
-        self.parser.add_argument('--input',
-                                 default="0",
-                                 help="Manually set the input device.")
 
         self.parser.add_argument('--host',
                                  default="0.0.0.0",
@@ -173,36 +170,8 @@ class WebChessCamArgs:
                                  default=None,
                                  help="game to initialize with")
 
-        self.parser.add_argument('--debug',
-                                 action='store_true',
-                                 help="show debug output")
-
-        self.parser.add_argument('--rotation',
-                                 type=int,
-                                 default=0,
-                                 help="rotation of chessboard")
-        
-        self.parser.add_argument('--speedup',
-                                 type=int,
-                                 default=1,
-                                 help="detection speedup - higher speedup means less precision")
-        
-        self.parser.add_argument('--distance',
-                                 type=int,
-                                 default=5,
-                                 help="detection pixel distance - number of pixels analyzed i square of this")
-        
-        self.parser.add_argument('--step',
-                                 type=int,
-                                 default=3,
-                                 help="detection pixel steps - distance*step is the grid size being analyzed")
-        
-
-        self.parser.add_argument('--warp',
-                                 default="[]",
-                                 help="warp points")
-
-        self.args = self.parser.parse_args(argv)
+       
+        self.args = self.parse(argv)
         self.args.warpPointList = ast.literal_eval(self.args.warp)
 
 
