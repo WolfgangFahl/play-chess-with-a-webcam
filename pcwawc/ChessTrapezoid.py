@@ -12,7 +12,7 @@ from enum import IntEnum
 import cv2
 import chess
 from pcwawc.Video import Video
-from pcwawc.RunningStats import MinMaxStats, MovingAverage
+from pcwawc.runningstats import MinMaxStats, MovingAverage
 from timeit import default_timer as timer
 
 class Transformation(IntEnum):

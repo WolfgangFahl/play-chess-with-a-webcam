@@ -8,7 +8,7 @@ from pcwawc.Video import Video
 from pcwawc.WebApp import WebApp
 from pcwawc.webchesscam import WebChessCamArgs
 from pcwawc.Field import FieldState
-from pcwawc.RunningStats import ColorStats
+from pcwawc.runningstats import ColorStats
 from timeit import default_timer as timer
 import cv2
 

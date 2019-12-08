@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.RunningStats import RunningStats, ColorStats, MovingAverage
+from pcwawc.runningstats import RunningStats, ColorStats, MovingAverage
 import pytest
 
 def test_RunningStats():

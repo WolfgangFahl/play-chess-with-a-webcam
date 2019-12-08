@@ -4,7 +4,7 @@ import colorsys
 # from colormath.color_objects import sRGBColor, LabColor
 # from colormath.color_conversions import convert_color
 # from colormath.color_diff import delta_e_cie2000
-from pcwawc.RunningStats import ColorStats
+from pcwawc.runningstats import ColorStats
 import chess
 from enum import IntEnum
 
