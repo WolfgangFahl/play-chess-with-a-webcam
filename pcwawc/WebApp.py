@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.Board import Board
-from pcwawc.boardfinder import BoardFinder, Corners
+from pcwawc.videoanalyze import VideoAnalyzer
 from pcwawc.BoardDetector import BoardDetector
 from pcwawc.Environment import Environment
 from pcwawc.Video import Video
@@ -18,6 +18,7 @@ class WebApp:
         """ construct me """
         self.args = args
         self.logger = logger
+        self.videoAnalyzer=VideoAnalyzer(args)
         self.setDebug(args.debug)
         self.video = Video()
         self.videoStream = None
@@ -42,7 +43,7 @@ class WebApp:
         self.log("Warp: %s" % (args.warpPointList))
         self.warp = Warp(args.warpPointList)
         self.warp.rotation = args.rotation
-
+  
     def createNewCame(self):
         return WebCamGame("game" + self.video.fileTimeStamp())
         
@@ -69,9 +70,8 @@ class WebApp:
     def setDebug(self, debug):
         WebApp.debug = debug
         BoardDetector.debug = WebApp.debug
-        BoardFinder.debug=WebApp.debug
-        Corners.debug=WebApp.debug
-
+        self.videoAnalyzer.setDebug(debug)
+ 
     # toggle the debug flag
     def chessDebug(self):
         self.setDebug(not WebApp.debug)
@@ -82,15 +82,7 @@ class WebApp:
     def chessFindBoard(self):
         if self.video.frame is not None:
             try: 
-                finder = BoardFinder(self.video.frame,video=self.video)
-                corners=finder.findOuterCorners()
-                title = 'corners_%s.jpg' % (self.video.fileTimeStamp())
-                histograms=finder.getHistograms(self.video.frame, title, corners)    
-                finder.expand(self.video.frame,title,histograms,corners)
-                if self.debug:
-                    corners.showDebug(self.video.frame,title)
-                    finder.showPolygonDebug(self.video.frame,title,corners)
-                    finder.showHistogramDebug(histograms,title,corners)
+                corners=self.videoAnalyzer.findChessBoard(self.video.frame, self.video)
                 msg="%dx%d found" % (corners.rows,corners.cols)
                 trapez=corners.trapez8x8
                 self.warp.pointList=trapez
