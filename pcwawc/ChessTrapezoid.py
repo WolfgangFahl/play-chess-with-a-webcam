@@ -1,5 +1,11 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
+#<uml>
+#   Trapez2Square <|-- ChessTrapezoid 
+#   ChessTrapezoid -- ChessTSquare
+#   ChessTSquare -- SquareChange
+#   ChessTSquare -- FieldState
+#</uml>
 import numpy as np
 import math
 from enum import IntEnum

@@ -32,6 +32,10 @@ jsonpickle
 # https://github.com/pytransitions/transitions
 transitions
 #
+# interfaces
+#
+interface
+#
 # test dependencies
 #
 # python tests

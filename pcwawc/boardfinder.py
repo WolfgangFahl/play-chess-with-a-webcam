@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 #<uml>
-BoardFinder -- Corners
+#BoardFinder -- Corners
 #</uml>
 
 # Global imports

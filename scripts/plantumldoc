@@ -28,7 +28,10 @@ do
     cat $src | gawk -v srcfile="$srcfile" -v githuburl="$l_githuburl" '
 /#<uml>/ { inuml=1;next}
 /#<\/uml>/ { inuml=0;next }
-inuml { print }
+inuml {
+  gsub ("#","",$0)
+  print
+}
 /class .*:/ {
   finishClass()
   classLine=$0
