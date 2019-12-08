@@ -2,6 +2,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.boardfinder import BoardFinder,Corners
 from pcwawc.Environment4Test import Environment4Test
+from pcwawc.Environment import Environment
 from pcwawc.ChessTrapezoid import Trapez2Square
 from pcwawc.Video import Video
 from timeit import default_timer as timer
@@ -59,10 +60,12 @@ def test_Trapez2Square():
     
 def test_MovingBoard():
     video=Video()
-    testvideos=['emptyBoard001.avi','baxter.avi']
+    testvideos=['emptyBoard001','baxter']
     expected=[51,155]
+    imagePath=Environment.debugImagePath+"testMovingBoard/"
+    Environment.checkDir(imagePath)
     for testindex,testvideo in enumerate(testvideos):
-        video.open(testEnv.testMedia + testvideo)
+        video.open(testEnv.testMedia + testvideo+".avi")
         ret=True
         speedup=5
         frames=0
@@ -74,7 +77,7 @@ def test_MovingBoard():
                 break
             if ret:
                 try:        
-                    title="corners-baxter-"+video.fileTimeStamp()
+                    title="corners-%s-%04d" % (testvideo,frames)
                     startt=timer()
                     finder = BoardFinder(image,video=video)
                     corners=finder.findChessBoard(image,title)
@@ -82,6 +85,8 @@ def test_MovingBoard():
                     video.drawTrapezoid(image,corners.trapez8x8.tolist(),(255,0,0))
                     video.showImage(warped,"warped")
                     endt=timer()
+                    video.writeImage(image, imagePath+title+".jpg")
+                    video.writeImage(warped, imagePath+title+"-warped.jpg")
                     found+=1
                     print("%3d/%3d: %dx%d in %.1f s" % (found,frames,corners.rows,corners.cols,(endt-startt)))
                 except Exception as ex:
@@ -91,7 +96,7 @@ def test_MovingBoard():
         video.close()  
         assert found==expected[testindex]
                 
-#test_SortPoints()        
-#test_Trapez2Square()
-#test_findBoard()
+test_SortPoints()        
+test_Trapez2Square()
+test_findBoard()
 test_MovingBoard()
