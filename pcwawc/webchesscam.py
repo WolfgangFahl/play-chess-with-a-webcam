@@ -6,8 +6,6 @@ from pcwawc.args import Args
 from flask import Flask, request
 from flask_autoindex import AutoIndex
 from flask_restful import Api
-import argparse
-import ast
 import logging
 import platform
 import os.path
@@ -172,8 +170,6 @@ class WebChessCamArgs(Args):
 
        
         self.args = self.parse(argv)
-        self.args.warpPointList = ast.literal_eval(self.args.warp)
-
 
 if __name__ == '__main__':
     args = WebChessCamArgs(sys.argv[1:]).args

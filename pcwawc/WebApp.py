@@ -5,7 +5,7 @@ from pcwawc.videoanalyze import VideoAnalyzer
 from pcwawc.BoardDetector import BoardDetector
 from pcwawc.Environment import Environment
 from pcwawc.Video import Video
-from pcwawc.game import WebCamGame, Warp
+from pcwawc.game import WebCamGame
 from flask import render_template, send_from_directory, Response, jsonify
 from datetime import datetime
 
@@ -17,17 +17,15 @@ class WebApp:
     def __init__(self, args, logger=None):
         """ construct me """
         self.args = args
-        self.logger = logger
-        self.videoAnalyzer=VideoAnalyzer(args)
-        self.setDebug(args.debug)
         self.video = Video()
+        self.videoAnalyzer=VideoAnalyzer(args,video=self.video,logger=logger)
+        self.setDebug(args.debug)
         self.videoStream = None
         self.board = Board()
+        # @FIXME - restore functionality
+        # self.boardDetector.analyze(warped, self.video.frames, self.args.distance, self.args.step)      
         self.boardDetector = BoardDetector(self.board, self.video,args.speedup)
         self.env = Environment()
-        # not recording
-        self.videopath=None
-        self.videoout=None
         if args.game is None:
             self.webCamGame = self.createNewCame()
         else:
@@ -36,31 +34,27 @@ class WebApp:
                 gamepath = self.env.games + "/" + gamepath
             self.webCamGame = WebCamGame.readJson(gamepath)
             if self.webCamGame is None:
-                self.log("could not read %s " % (gamepath))
+                self.videoAnalyzer.log("could not read %s " % (gamepath))
                 self.webCamGame = self.createNewCame() 
         self.webCamGame.checkEnvironment(self.env)        
-        self.game = self.webCamGame.game    
-        self.log("Warp: %s" % (args.warpPointList))
-        self.warp = Warp(args.warpPointList)
-        self.warp.rotation = args.rotation
+        self.game = self.webCamGame.game
   
     def createNewCame(self):
         return WebCamGame("game" + self.video.fileTimeStamp())
         
     def log(self, msg):
-        if WebApp.debug and self.logger is not None:
-            self.logger.info(msg)
+        self.videoAnalyzer.log(msg)
 
     # return the index.html template content with the given message
     def index(self, msg):
         self.log(msg)
-        self.webCamGame.warp = self.warp
+        self.webCamGame.warp = self.videoAnalyzer.warp
         self.webCamGame.save()
         gameid = self.webCamGame.gameid
         return render_template('index.html', message=msg, timeStamp=self.video.timeStamp(), gameid=gameid)
 
     def home(self):
-        self.video = Video()
+        self.videoAnalyzer.video = Video()
         return self.index("Home")
 
     def photoDownload(self, path, filename):
@@ -80,13 +74,10 @@ class WebApp:
     
     # automatically find the chess board
     def chessFindBoard(self):
-        if self.video.frame is not None:
+        if self.videoAnalyzer.hasImage():
             try: 
-                corners=self.videoAnalyzer.findChessBoard(self.video.frame, self.video)
+                corners=self.videoAnalyzer.findChessBoard()
                 msg="%dx%d found" % (corners.rows,corners.cols)
-                trapez=corners.trapez8x8
-                self.warp.pointList=trapez
-                self.warp.updatePoints()
             except Exception as e:
                 msg=str(e)  
         else: 
@@ -169,68 +160,60 @@ class WebApp:
 
     # picture has been clicked
     def chessWebCamClick(self, x, y, w, h):
-        px = x * self.video.width // w
-        py = y * self.video.height // h
+        px = x * self.videoAnalyzer.video.width // w
+        py = y * self.videoAnalyzer.video.height // h
         colorInfo=""
-        if self.video.frame is not None:
-            b, g, r = self.video.frame[py, px]
+        if self.videoAnalyzer.hasImage() is not None:
+            b, g, r = self.videoAnalyzer.video.frame[py, px]
             colorInfo="r:%x g:%x b:%x" % (r,g,b)
-        self.warp.addPoint(px, py)
-        msg = "clicked warppoint %d pixel %d,%d %s mouseclick %d,%d in image %d x %d" % (len(self.warp.pointList), px, py, colorInfo, x, y, w, h)
+        warp=self.videoAnalyzer.warp
+        warp.addPoint(px, py)
+        msg = "clicked warppoint %d pixel %d,%d %s mouseclick %d,%d in image %d x %d" % (len(warp.pointList), px, py, colorInfo, x, y, w, h)
         return self.index(msg)
 
     def photo(self, path):
         try:
-            # todo select input device
-            if self.video.frames == 0:
-                self.video.capture(self.args.input)
-            filename = 'chessboard_%s.jpg' % (self.video.fileTimeStamp())
+            self.videoAnalyzer.open()
+            video=self.videoAnalyzer.video
+            filename = 'chessboard_%s.jpg' % (video.fileTimeStamp())
             # make sure the path exists
             Environment.checkDir(path)
-            self.video.still2File(path + filename, postProcess=self.warpAndRotate, close=False)
+            video.still2File(path + filename, postProcess=self.videoAnalyzer.warpAndRotate, close=False)
             msg = "still image <a href='/photo/%s'>%s</a> taken from input %s" % (filename, filename, self.args.input)
             return self.index(msg)
         except BaseException as e:
             return self.indexException(e)
     
     def videoRecord(self,path):
-        if self.videoout is None:
-            if self.video.frames == 0:
-                self.video.capture(self.args.input)
-            self.videofilename = 'chessgame_%s.avi' % (self.video.fileTimeStamp())
-            # make sure the path exists
-            Environment.checkDir(path)
-            self.videopath=path+self.videofilename
-            msg="started recording"
+        if not self.videoAnalyzer.isRecording():
+            video=self.videoAnalyzer.video
+            filename=self.videoAnalyzer.startVideoRecording(path,'chessgame_%s.avi' % (video.fileTimeStamp()))
+            msg="started recording %s" % (filename)
         else:
-            self.videoout.release()
-            self.videopath=None
-            self.videoout=None    
-            msg="finished recording "+self.videofilename
+            filename=self.videoAnalyzer.stopVideoRecording()  
+            msg="finished recording "+filename
         return self.index(msg)   
 
     def videoRotate90(self):
         try:
-            self.warp.rotate(90)
-            msg = "rotation: %d°" % (self.warp.rotation)
+            warp=self.videoAnalyzer.warp
+            warp.rotate(90)
+            msg = "rotation: %d°" % (warp.rotation)
             return self.index(msg)
         except BaseException as e:
             return self.indexException(e)
 
     def videoPause(self):
-        ispaused = not self.video.paused()
-        self.video.pause(ispaused)
+        ispaused=self.videoAnalyzer.videoPause()
         msg = "video " + ('paused' if ispaused else 'running')
         return self.index(msg)
-    
 
     def videoFeed(self):
-        if self.video.frames == 0:
-            # capture from the given video device
-            self.video.capture(self.args.input)
+        self.videoAnalyzer.open()
         # return the response generated along with the specific media
         # type (mime type)
-        return Response(self.genVideo(self.video),
+        video=self.videoAnalyzer.video
+        return Response(self.genVideo(video),
                         mimetype='multipart/x-mixed-replace; boundary=frame')
 
     # streamed video generator
@@ -250,40 +233,13 @@ class WebApp:
     #            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
     #                  bytearray(encodedImage) + b'\r\n')
 
-    def warpAndRotate(self, image):
-        """ warp and rotate the image as necessary - add timestamp if in debug mode """
-        if self.warp.points is None:
-            warped = image
-        else:
-            if len(self.warp.points) < 4:
-                self.video.drawTrapezoid(image, self.warp.points, self.warp.bgrColor)
-                warped = image
-            else:
-                warped = self.video.warp(image, self.warp.points)
-        if self.warp.rotation > 0:
-            warped = self.video.rotate(warped, self.warp.rotation)
-        # analyze the board if warping is active
-        if self.warp.warping:
-            warped = self.boardDetector.analyze(warped, self.video.frames, self.args.distance, self.args.step)
-        if WebApp.debug:
-            warped = self.video.addTimeStamp(warped)
-        # do we need to record?
-        if self.videopath is not None:
-            # is the output open?
-            if self.videoout is None:
-                # create correctly sized output
-                h, w = warped.shape[:2]
-                self.videoout=self.video.prepareRecording(self.videopath,w,h)
-         
-            self.videoout.write(warped)   
-            self.log("wrote frame %d to recording " % (self.video.frames)) 
-        return warped
+    
 
     # video generator
     def genVideo(self, video):
         while True:
             # postProcess=video.addTimeStamp
-            postProcess = self.warpAndRotate
+            postProcess = self.videoAnalyzer.warpAndRotate
             ret, encodedImage, quitWanted = video.readJpgImage(show=False, postProcess=postProcess)
             # ensure we got a valid image
             if not ret:

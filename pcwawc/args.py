@@ -6,6 +6,8 @@ Created on 2019-12-08
 @author: wf
 '''
 import argparse
+import ast
+
 
 class Args:
     """ Command Line argument handling """
@@ -46,4 +48,6 @@ class Args:
         pass
     
     def parse(self,argv):
-        return self.parser.parse_args(argv)
+        self.args=self.parser.parse_args(argv)
+        self.args.warpPointList = ast.literal_eval(self.args.warp)
+        return self.args
