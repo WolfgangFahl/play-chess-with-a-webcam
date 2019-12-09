@@ -37,6 +37,11 @@ class VideoAnalyzer():
     def open(self):
         if self.video.frames == 0:
             self.video.capture(self.args.input)
+            
+    def close(self):
+        if self.videoout is not None:
+            self.stopVideoRecording()
+        self.video.close()        
            
     def hasImage(self):
         return self.video.frame is not None    
@@ -62,10 +67,21 @@ class VideoAnalyzer():
         ispaused = not self.video.paused()
         self.video.pause(ispaused)
         return ispaused
-   
         
     def analyze(self):
-        pass
+        self.open()
+        quitWanted=False
+        while not quitWanted: 
+            # postProcess=video.addTimeStamp
+            ret, encodedImage, quitWanted = self.video.readJpgImage(show=False, postProcess=self.warpAndRotate)
+            # ensure we got a valid image
+            if not ret:
+                break
+            # if we got a valid image
+            if encodedImage is not None:
+                # we could do something with it - but postprocess already cared for this
+                pass
+        self.close()    
     
     def findChessBoard(self):
         return self.findTheChessBoard(self.video.frame,self.video)
@@ -117,8 +133,11 @@ class VideoAnalyzer():
         return warped
     
     def log(self, msg):
-        if self.debug and self.logger is not None:
-            self.logger.info(msg)
+        if self.debug:
+            if self.logger is not None:
+                self.logger.info(msg)
+            else:
+                print(msg)    
     
     def setDebug(self, debug):
         self.debug=debug
