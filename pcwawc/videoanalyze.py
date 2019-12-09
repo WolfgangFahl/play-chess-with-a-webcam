@@ -101,7 +101,7 @@ class VideoAnalyzer():
         # analyze the board if warping is active
         if self.warp.warping:
             for analyzer in self.analyzers:
-                warped = analyzer.analyze(self.video,self.args)
+                warped = analyzer.analyzeChessBoardImage(warped,self.video,self.args)
         if self.debug:
             warped = self.video.addTimeStamp(warped)
         # do we need to record?

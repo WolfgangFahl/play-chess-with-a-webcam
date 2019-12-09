@@ -93,7 +93,7 @@ class Environment4Test(Environment):
         return image,video,warp
    
     def loadFromImageInfo(self,webApp,imageInfo):
-        image,webApp.video,webApp.warp=self.prepareFromImageInfo(imageInfo)
+        image,webApp.video,webApp.videoAnalyzer.warp=self.prepareFromImageInfo(imageInfo)
         start = timer()
         webApp.board.setFEN(imageInfo['fen'])
         bgr = webApp.videoAnalyzer.warpAndRotate(image)

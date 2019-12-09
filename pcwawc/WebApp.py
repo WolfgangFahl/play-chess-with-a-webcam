@@ -18,13 +18,13 @@ class WebApp:
         """ construct me """
         self.args = args
         self.video = Video()
-        self.videoAnalyzer=VideoAnalyzer(args,video=self.video,logger=logger)
-        self.setDebug(args.debug)
+       
+        
         self.videoStream = None
         self.board = Board()
-        # @FIXME - restore functionality
-        # self.boardDetector.analyze(warped, self.video.frames, self.args.distance, self.args.step)      
         self.boardDetector = BoardDetector(self.board, self.video,args.speedup)
+        self.videoAnalyzer=VideoAnalyzer(args,video=self.video,logger=logger,analyzers={self.boardDetector})
+        self.setDebug(args.debug)
         self.env = Environment()
         if args.game is None:
             self.webCamGame = self.createNewCame()

@@ -62,12 +62,13 @@ def test_FieldDetector():
             frames = 20
             # @TODO speed up and test all frames again
             # frames=334
-        webApp.warp.rotation = 270
-        webApp.warp.pointList = []
-        webApp.warp.addPoint(140, 5)
-        webApp.warp.addPoint(506, 10)
-        webApp.warp.addPoint(507, 377)
-        webApp.warp.addPoint(137, 374)
+        warp=webApp.videoAnalyzer.warp    
+        warp.rotation = 270
+        warp.pointList = []
+        warp.addPoint(140, 5)
+        warp.addPoint(506, 10)
+        warp.addPoint(507, 377)
+        warp.addPoint(137, 374)
 
         for frame in range(0, frames):
             ret, bgr, quitWanted = video.readFrame(show=False)
@@ -77,7 +78,7 @@ def test_FieldDetector():
             height, width = bgr.shape[:2]
             # print ("%d: %d x %d" % (frame,width,height))
             start = timer()
-            bgr = webApp.warpAndRotate(bgr)
+            bgr = webApp.videoAnalyzer.warpAndRotate(bgr)
             image = cv2.resize(bgr, (int(width * 1.5), int(height * 1.5)))
             video.showImage(image, "BoardDetector", keyWait=200)
             end = timer()
