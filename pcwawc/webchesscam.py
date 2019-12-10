@@ -3,6 +3,8 @@
 
 # Global imports
 from pcwawc.args import Args
+from pcwawc.environment import Environment
+from pcwawc.webapp import WebApp
 from flask import Flask, request
 from flask_autoindex import AutoIndex
 from flask_restful import Api
@@ -11,8 +13,6 @@ import platform
 import os.path
 import sys
 
-from pcwawc.WebApp import WebApp
-from pcwawc.Environment import Environment
 
 env = Environment()
 
@@ -101,7 +101,7 @@ def chessGameState(gameid):
 def chessGameColors():
     return webApp.chessGameColors()
 
-    
+
 @app.route("/chess/update", methods=['GET'])
 def chessUpdate():
     """ set game status from the given pgn, fen or move"""
@@ -163,12 +163,12 @@ class WebChessCamArgs(Args):
         self.parser.add_argument('--host',
                                  default="0.0.0.0",
                                  help="host to allow access for")
-        
+
         self.parser.add_argument('--game',
                                  default=None,
                                  help="game to initialize with")
 
-       
+
         self.args = self.parse(argv)
 
 if __name__ == '__main__':
