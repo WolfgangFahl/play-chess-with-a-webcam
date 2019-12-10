@@ -11,7 +11,9 @@ import math
 from enum import IntEnum
 import cv2
 import chess
+from zope.interface import implementer
 from pcwawc.video import Video
+from pcwawc.chessvision import ISquare
 from pcwawc.runningstats import MinMaxStats, MovingAverage
 from timeit import default_timer as timer
 
@@ -445,7 +447,8 @@ class SquareChange:
     def push(self,stats,value):
         if self.valid:
             stats.push(value) 
-        
+
+@implementer(ISquare)        
 class ChessTSquare:
     """ a chess square in it's trapezoidal perspective """
     # relative position and size of original square
