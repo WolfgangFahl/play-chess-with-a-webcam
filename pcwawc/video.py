@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import math
 from time import strftime
-from pcwawc.FPSCheck import FPSCheck
+from pcwawc.fpscheck import FPSCheck
 from imutils import perspective
 import argparse
 from threading import Thread
