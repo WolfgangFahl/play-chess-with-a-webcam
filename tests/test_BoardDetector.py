@@ -7,7 +7,7 @@ from pcwawc.environment4test import Environment4Test
 from pcwawc.video import Video
 from pcwawc.webapp import WebApp
 from pcwawc.webchesscam import WebChessCamArgs
-from pcwawc.field import FieldState
+from pcwawc.chessvision import FieldState
 from pcwawc.runningstats import ColorStats
 from timeit import default_timer as timer
 import cv2

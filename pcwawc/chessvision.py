@@ -9,6 +9,19 @@ see https://www.fide.com/FIDE/handbook/LawsOfChess.pdf
 
 from zope.interface import Interface
 from zope.interface import Attribute
+from enum import IntEnum
+
+class FieldState(IntEnum):
+    """ the state of a field is a combination of the field color with a piece color + two empty field color options"""
+    WHITE_EMPTY = 0
+    WHITE_WHITE = 1
+    WHITE_BLACK = 2
+    BLACK_EMPTY = 3
+    BLACK_WHITE = 4
+    BLACK_BLACK = 5    
+    
+    def title(self,titles=["white empty", "white on white", "black on white","black empty","white on black","black on black"]):
+        return titles[self]
 
 class IGame(Interface):
     pgn=Attribute("Portable game notation")

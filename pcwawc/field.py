@@ -4,7 +4,9 @@ import colorsys
 # from colormath.color_objects import sRGBColor, LabColor
 # from colormath.color_conversions import convert_color
 # from colormath.color_diff import delta_e_cie2000
+from zope.interface import implementer
 from pcwawc.runningstats import ColorStats
+from pcwawc.chessvision import ISquare,FieldState
 import chess
 from enum import IntEnum
 
@@ -24,18 +26,6 @@ class Channel(IntEnum):
     RED=2
     
     def title(self,titles=["green", "blue", "red"]):
-        return titles[self]
-
-class FieldState(IntEnum):
-    """ the state of a field is a combination of the field color with a piece color + two empty field color options"""
-    WHITE_EMPTY = 0
-    WHITE_WHITE = 1
-    WHITE_BLACK = 2
-    BLACK_EMPTY = 3
-    BLACK_WHITE = 4
-    BLACK_BLACK = 5    
-    
-    def title(self,titles=["white empty", "white on white", "black on white","black empty","white on black","black on black"]):
         return titles[self]
     
 class Grid:
@@ -116,7 +106,7 @@ class FieldROI:
         pixel=(x,y)
         return pixel      
             
-
+@implementer(ISquare)
 class Field:
     """ a single Field of a chess board as observed from a WebCam"""
     rows = 8
