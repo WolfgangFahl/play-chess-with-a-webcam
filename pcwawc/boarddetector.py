@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
-from pcwawc.Field import Field, FieldState
+from pcwawc.field import Field, FieldState
 import cv2
 
 

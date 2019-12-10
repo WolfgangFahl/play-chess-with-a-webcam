@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.Board import Board
+from pcwawc.board import Board
 from pcwawc.videoanalyze import VideoAnalyzer
-from pcwawc.BoardDetector import BoardDetector
-from pcwawc.Environment import Environment
-from pcwawc.Video import Video
+from pcwawc.boarddetector import BoardDetector
+from pcwawc.environment import Environment
+from pcwawc.video import Video
 from pcwawc.game import WebCamGame
 from flask import render_template, send_from_directory, Response, jsonify
 from datetime import datetime

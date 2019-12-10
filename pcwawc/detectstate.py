@@ -10,8 +10,8 @@ but we don't for the time being
 @author: wf
 '''
 from timeit import default_timer as timer
-from pcwawc.ChessTrapezoid import FieldState, FieldColorStats
-from pcwawc.Environment import Environment
+from pcwawc.chesstrapezoid import FieldState, FieldColorStats
+from pcwawc.environment import Environment
 
 class DetectState(object):
     '''

@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.Board import Board
-from pcwawc.BoardDetector import BoardDetector
-from pcwawc.Environment4Test import Environment4Test
-from pcwawc.Video import Video
-from pcwawc.WebApp import WebApp
+from pcwawc.board import Board
+from pcwawc.boarddetector import BoardDetector
+from pcwawc.environment4test import Environment4Test
+from pcwawc.video import Video
+from pcwawc.webapp import WebApp
 from pcwawc.webchesscam import WebChessCamArgs
-from pcwawc.Field import FieldState
+from pcwawc.field import FieldState
 from pcwawc.runningstats import ColorStats
 from timeit import default_timer as timer
 import cv2

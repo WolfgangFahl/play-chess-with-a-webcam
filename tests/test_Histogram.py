@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.PlotLib import PlotLib, PlotType
-from pcwawc.Environment4Test import Environment4Test
-from pcwawc.Environment import Environment
-from pcwawc.WebApp import WebApp
+from pcwawc.plotlib import PlotLib, PlotType
+from pcwawc.environment4test import Environment4Test
+from pcwawc.environment import Environment
+from pcwawc.webapp import WebApp
 from pcwawc.webchesscam import  WebChessCamArgs
 import cv2
 testEnv = Environment4Test()

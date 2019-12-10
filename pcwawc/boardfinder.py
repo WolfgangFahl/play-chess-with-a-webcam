@@ -7,10 +7,10 @@
 # Global imports
 import cv2
 from timeit import default_timer as timer
-from pcwawc.Environment import Environment
+from pcwawc.environment import Environment
 from pcwawc.histogram import Histogram
-from pcwawc.ChessTrapezoid import Trapez2Square
-from pcwawc.Video import Video
+from pcwawc.chesstrapezoid import Trapez2Square
+from pcwawc.video import Video
 import numpy as np
 import math
 import chess

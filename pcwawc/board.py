@@ -5,7 +5,7 @@
 import chess.pgn
 import io
 from chess import Move
-from pcwawc.Field import Field
+from pcwawc.field import Field
 
 class Board(object):
     """This class is used to hold the state of a chessboard with pieces positions and the current player's color which player needs to play. It uses the python-chess library by default"""

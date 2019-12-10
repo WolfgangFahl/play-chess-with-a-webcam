@@ -11,7 +11,7 @@ import math
 from enum import IntEnum
 import cv2
 import chess
-from pcwawc.Video import Video
+from pcwawc.video import Video
 from pcwawc.runningstats import MinMaxStats, MovingAverage
 from timeit import default_timer as timer
 

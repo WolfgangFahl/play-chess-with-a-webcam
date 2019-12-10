@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.Environment import Environment
-from pcwawc.JsonAbleMixin import JsonAbleMixin
-from pcwawc.YamlAbleMixin import YamlAbleMixin
+from pcwawc.environment import Environment
+from pcwawc.jsonablemixin import JsonAbleMixin
+from pcwawc.yamlablemixin import YamlAbleMixin
 from time import strftime
 import numpy as  np
 import chess

@@ -1,5 +1,5 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.Video import Video
+from pcwawc.video import Video
 import sys
 
 

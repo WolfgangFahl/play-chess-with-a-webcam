@@ -6,10 +6,10 @@ Created on 2019-11-29
 
 @author: wf
 '''
-from pcwawc.Environment4Test import Environment4Test
-from pcwawc.Environment import Environment
+from pcwawc.environment4test import Environment4Test
+from pcwawc.environment import Environment
 from pcwawc.histogram import Histogram, Stats
-from pcwawc.ChessTrapezoid import ChessTrapezoid
+from pcwawc.chesstrapezoid import ChessTrapezoid
 import chess
 testEnv = Environment4Test()
 

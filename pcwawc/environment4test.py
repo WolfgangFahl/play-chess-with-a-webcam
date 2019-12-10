@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
-from pcwawc.Board import Board
-from pcwawc.Environment import Environment
-from pcwawc.Video import Video
+from pcwawc.board import Board
+from pcwawc.environment import Environment
+from pcwawc.video import Video
 from pcwawc.game import Warp
 from timeit import default_timer as timer
 import os

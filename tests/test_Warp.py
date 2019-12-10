@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.videoanalyze import Warp
-from pcwawc.YamlAbleMixin import YamlAbleMixin
-from pcwawc.JsonAbleMixin import JsonAbleMixin
+from pcwawc.yamlablemixin import YamlAbleMixin
+from pcwawc.jsonablemixin import JsonAbleMixin
 import tempfile
 
 debug = False

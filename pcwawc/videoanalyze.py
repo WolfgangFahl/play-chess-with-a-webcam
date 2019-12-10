@@ -6,8 +6,8 @@ Created on 2019-12-08
 @author: wf
 '''
 from pcwawc.args import Args
-from pcwawc.Video import Video
-from pcwawc.Environment import Environment
+from pcwawc.video import Video
+from pcwawc.environment import Environment
 from pcwawc.boardfinder import BoardFinder, Corners
 from pcwawc.game import Warp
 import sys

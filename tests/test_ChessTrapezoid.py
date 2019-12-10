@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.Environment4Test import Environment4Test
-from pcwawc.Video import Video
-from pcwawc.ChessTrapezoid import ChessTrapezoid,ChessTSquare, FieldState, Color, SquareChange
+from pcwawc.chesstrapezoid import ChessTrapezoid,ChessTSquare, FieldState, Color, SquareChange
+from pcwawc.detectstate import DetectState, DetectColorState
+from pcwawc.environment4test import Environment4Test
+from pcwawc.video import Video
+
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -13,7 +15,6 @@ import numpy as np
 import pytest
 import chess
 import getpass
-from pcwawc.detectstate import DetectState, DetectColorState
 
 testEnv = Environment4Test()
 speedup=5 # times 
