@@ -18,8 +18,6 @@ class WebApp:
         """ construct me """
         self.args = args
         self.video = Video()
-       
-        
         self.videoStream = None
         self.board = Board()
         self.boardDetector = BoardDetector(self.board, self.video,args.speedup)
@@ -232,8 +230,6 @@ class WebApp:
     #            # yield the output frame in the byte format
     #            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
     #                  bytearray(encodedImage) + b'\r\n')
-
-    
 
     # video generator
     def genVideo(self, video):

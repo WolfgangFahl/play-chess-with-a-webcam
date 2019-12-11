@@ -12,7 +12,7 @@ testEnv = Environment4Test()
 def test_ReadAvi():
     debug=False
     title='emptyBoard001'
-    vision=ChessBoardVision()
+    vision=ChessBoardVision(title)
     vision.showDebug=debug
     vision.open(testEnv.testMedia +title+".avi")
     frameIndex=0
@@ -25,5 +25,6 @@ def test_ReadAvi():
         assert (cbImage.frameIndex == frameIndex)
         if debug: print("%3d %.2fs" % (cbImage.frameIndex,cbImage.timeStamp))
     assert frameIndex==52    
+    vision.save()
     
 test_ReadAvi()    

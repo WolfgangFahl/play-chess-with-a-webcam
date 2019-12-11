@@ -4,15 +4,19 @@ Created on 2019-12-10
 @author: wf
 '''
 from pcwawc.chessvision import IChessBoardImage, IChessBoardVision
+from pcwawc.environment import Environment
+from pcwawc.jsonablemixin import JsonAbleMixin
 from pcwawc.video import Video
 from zope.interface import implementer
 from timeit import default_timer as timer
 
+
 @implementer(IChessBoardVision) 
-class ChessBoardVision:
-    debug=False
-    
+class ChessBoardVision(JsonAbleMixin):   
     """ implements access to chessboard images"""
+    
+    debug=False
+ 
     def __init__(self,title="chessboard"):
         self.title=title
         self.video=Video(title)
@@ -20,20 +24,45 @@ class ChessBoardVision:
         self.start=None
         self.quitWanted=False
         self.hasImage=False
+        self.device=None
+        self.timestamps=[]
         pass
     
     def open(self,device):
         self.video.capture(device)
+        self.device=device
         
     def readChessBoardImage(self):
         self.hasImage, image, self.quitWanted = self.video.readFrame(self.showDebug)
         if self.video.frames==1:
             self.start=timer()
-        self.chessBoardImage=ChessBoardImage(self,image,self.video.frames,timer()-self.start)
+        timestamp=timer()-self.start
+        frameIndex=self.video.frames
+        self.chessBoardImage=ChessBoardImage(self,image,frameIndex,timestamp)
+        self.timestamps.append(timestamp)
         return self.chessBoardImage
         
     def close(self):
         self.video.close()    
+        
+    def __getstate__(self):
+        state={}
+        state["title"]=self.title
+        state["device"]=self.device
+        state["timestamps"]=self.timestamps
+        return state
+        
+    def __setstate__(self, state):
+        self.title=state["title"]
+        self.device=state["device"]
+        self.timestamps=state["timestamps"]  
+        
+    def save(self,path="games/videos"):
+        env = Environment()
+        savepath = str(env.projectPath) + "/" + path
+        Environment.checkDir(savepath)
+        jsonFile = savepath + "/" + self.title 
+        self.writeJson(jsonFile)    
 
 @implementer(IChessBoardImage)     
 class ChessBoardImage:
