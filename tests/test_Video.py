@@ -76,8 +76,7 @@ def test_getSubRect():
 
 
 def test_device():
-    video = Video()
-    assert video.is_int("0")
+    assert Video.is_int("0")
     v0 = int("0")
     assert v0 == 0
 

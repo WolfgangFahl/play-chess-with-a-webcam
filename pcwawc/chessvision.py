@@ -55,14 +55,18 @@ class IChessBoardVision(Interface):
         """ close the access to the chessbaord images"""
         pass
     
+class IChessBoardImageSet(Interface):
+    frameIndex=Attribute("index of image in a sequence")
+    timeStamp=Attribute("time")    
+    image=Attribute("original image")
+    warped=Attribute("image warped to square size")
+        
+    
 class IChessBoardImage(Interface):
     """ a single image of a chessboard"""
     image=Attribute("original trapezoid image")
     width=Attribute("width of the original image")
     height=Attribute("width of the original image")
-    warped=Attribute("image warped to square size")
-    frameIndex=Attribute("index of image in a sequence")
-    timeStamp=Attribute("time")    
     
 class IMoveDetector(Interface):
     """ a detector for moves on a chessboard image"""

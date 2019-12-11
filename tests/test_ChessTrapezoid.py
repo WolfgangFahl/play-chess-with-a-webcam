@@ -3,6 +3,7 @@
 from pcwawc.chesstrapezoid import ChessTrapezoid,ChessTSquare, FieldState, Color, SquareChange
 from pcwawc.detectstate import DetectState, DetectColorState
 from pcwawc.environment4test import Environment4Test
+from pcwawc.chessimage import ChessBoardVision
 from pcwawc.video import Video
 
 from timeit import default_timer as timer
@@ -167,6 +168,10 @@ def test_ColorDistribution():
 class TestVideo:
     def __init__(self,frames,totalFrames,path,points,rotation=270,idealSize=800,ans=None):
         self.path=path
+        if not Video.is_int(path):
+            self.title=os.path.basename(path)
+        else:
+            self.title="camera %s" % (path)    
         self.frames=frames
         self.totalFrames=totalFrames,
         self.points=points
@@ -189,8 +194,6 @@ def onPieceMoveDetected(tSquare):
         tSquare.trapez.video.showImage(tSquare.postMoveImage,tSquare.an+" post")      
     
 def test_ChessTrapezoid():
-    video=Video()
-    
     #ans=["e2","e4","e7","e5","d1","h5","b8","c6","f1","c4","c8","f6","f7","a1","h8"]
     tk=testEnv.testMedia+'../../Chess-Testmedia/'
     videos=testEnv.testMedia+'../games/videos/'
@@ -239,23 +242,23 @@ def test_ChessTrapezoid():
     if debugMoveDetected:
         detectState.onPieceMoveDetected=onPieceMoveDetected
     ChessTSquare.showDebugChange=["e2","e4","e7","e5"]
-    video.open(testVideo.path)
+    vision=ChessBoardVision(testVideo.title)
+    vision.open(testVideo.path)
     start=timer()  
     colorHistory={}
     changeHistory={}
-    for frame in range(frames):
-        ret, bgr, quitWanted = video.readFrame(show=False)
-        if quitWanted:
+    while True:
+        cbImageSet=vision.readChessBoardImage()
+        if not vision.hasImage:
             break
-        assert ret
-        assert bgr is not None     
-        h,w = bgr.shape[:2]
+        frame=cbImageSet.frameIndex-1
         if frame==0:
             #trapezoid.prepareMask(bgr)
             #trapezoid.maskPolygon(trapezoid.polygon)  
             trapezoid.updatePieces(chess.STARTING_BOARD_FEN)
         startc=timer()  
-        warped=trapezoid.warpedBoardImage(bgr)
+        cbImage=cbImageSet.cbImage
+        warped=trapezoid.warpedBoardImage(cbImage.image)
         warpedHeight, warpedWidth = warped.shape[:2]
         averageColors=trapezoid.analyzeColors(warped)
         idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
@@ -267,7 +270,7 @@ def test_ChessTrapezoid():
         # diffSum=trapezoid.diffSum(warped,idealImage)
         endc=timer()
         print('%dx%d frame %5d in %.3f s with %2d ✅ %5.1f Δ %5.1f ΣΔ %4d ✅/%4d ❌' 
-              % (w,h,frame,endc-startc,squareChanges["valid"],squareChanges["diffSum"],squareChanges["diffSumDelta"],squareChanges["validFrames"],squareChanges["invalidFrames"]))    
+              % (cbImage.width,cbImage.height,frame,endc-startc,squareChanges["valid"],squareChanges["diffSum"],squareChanges["diffSumDelta"],squareChanges["validFrames"],squareChanges["invalidFrames"]))    
         detectColorState.check(warped,averageColors,drawDebug=True)
         colorHistory[frame]=trapezoid.averageColors.copy()
         
@@ -279,13 +282,13 @@ def test_ChessTrapezoid():
             keyWait=5
             #trapezoid.drawDebug(warped)
             if displayImage:
-                video.showImage(warped, "warped", keyWait=keyWait)
+                vision.video.showImage(warped, "warped", keyWait=keyWait)
             if displayDebug:
                 #trapezoid.drawDebug(idealImage)
-                video.showImage(idealImage,"ideal")
+                vision.video.showImage(idealImage,"ideal")
                 trapezoid.drawDebug(diffImage)
-                video.showImage(diffImage,"diff")
-                video.showImage(preMoveImage,"preMove")
+                vision.video.showImage(diffImage,"diff")
+                vision.video.showImage(preMoveImage,"preMove")
            
     end=timer()
     print('read %3d frames in %.3f s at %.0f fps' % (frames,end-start,(frames/(end-start))))
@@ -294,7 +297,7 @@ def test_ChessTrapezoid():
     if debugPlotHistory:
         plotColorHistory(colorHistory)
     if waitAtEnd>0:
-        video.showImage(warped, "warped", keyWait=waitAtEnd)
+        vision.video.showImage(warped, "warped", keyWait=waitAtEnd)
         
 def plotChangeHistory(changeHistory,testVideo,title,detectState):
     #plot=PlotLib("Move Detection",PlotLib.A4(turned=True))

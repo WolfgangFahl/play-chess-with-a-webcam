@@ -3,7 +3,7 @@ Created on 2019-12-10
 
 @author: wf
 '''
-from pcwawc.chessvision import IChessBoardImage, IChessBoardVision
+from pcwawc.chessvision import IChessBoardImageSet, IChessBoardImage, IChessBoardVision
 from pcwawc.environment import Environment
 from pcwawc.jsonablemixin import JsonAbleMixin
 from pcwawc.video import Video
@@ -39,9 +39,9 @@ class ChessBoardVision(JsonAbleMixin):
             self.start=timer()
         timestamp=timer()-self.start
         frameIndex=self.video.frames
-        self.chessBoardImage=ChessBoardImage(self,image,frameIndex,timestamp)
+        self.chessBoardImageSet=ChessBoardImageSet(self,image,frameIndex,timestamp)
         self.timestamps.append(timestamp)
-        return self.chessBoardImage
+        return self.chessBoardImageSet
         
     def close(self):
         self.video.close()    
@@ -50,7 +50,7 @@ class ChessBoardVision(JsonAbleMixin):
         state={}
         state["title"]=self.title
         device=self.device
-        if not self.video.is_int(device):
+        if not Video.is_int(device):
             cwd=os.getcwd()
             devicepath=os.path.dirname(device)
             root=os.path.commonpath([cwd,devicepath])
@@ -71,15 +71,18 @@ class ChessBoardVision(JsonAbleMixin):
         jsonFile = savepath + "/" + self.title 
         self.writeJson(jsonFile)    
 
-@implementer(IChessBoardImage)     
-class ChessBoardImage:
-    """ a chessboard image and it's transformations"""
+@implementer(IChessBoardImageSet)     
+class ChessBoardImageSet:
     def __init__(self,vision,image,frameIndex,timeStamp):
         self.vision=vision
         self.frameIndex=frameIndex
-        self.image=image
-        self.height,self.width = image.shape[:2]
-  
         # see https://stackoverflow.com/questions/47743246/getting-timestamp-of-each-frame-in-a-video
         self.timeStamp=timeStamp
-        
+        self.cbImage=ChessBoardImage(image)
+  
+@implementer(IChessBoardImage)     
+class ChessBoardImage:
+    """ a chessboard image and it's transformations"""
+    def __init__(self,image):
+        self.image=image
+        self.height,self.width = image.shape[:2]

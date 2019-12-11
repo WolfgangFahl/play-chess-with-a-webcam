@@ -30,7 +30,8 @@ class Video:
         pass
 
     # check whether s is an int
-    def is_int(self, s):
+    @staticmethod
+    def is_int(s):
         try:
             int(s)
             return True
@@ -47,7 +48,7 @@ class Video:
 
     # capture from the given device
     def capture(self, device):
-        if self.is_int(device):
+        if Video.is_int(device):
             self.device = int(device)
         else:
             self.device = device

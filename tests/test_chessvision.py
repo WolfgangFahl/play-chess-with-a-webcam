@@ -19,13 +19,14 @@ def test_ReadAvi():
         vision.open(testEnv.testMedia +title+".avi")
         frameIndex=0
         while True:
-            cbImage=vision.readChessBoardImage()
+            cbImageSet=vision.readChessBoardImage()
             if not vision.hasImage:
                 break
             frameIndex+=1
+            cbImage=cbImageSet.cbImage
             assert (cbImage.width,cbImage.height)==(640,480)
-            assert (cbImage.frameIndex == frameIndex)
-            if debug: print("%3d %.2fs" % (cbImage.frameIndex,cbImage.timeStamp))
+            assert (cbImageSet.frameIndex == frameIndex)
+            if debug: print("%3d %.2fs" % (cbImageSet.frameIndex,cbImageSet.timeStamp))
         assert frameIndex==expectedFrames[index]   
         vision.save()
         
