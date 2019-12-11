@@ -9,6 +9,7 @@ from pcwawc.jsonablemixin import JsonAbleMixin
 from pcwawc.video import Video
 from zope.interface import implementer
 from timeit import default_timer as timer
+import os
 
 
 @implementer(IChessBoardVision) 
@@ -48,7 +49,13 @@ class ChessBoardVision(JsonAbleMixin):
     def __getstate__(self):
         state={}
         state["title"]=self.title
-        state["device"]=self.device
+        device=self.device
+        if not self.video.is_int(device):
+            cwd=os.getcwd()
+            devicepath=os.path.dirname(device)
+            root=os.path.commonpath([cwd,devicepath])
+            device=os.path.relpath(devicepath,root)+'/'+os.path.basename(device)
+        state["device"]=device
         state["timestamps"]=self.timestamps
         return state
         

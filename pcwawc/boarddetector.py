@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.chessvision import FieldState
+from pcwawc.chessvision import FieldState, IMoveDetector
 from pcwawc.field import Field
 import cv2
+from zope.interface import implementer
 
-
+@implementer(IMoveDetector) 
 class BoardDetector:
     """ detect a chess board's state from the given image """
     debug = False
