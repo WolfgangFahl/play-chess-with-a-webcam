@@ -13,7 +13,7 @@ import cv2
 import chess
 from zope.interface import implementer
 from pcwawc.video import Video
-from pcwawc.chessvision import ISquare
+from pcwawc.chessvision import ISquare,FieldState
 from pcwawc.runningstats import MinMaxStats, MovingAverage
 from timeit import default_timer as timer
 
@@ -300,19 +300,7 @@ class ChessTrapezoid(Trapez2Square):
         changes["diffSumDelta"]=diffSumDelta
         changes["validFrames"]=detectState.validFrames
         changes["invalidFrames"]=detectState.invalidFrames            
-        return changes    
-
-class FieldState(IntEnum):
-    """ the state of a field is a combination of the field color with a piece color + two empty field color options"""
-    WHITE_EMPTY = 0
-    WHITE_WHITE = 1
-    WHITE_BLACK = 2
-    BLACK_EMPTY = 3
-    BLACK_WHITE = 4
-    BLACK_BLACK = 5
-
-    def title(self,titles=["white empty", "white on white", "black on white","black empty","white on black","black on black"]):
-        return titles[self]
+        return changes
     
 class FieldColorStats(object):
     """ Color statistics for Fields """

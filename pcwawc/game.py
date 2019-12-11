@@ -1,13 +1,16 @@
 #!/usr/bin/python
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
+from pcwawc.chessvision import IGame
 from pcwawc.environment import Environment
 from pcwawc.jsonablemixin import JsonAbleMixin
 from pcwawc.yamlablemixin import YamlAbleMixin
+from zope.interface import implementer
 from time import strftime
 import numpy as  np
 import chess
 import os
 
+@implementer(IGame) 
 class Game(JsonAbleMixin):
     """ keeps track of a games state in a JavaScript compatible way to exchange game State information
     across platforms e.g. between Python backend and JavaScript frontend"""

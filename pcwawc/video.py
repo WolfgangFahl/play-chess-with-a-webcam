@@ -15,7 +15,8 @@ class Video:
     """ Video handling e.g. recording/writing """
 
     # construct me with no parameters
-    def __init__(self):
+    def __init__(self,title="frame"):
+        self.title=title
         self.cap = None
         self.frames = 0
         self.ispaused = False
@@ -134,7 +135,7 @@ class Video:
             else:
                 self.processedFrame=self.frame    
             if show:
-                quitWanted = not self.showImage(self.frame, "frame")
+                quitWanted = not self.showImage(self.frame, self.title)
         return ret, self.processedFrame, quitWanted
 
     # play the given capture
