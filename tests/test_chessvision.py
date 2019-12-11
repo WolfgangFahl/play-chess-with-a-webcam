@@ -11,7 +11,7 @@ testEnv = Environment4Test()
 # test reading video as jpg frames
 def test_ReadAvi():
     debug=False
-    titles=['scholarsMate','emptyBoard001']
+    titles=['scholarsmate','emptyBoard001']
     expectedFrames=[334,52]
     for index,title in enumerate(titles):
         vision=ChessBoardVision(title)
