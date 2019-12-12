@@ -13,6 +13,8 @@ from zope.interface import implementer
 class Board(object):
     """This class is used to hold the state of a chessboard with pieces positions and the current player's color which player needs to play. It uses the python-chess library by default"""
     debug = True
+    EMPTY_FEN='8/8/8/8/8/8/8/8 w - -'
+    START_FEN = chess.STARTING_BOARD_FEN
     
     # initialize the board 
     def __init__(self):
