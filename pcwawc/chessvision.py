@@ -58,8 +58,11 @@ class IChessBoardVision(Interface):
 class IChessBoardImageSet(Interface):
     frameIndex=Attribute("index of image in a sequence")
     timeStamp=Attribute("time")    
-    image=Attribute("original image")
-    warped=Attribute("image warped to square size")
+    cbImage=Attribute("original chessboard image")
+    cbWarped=Attribute("chessboard image warped to square size")
+    cbIdeal=Attribute("ideal chessboard image constructed from parameters")
+    cbPreMove=Attribute("chessboard image before move")
+    cbDiff=Attribute("chessboard image difference to premove state")
         
     
 class IChessBoardImage(Interface):
@@ -67,6 +70,7 @@ class IChessBoardImage(Interface):
     image=Attribute("original trapezoid image")
     width=Attribute("width of the original image")
     height=Attribute("width of the original image")
+    title=Attribute("title of the image")
     
 class IMoveDetector(Interface):
     """ a detector for moves on a chessboard image"""

@@ -160,23 +160,34 @@ class ChessTrapezoid(Trapez2Square):
             for tsquare in self.genSquares():
                 if tsquare.fieldState in fieldStates:
                     tsquare.drawState(image,transformation,channels)
+                    
+    def prepareImageSet(self,cbImageSet):
+        """ prepare the image set"""
+        cbWarped=self.warpedBoardImage(cbImageSet.cbImage.image)
+        averageColors=self.analyzeColors(cbWarped)
+        cbImageSet.cbWarped=cbWarped
+        cbIdeal=self.idealColoredBoard(cbWarped.width,cbWarped.height)
+        cbImageSet.cbIdeal=cbIdeal
+        cbImageSet.cbPreMove=self.preMoveBoard(cbWarped.width,cbWarped.height)
+        cbImageSet.cbDiff=self.diffBoardImage(cbWarped,cbIdeal)
+        return averageColors         
 
     def warpedBoardImage(self,image):
         warped=cv2.warpPerspective(image,self.inverseTransform,(self.idealSize,self.idealSize))
-        return ChessBoardImage(warped)
+        return ChessBoardImage(warped,"warped")
     
-    def diffBoardImage(self,cbImage,other):
+    def diffBoardImage(self,cbImage,cbOther):
         if cbImage is None :
             raise Exception("image is None for diff")
-        if other is None:
+        if cbOther is None:
             raise Exception("other is None for diff")
         h, w = cbImage.height,cbImage.width
-        ho, wo = other.height,other.width
+        ho, wo = cbOther.height,cbOther.width
         if not h==ho or not w==wo:
             raise Exception("image %d x %d has to have same size as other %d x %d for diff" % (w,h,wo,ho))
         #return np.subtract(self.image,other)
-        diff=cv2.absdiff(cbImage.image,other.image)
-        return ChessBoardImage(diff)
+        diff=cv2.absdiff(cbImage.image,cbOther.image)
+        return ChessBoardImage(diff,"diff")
     
     def diffSum(self,image,other):
         #diffImage=self.diff(other) 
@@ -192,14 +203,14 @@ class ChessTrapezoid(Trapez2Square):
         idealImage=self.video.getEmptyImage4WidthAndHeight(w,h,3)
         for tsquare in self.genSquares():
             tsquare.drawState(idealImage,transformation,3)
-        return ChessBoardImage(idealImage)
+        return ChessBoardImage(idealImage,"ideal")
    
     def preMoveBoard(self,w,h):
         """ get an image of the board as it was before any move """
         refImage=self.video.getEmptyImage4WidthAndHeight(w,h,3)
         for tsquare in self.genSquares():
             tsquare.addPreMoveImage(refImage)
-        return refImage;
+        return ChessBoardImage(refImage,"preMove ref");
      
     def drawDebug(self,image,color=(255,255,255)):
         """ draw debug information e.g. piecel symbol and an onto the given image"""
@@ -272,15 +283,16 @@ class ChessTrapezoid(Trapez2Square):
                 #self.video.showImage(asExpected,tsquare.an)
         return colorStats
                 
-                
-    def detectChanges(self,cbImage,cbDiffImage,detectState):
+    def detectChanges(self,cbImageSet,detectState):
         """ detect the changes of the given differential image using the given detect state machine"""
         detectState.nextFrame()
         changes={}
         validChanges=0
         diffSum=0
+        cbImage=cbImageSet.cbImage
+        cbDiff=cbImageSet.cbDiff
         for tsquare in self.genSquares():
-            squareChange=tsquare.squareChange(cbImage.image,cbDiffImage.image)
+            squareChange=tsquare.squareChange(cbImage.image,cbDiff.image)
             changes[tsquare.an]=squareChange
             diffSum+=abs(squareChange.diff)
             if squareChange.valid:

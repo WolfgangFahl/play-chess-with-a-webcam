@@ -79,12 +79,26 @@ class ChessBoardImageSet:
         self.frameIndex=frameIndex
         # see https://stackoverflow.com/questions/47743246/getting-timestamp-of-each-frame-in-a-video
         self.timeStamp=timeStamp
-        self.cbImage=ChessBoardImage(image)
-        self.warped=None
+        self.cbImage=ChessBoardImage(image,"chessboard")
+        self.cbWarped=None
+        self.cbIdeal=None
+        self.cbPreMove=None
+        self.cbDiff=None
+        
+    def showDebug(self,video=None):
+        self.cbIdeal.showDebug(video)
+        self.cbDiff.showDebug(video)
+        self.cbPreMove.showDebug(video)
   
 @implementer(IChessBoardImage)     
 class ChessBoardImage:
     """ a chessboard image and it's transformations"""
-    def __init__(self,image):
+    def __init__(self,image,title):
         self.image=image
+        self.title=title
         self.height,self.width = image.shape[:2]
+        
+    def showDebug(self,video=None,keyWait=5):
+        if video is None:
+            video=Video()
+        video.showImage(self.image,self.title,keyWait=keyWait)

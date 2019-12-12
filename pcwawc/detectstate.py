@@ -64,12 +64,12 @@ class DetectColorState(object):
         Environment.checkDir(self.imagePath)
         
         
-    def check(self,image,averageColors,drawDebug=False):
+    def check(self,cbImage,averageColors,drawDebug=False):
         self.frames+=1
         startco=timer()
         self.averageColors=averageColors
-        self.image=image
-        self.fieldColorStats=self.trapez.optimizeColorCheck(image,averageColors)
+        self.image=cbImage.image
+        self.fieldColorStats=self.trapez.optimizeColorCheck(cbImage,averageColors)
         endco=timer()
         if drawDebug:
             self.fieldColorStats.showStatsDebug(endco-startco)
