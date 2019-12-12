@@ -118,7 +118,7 @@ def test_MaskFieldStates():
         board=webApp.board
         sortedFields=checkFieldStates(boardDetector, board)
         whiteFields=sortedFields[FieldState.WHITE_EMPTY]
-        print ("%d white fields for %s"  % (len(whiteFields),board.fen()))
+        print ("%d white fields for %s"  % (len(whiteFields),board.fen))
         for field in whiteFields:
             print("%s: %3d,%3d" % (field.an,field.pcx,field.pcy))
         video.showImage(rgba, imageInfo['title'],keyWait=waitTime)
