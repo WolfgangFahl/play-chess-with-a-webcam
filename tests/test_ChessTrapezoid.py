@@ -3,7 +3,7 @@
 from pcwawc.chesstrapezoid import ChessTrapezoid,ChessTSquare, FieldState, Color, SquareChange
 from pcwawc.detectstate import DetectState, DetectColorState
 from pcwawc.environment4test import Environment4Test
-from pcwawc.chessimage import ChessBoardVision, ChessBoardImage
+from pcwawc.chessimage import ChessBoardVision
 from pcwawc.video import Video
 
 from timeit import default_timer as timer

@@ -5,22 +5,20 @@
 import chess.pgn
 import io
 from chess import Move
+from pcwawc.chessvision import IChessboard
 from pcwawc.field import Field
+from zope.interface import implementer
 
+@implementer(IChessboard)
 class Board(object):
     """This class is used to hold the state of a chessboard with pieces positions and the current player's color which player needs to play. It uses the python-chess library by default"""
     debug = True
-
-    C = {'w': 0, 'b': 1}
-    EMPTY_FEN='8/8/8/8/8/8/8/8 w - -'
-    START_FEN = chess.STARTING_BOARD_FEN
     
-    # initialize the board with a default dominator next cell to the right
-    def __init__(self, dominatorOffset=(0, -1)):
+    # initialize the board 
+    def __init__(self):
         self.chessboard = chess.Board()
-        self.toPlay = Board.C['w']
-        self.dominator = dominatorOffset
         self.fieldsByAn = {}
+        self.updateFen()
 
         self.fields = [[0 for x in range(Field.rows)] for y in range(Field.cols)]
         for row in range(Field.rows):
@@ -63,6 +61,7 @@ class Board(object):
         move = Move.from_uci(ucimove)
         san = self.chessboard.san(move)
         self.chessboard.push(move)
+        self.updateFen()
         if Board.debug:
             print ("move %s" % (ucimove))
             print ("%s" % (self.unicode()))
@@ -70,6 +69,7 @@ class Board(object):
     
     def takeback(self):
         self.chessboard.pop()
+        self.updateFen()
 
     # get my pgn description
     def getPgn(self):
@@ -91,14 +91,16 @@ class Board(object):
         self.chessboard = game.board()
         for move in game.mainline_moves():
             self.chessboard.push(move)
+        self.updateFen()    
 
     def setFEN(self, fen):
         self.chessboard = chess.Board(fen)
+        self.updateFen()
 
     # get my fen description
-    def fen(self):
-        fen = self.chessboard.board_fen()
-        return fen
+    def updateFen(self):
+        self.fen = self.chessboard.board_fen()
+        return self.fen
 
     # get my unicode representation
     def unicode(self):

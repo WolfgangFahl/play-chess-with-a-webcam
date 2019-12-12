@@ -4,7 +4,6 @@ from pcwawc.board import Board
 from pcwawc.chessvision import FieldState
 import chess
 
-
 # check the sequence of  moves end positon against the expected FEN notation string
 def checkMovesEndPosition(moves, expectedFen):
     board = Board()
@@ -17,7 +16,7 @@ def checkMovesEndPosition(moves, expectedFen):
 # check the expected end position
 def checkEndPosition(board, expectedFen):
     print("---Final positions---")
-    fen = board.fen()
+    fen = board.updateFen()
     print (fen)
     unicode = board.unicode()
     print (unicode)
