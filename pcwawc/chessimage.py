@@ -73,12 +73,14 @@ class ChessBoardVision(JsonAbleMixin):
 
 @implementer(IChessBoardImageSet)     
 class ChessBoardImageSet:
+    """ a set of images of the current chess board"""
     def __init__(self,vision,image,frameIndex,timeStamp):
         self.vision=vision
         self.frameIndex=frameIndex
         # see https://stackoverflow.com/questions/47743246/getting-timestamp-of-each-frame-in-a-video
         self.timeStamp=timeStamp
         self.cbImage=ChessBoardImage(image)
+        self.warped=None
   
 @implementer(IChessBoardImage)     
 class ChessBoardImage:

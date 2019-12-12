@@ -3,7 +3,7 @@
 from pcwawc.chesstrapezoid import ChessTrapezoid,ChessTSquare, FieldState, Color, SquareChange
 from pcwawc.detectstate import DetectState, DetectColorState
 from pcwawc.environment4test import Environment4Test
-from pcwawc.chessimage import ChessBoardVision
+from pcwawc.chessimage import ChessBoardVision, ChessBoardImage
 from pcwawc.video import Video
 
 from timeit import default_timer as timer
@@ -138,15 +138,14 @@ def test_ColorDistribution():
         trapez=ChessTrapezoid(warp.pointList,rotation=warp.rotation,idealSize=800)  
         warped=trapez.warpedBoardImage(image)
         end = timer()
-        height, width = warped.shape[:2]
-        video.writeImage(warped,imgPath+title+"-warped.jpg")
+        video.writeImage(warped.image,imgPath+title+"-warped.jpg")
         #startd = timer()
         #denoised=video.getEmptyImage(warped, 3)
         #cv2.fastNlMeansDenoisingColored(warped,denoised)
         #endd = timer()
         #print("%.3fs for loading %.3fs for denoising image %s: %4d x %4d" % ((end-start),(endd-startd),title,width,height))
         #video.writeImage(denoised,imgPath+title+"-denoised.jpg")
-        print("%.3fs for loading image %s: %4d x %4d" % ((end-start),title,width,height))
+        print("%.3fs for loading image %s: %4d x %4d" % ((end-start),title,warped.width,warped.height))
         
         trapez.updatePieces(fen)
         #ChessTrapezoid.colorDebug=True
@@ -155,14 +154,13 @@ def test_ColorDistribution():
         fcs=trapez.optimizeColorCheck(warped,averageColors)
         endc=timer()
         fcs.showStatsDebug(endc-startc)
-        warpedHeight, warpedWidth = warped.shape[:2]
-        idealImage=trapez.idealColoredBoard(warpedWidth,warpedHeight)
+        idealImage=trapez.idealColoredBoard(warped.width,warped.height)
         diffImage=trapez.diffBoardImage(warped,idealImage)
         for tSquare in trapez.genSquares():
             percent="%.0f" % (fcs.colorPercent[tSquare.an]) 
-            trapez.drawRCenteredText(diffImage, percent, tSquare.rcx,tSquare.rcy,(0,255,0))
+            trapez.drawRCenteredText(diffImage.image, percent, tSquare.rcx,tSquare.rcy,(0,255,0))
         #video.showImage(warped,title,keyWait=15000)
-        video.writeImage(diffImage,imgPath+title+"-colors.jpg")
+        video.writeImage(diffImage.image,imgPath+title+"-colors.jpg")
             
 
 class TestVideo:
@@ -259,10 +257,9 @@ def test_ChessTrapezoid():
         startc=timer()  
         cbImage=cbImageSet.cbImage
         warped=trapezoid.warpedBoardImage(cbImage.image)
-        warpedHeight, warpedWidth = warped.shape[:2]
         averageColors=trapezoid.analyzeColors(warped)
-        idealImage=trapezoid.idealColoredBoard(warpedWidth,warpedHeight)
-        preMoveImage=trapezoid.preMoveBoard(warpedWidth,warpedHeight)
+        idealImage=trapezoid.idealColoredBoard(warped.width,warped.height)
+        preMoveImage=trapezoid.preMoveBoard(warped.width,warped.height)
         diffImage=trapezoid.diffBoardImage(warped,idealImage)
         #diffImage=trapezoid.diffBoardImage(warped,preMoveImage)
         squareChanges=trapezoid.detectChanges(warped,diffImage, detectState)
@@ -282,12 +279,12 @@ def test_ChessTrapezoid():
             keyWait=5
             #trapezoid.drawDebug(warped)
             if displayImage:
-                vision.video.showImage(warped, "warped", keyWait=keyWait)
+                vision.video.showImage(warped.image, "warped", keyWait=keyWait)
             if displayDebug:
                 #trapezoid.drawDebug(idealImage)
-                vision.video.showImage(idealImage,"ideal")
-                trapezoid.drawDebug(diffImage)
-                vision.video.showImage(diffImage,"diff")
+                vision.video.showImage(idealImage.image,"ideal")
+                trapezoid.drawDebug(diffImage.image)
+                vision.video.showImage(diffImage.image,"diff")
                 vision.video.showImage(preMoveImage,"preMove")
            
     end=timer()

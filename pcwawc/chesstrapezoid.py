@@ -14,6 +14,7 @@ import chess
 from zope.interface import implementer
 from pcwawc.video import Video
 from pcwawc.chessvision import ISquare,FieldState
+from pcwawc.chessimage import ChessBoardImage
 from pcwawc.runningstats import MinMaxStats, MovingAverage
 from timeit import default_timer as timer
 
@@ -162,19 +163,20 @@ class ChessTrapezoid(Trapez2Square):
 
     def warpedBoardImage(self,image):
         warped=cv2.warpPerspective(image,self.inverseTransform,(self.idealSize,self.idealSize))
-        return warped
+        return ChessBoardImage(warped)
     
-    def diffBoardImage(self,image,other):
-        if image is None :
+    def diffBoardImage(self,cbImage,other):
+        if cbImage is None :
             raise Exception("image is None for diff")
         if other is None:
             raise Exception("other is None for diff")
-        h, w = image.shape[:2]
-        ho, wo = other.shape[:2]
+        h, w = cbImage.height,cbImage.width
+        ho, wo = other.height,other.width
         if not h==ho or not w==wo:
             raise Exception("image %d x %d has to have same size as other %d x %d for diff" % (w,h,wo,ho))
         #return np.subtract(self.image,other)
-        return cv2.absdiff(image,other)   
+        diff=cv2.absdiff(cbImage.image,other.image)
+        return ChessBoardImage(diff)
     
     def diffSum(self,image,other):
         #diffImage=self.diff(other) 
@@ -190,7 +192,7 @@ class ChessTrapezoid(Trapez2Square):
         idealImage=self.video.getEmptyImage4WidthAndHeight(w,h,3)
         for tsquare in self.genSquares():
             tsquare.drawState(idealImage,transformation,3)
-        return idealImage
+        return ChessBoardImage(idealImage)
    
     def preMoveBoard(self,w,h):
         """ get an image of the board as it was before any move """
@@ -214,14 +216,13 @@ class ChessTrapezoid(Trapez2Square):
             sortedTSquares[tsquare.fieldState].append(tsquare)
         return sortedTSquares
 
-    def analyzeColors(self,image):
+    def analyzeColors(self,cbImage):
         """ get the average colors per fieldState """
-        warped=self.warpedBoardImage(image)
         byFieldState=self.byFieldState()
         for fieldState in byFieldState.keys():
-            mask=self.video.getEmptyImage(warped)
+            mask=self.video.getEmptyImage(cbImage.image)
             self.drawFieldStates(mask,[fieldState],Transformation.IDEAL,1)
-            masked=self.video.maskImage(image,mask)
+            masked=self.video.maskImage(cbImage.image,mask)
             countedFields=len(byFieldState[fieldState])
             averageColor=Color(masked)
             self.averageColors[fieldState]=averageColor
@@ -231,13 +232,13 @@ class ChessTrapezoid(Trapez2Square):
                 print("%15s (%2d): %s" % (fieldState.title(),countedFields,averageColor))
         return self.averageColors      
     
-    def optimizeColorCheck(self,image,averageColors,debug=False):
+    def optimizeColorCheck(self,cbImage,averageColors,debug=False):
         optimalSelectivity=-100
         colorStats=None
         for factor in [x*0.05 for x in range(20,41)]:
             """ optimize the factor for the color check"""
             startc=timer()
-            fieldColorStatsCandidate=self.checkColors(image,averageColors,factor)
+            fieldColorStatsCandidate=self.checkColors(cbImage.image,averageColors,factor)
             endc=timer()
             fieldColorStatsCandidate.analyzeStats(factor,endc-startc)
             if fieldColorStatsCandidate.minSelectivity>optimalSelectivity:
@@ -272,14 +273,14 @@ class ChessTrapezoid(Trapez2Square):
         return colorStats
                 
                 
-    def detectChanges(self,image,diffImage,detectState):
+    def detectChanges(self,cbImage,cbDiffImage,detectState):
         """ detect the changes of the given differential image using the given detect state machine"""
         detectState.nextFrame()
         changes={}
         validChanges=0
         diffSum=0
         for tsquare in self.genSquares():
-            squareChange=tsquare.squareChange(image,diffImage)
+            squareChange=tsquare.squareChange(cbImage.image,cbDiffImage.image)
             changes[tsquare.an]=squareChange
             diffSum+=abs(squareChange.diff)
             if squareChange.valid:
