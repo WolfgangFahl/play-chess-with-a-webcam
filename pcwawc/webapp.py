@@ -121,7 +121,7 @@ class WebApp:
                 move = move.replace('-', '')
             self.board.move(move)
             self.game.moveIndex = self.game.moveIndex + 1
-            self.game.fen = self.board.fen()
+            self.game.fen = self.board.fen
             self.game.pgn = self.board.getPgn()
             msg = "move %s -> fen= %s" % (move, self.game.fen)
             if WebApp.debug:
@@ -134,7 +134,7 @@ class WebApp:
         return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
                         
     def chessGameState(self, gameid):
-        fen = self.board.fen()
+        fen = self.board.fen
         pgn = self.board.getPgn()
         return jsonify(fen=fen, pgn=pgn, gameid=gameid, debug=WebApp.debug, timestamp=self.timeStamp())
     
