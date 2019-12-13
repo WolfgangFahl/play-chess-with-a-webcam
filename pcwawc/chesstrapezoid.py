@@ -249,7 +249,7 @@ class ChessTrapezoid(Trapez2Square):
         for factor in [x*0.05 for x in range(20,41)]:
             """ optimize the factor for the color check"""
             startc=timer()
-            fieldColorStatsCandidate=self.checkColors(cbImage.image,averageColors,factor)
+            fieldColorStatsCandidate=self.checkColors(cbImage,averageColors,factor)
             endc=timer()
             fieldColorStatsCandidate.analyzeStats(factor,endc-startc)
             if fieldColorStatsCandidate.minSelectivity>optimalSelectivity:
@@ -259,7 +259,7 @@ class ChessTrapezoid(Trapez2Square):
                     print ("selectivity %5.1f white: %5.1f black: %5.1f " % (self.minSelectivity,self.whiteSelectivity,self.blackSelectivity))
         return colorStats       
         
-    def checkColors(self,image,averageColors,rangeFactor=1.0):
+    def checkColors(self,cbImage,averageColors,rangeFactor=1.0):
         """ check the colors against the expectation """
         byFieldState=self.byFieldState()
         colorStats=FieldColorStats()
@@ -274,7 +274,7 @@ class ChessTrapezoid(Trapez2Square):
             if ChessTrapezoid.colorDebug:
                 print ("%25s (%2d): %s -> %s - %s" % (fieldState.title(),len(fields),averageColor,lower,upper))
             for tsquare in fields:
-                squareImage=tsquare.getSquareImage(image)
+                squareImage=tsquare.getSquareImage(cbImage)
                 asExpected=cv2.inRange(squareImage,lower,upper)
                 h, w = squareImage.shape[:2]
                 pixels=h*w
@@ -579,10 +579,10 @@ class ChessTSquare:
         rcx,rcy=self.rcenter()
         self.trapez.drawRCenteredText(image,squareHint,rcx,rcy,color=color)   
         
-    def getSquareImage(self,image):
+    def getSquareImage(self,cbImage):
         """ get the image of me within the given image"""
-        h,w,x,y,dh,dw=self.rxy2xy(image)
-        squareImage=image[y:y +dh, x:x +dw]
+        h,w,x,y,dh,dw=self.rxy2xy(cbImage.image)
+        squareImage=cbImage.image[y:y +dh, x:x +dw]
         return squareImage        
              
     def squareChange(self,image,diffImage):

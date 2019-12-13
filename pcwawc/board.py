@@ -5,11 +5,11 @@
 import chess.pgn
 import io
 from chess import Move
-from pcwawc.chessvision import IChessboard
+from pcwawc.chessvision import IChessBoard
 from pcwawc.field import Field
 from zope.interface import implementer
 
-@implementer(IChessboard)
+@implementer(IChessBoard)
 class Board(object):
     """This class is used to hold the state of a chessboard with pieces positions and the current player's color which player needs to play. It uses the python-chess library by default"""
     debug = True
@@ -31,6 +31,10 @@ class Board(object):
 
     def fieldAt(self, row, col):
         return self.fields[col][row]
+    
+    def genSquares(self):
+        for field in self.fieldsByAn.values():
+            yield field
 
     def fieldStateCounts(self):
         # there are 6 different FieldStats
@@ -95,7 +99,7 @@ class Board(object):
             self.chessboard.push(move)
         self.updateFen()    
 
-    def setFEN(self, fen):
+    def updatePieces(self, fen):
         self.chessboard = chess.Board(fen)
         self.updateFen()
 

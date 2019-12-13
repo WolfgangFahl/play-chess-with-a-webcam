@@ -141,7 +141,7 @@ class WebApp:
     def chessFEN(self, fen):
         msg = fen
         try:
-            self.board.setFEN(fen)
+            self.board.updatePieces(fen)
             msg = "game update from fen %s" % (fen)
             self.game.fen = fen
             return self.index(msg)

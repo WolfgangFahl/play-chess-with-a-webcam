@@ -26,15 +26,27 @@ class FieldState(IntEnum):
 class IGame(Interface):
     pgn=Attribute("Portable game notation")
     
-class IChessboard(Interface):
+class IChessBoard(Interface):
     """ chessboard """
     fen=Attribute("Forsyth–Edwards Notation")
+    def genSquares(self):
+        """ generate all my squares"""
+        pass
+    
+    def updatePieces(self,fen):
+        """ update the piece positions according to the given FEN"""
+        pass
     
 class ISquare(Interface):
     """ one of the 64 square fields of a chessboard """
+    board=Attribute("the chessboard this square belongs to")
     an=Attribute("algebraic notation")
     fieldColor=Attribute("color of the empty square")
     piece=Attribute("chess piece currently on the square - may be None")
+    
+    def getSquareImage(self,cbImage):
+        """ get the 1/64 subimage of this square for the given chessboard image"""
+        pass
     
 class IPiece(Interface):
     """ a chess piece King,Queen,Bishop,Knight,Rook or Pawn"""   
