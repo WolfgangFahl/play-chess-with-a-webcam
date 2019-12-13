@@ -10,6 +10,7 @@ from pcwawc.video import Video
 from zope.interface import implementer
 from timeit import default_timer as timer
 import os
+import numpy as np
 
 
 @implementer(IChessBoardVision) 
@@ -85,11 +86,13 @@ class ChessBoardImageSet:
         self.cbPreMove=None
         self.cbDiff=None
         
+    def debugImage(self):
+        image=self.vision.video.as2x2(self.cbWarped.image,self.cbIdeal.image,self.cbDiff.image,self.cbPreMove.image)
+        return image
+        
     def showDebug(self,video=None):
-        self.cbIdeal.showDebug(video)
-        self.cbDiff.showDebug(video)
-        self.cbPreMove.showDebug(video)
-  
+        video.showImage(self.debugImage(),"debug")
+        
 @implementer(IChessBoardImage)     
 class ChessBoardImage:
     """ a chessboard image and it's transformations"""

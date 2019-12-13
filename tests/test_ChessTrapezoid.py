@@ -22,7 +22,6 @@ speedup=5 # times
 waitAtEnd=0 # msecs
 debug=False
 debugPlotHistory=False
-displayImage=True
 displayDebug=True
 
 def test_RankAndFile():
@@ -268,8 +267,6 @@ def test_ChessTrapezoid():
         colorHistory[frame]=trapezoid.averageColors.copy()
         
         if frame % speedup==0:
-            if displayImage:
-                cbWarped.showDebug(vision.video)
             if displayDebug:
                 trapezoid.drawDebug(cbImageSet.cbDiff.image)
                 cbImageSet.showDebug(video=vision.video)

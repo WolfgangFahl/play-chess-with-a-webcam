@@ -350,6 +350,20 @@ class Video:
             side = min(width, height)
             warped = cv2.resize(warped, (side, side))
         return warped
+    
+    def as2x2(self,row1col1,row1col2,row2col1,row2col2,downScale=2):
+        height, width = row1col1.shape[:2]
+        image1,image2,image3,image4=row1col1,row1col2,row2col1,row2col2
+        if downScale>1:
+            image1=cv2.resize(image1,(width//downScale,height//downScale))
+            image2=cv2.resize(image2,(width//downScale,height//downScale))
+            image3=cv2.resize(image3,(width//downScale,height//downScale))
+            image4=cv2.resize(image4,(width//downScale,height//downScale))
+            
+        combined1=np.concatenate((image1,image2),axis=0)
+        combined2=np.concatenate((image3,image4),axis=0)
+        combined=np.concatenate((combined1,combined2),axis=1)
+        return combined
 
     @staticmethod
     def getSubRect(image, rect):

@@ -1,7 +1,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.video import Video
 from pcwawc.environment4test import Environment4Test
-
+import numpy as np
 testenv=Environment4Test()
 
 # test reading an example video
@@ -12,13 +12,11 @@ def test_ReadVideo():
     print ("played %d frames" % (video.frames))
     assert video.frames == 52
 
-
 def test_ReadVideoWithPostProcess():
     video = Video()
     video.open(testenv.testMedia+'emptyBoard001.avi')
     for frame in range(0, 52):
         ret, jpgImage, quit = video.readFrame(show=True, postProcess=video.addTimeStamp)
-
 
 # test pausing the video
 def test_ReadVideoWithPause():
@@ -75,16 +73,33 @@ def test_getSubRect():
     assert iwidth == 200
     assert channels == 3
 
-
 def test_device():
     assert Video.is_int("0")
     v0 = int("0")
     assert v0 == 0
-
-test_device()
-test_ReadVideoWithPostProcess()
-test_ReadVideoWithPause()
-test_ReadJpg()
-test_ReadVideo()
-test_getSubRect()
-test_CreateBlank()
+    
+def test_Concatenate():
+    video=Video()
+    w=400
+    h=400
+    #https://stackoverflow.com/a/21170291/1497139
+    image1=video.createBlank(w, h, (192,192,192))
+    image2=video.createBlank(w, h, (255,128,0))
+    image3=video.createBlank(w, h, (255//3,255//3,255/3))
+    image4=video.createBlank(w, h, (0,0,255))
+    combined=video.as2x2(image1,image2,image3,image4,downScale=1)
+    hc, wc= combined.shape[:2]
+    assert hc==2*h
+    assert wc==2*w    
+    video.showImage(combined, "combined",keyWait=1000)       
+                 
+                       
+                             
+test_Concatenate()
+#test_device()
+#test_ReadVideoWithPostProcess()
+#test_ReadVideoWithPause()
+#test_ReadJpg()
+#test_ReadVideo()
+#test_getSubRect()
+#test_CreateBlank()
