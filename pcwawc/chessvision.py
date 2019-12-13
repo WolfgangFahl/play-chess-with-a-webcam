@@ -79,9 +79,9 @@ class IChessBoardImageSet(Interface):
     
 class IChessBoardImage(Interface):
     """ a single image of a chessboard"""
-    image=Attribute("original trapezoid image")
-    width=Attribute("width of the original image")
-    height=Attribute("width of the original image")
+    image=Attribute("the chessboard image")
+    width=Attribute("width of the image")
+    height=Attribute("height of the image")
     title=Attribute("title of the image")
     
 class IMoveDetector(Interface):

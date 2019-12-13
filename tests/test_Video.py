@@ -1,12 +1,13 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.video import Video
-import sys
+from pcwawc.environment4test import Environment4Test
 
+testenv=Environment4Test()
 
 # test reading an example video
 def test_ReadVideo():
     video = Video()
-    video.open('testMedia/emptyBoard001.avi')
+    video.open(testenv.testMedia+'emptyBoard001.avi')
     video.play()
     print ("played %d frames" % (video.frames))
     assert video.frames == 52
@@ -14,7 +15,7 @@ def test_ReadVideo():
 
 def test_ReadVideoWithPostProcess():
     video = Video()
-    video.open('testMedia/emptyBoard001.avi')
+    video.open(testenv.testMedia+'emptyBoard001.avi')
     for frame in range(0, 52):
         ret, jpgImage, quit = video.readFrame(show=True, postProcess=video.addTimeStamp)
 
@@ -22,7 +23,7 @@ def test_ReadVideoWithPostProcess():
 # test pausing the video
 def test_ReadVideoWithPause():
     video = Video()
-    video.open('testMedia/emptyBoard001.avi')
+    video.open(testenv.testMedia+'emptyBoard001.avi')
     for frame in range(0, 62):
         if frame >= 10 and frame < 20:
             video.pause(True)
@@ -41,7 +42,7 @@ def test_ReadVideoWithPause():
 # test reading video as jpg frames
 def test_ReadJpg():
     video = Video()
-    video.open('testMedia/emptyBoard001.avi')
+    video.open(testenv.testMedia+'emptyBoard001.avi')
     for frame in range(0, 52):
         ret, jpgImage, quit = video.readFrame(show=True)
         assert ret
@@ -67,7 +68,7 @@ def test_CreateBlank():
 
 def test_getSubRect():
     video = Video()
-    image = video.readImage("testMedia/chessBoard001.jpg")
+    image = video.readImage(testenv.testMedia+"chessBoard001.jpg")
     subImage = Video.getSubRect(image, (0, 0, 200, 200))
     iheight, iwidth, channels = subImage.shape
     assert iheight == 200
@@ -80,14 +81,10 @@ def test_device():
     v0 = int("0")
     assert v0 == 0
 
-
-if len(sys.argv) >= 2:
-    test_device()
-    test_ReadVideoWithPostProcess()
-    test_ReadVideoWithPause()
-    test_ReadJpg()
-    test_ReadVideo()
-    test_getSubRect()
-    test_CreateBlank()
-else:
-    print ("call me with any parameter to run")
+test_device()
+test_ReadVideoWithPostProcess()
+test_ReadVideoWithPause()
+test_ReadJpg()
+test_ReadVideo()
+test_getSubRect()
+test_CreateBlank()
