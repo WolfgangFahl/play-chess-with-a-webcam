@@ -63,7 +63,10 @@ class BoardDetector:
         for field in self.genFields():
             field.analyzeColor(image, self.hsv, distance, step)
         
-    def analyzeChessBoardImage(self,image,video,args):
+    def onChessBoardImage(self,imageEvent):
+        image=imageEvent.image
+        video=imageEvent.video
+        args=imageEvent.args
         frameIndex=video.frames
         distance=args.distance
         step=args.step

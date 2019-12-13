@@ -7,14 +7,16 @@ Created on 2019-12-08
 '''
 from pcwawc.args import Args
 from pcwawc.video import Video
+from pcwawc.eventhandling import Observable
 from pcwawc.environment import Environment
 from pcwawc.boardfinder import BoardFinder, Corners
 from pcwawc.game import Warp
 import sys
 
-class VideoAnalyzer():
+class VideoAnalyzer(Observable):
     """ analyzer for chessboard videos - may be used from command line or web app"""
-    def __init__(self,args,video=None,logger=None,analyzers=None):
+    def __init__(self,args,video=None,logger=None):
+        super(VideoAnalyzer,self).__init__()
         if video is None:
             self.video = Video()
         else:
@@ -24,10 +26,6 @@ class VideoAnalyzer():
         self.debug=args.debug
         if self.debug:
             self.log("Warp: %s" % (args.warpPointList))
-        if analyzers is None:
-            self.analyzers={}
-        else:
-            self.analyzers=analyzers    
         self.warp = Warp(args.warpPointList)
         self.warp.rotation = args.rotation
         # not recording
@@ -116,8 +114,7 @@ class VideoAnalyzer():
             warped = self.video.rotate(warped, self.warp.rotation)
         # analyze the board if warping is active
         if self.warp.warping:
-            for analyzer in self.analyzers:
-                warped = analyzer.analyzeChessBoardImage(warped,self.video,self.args)
+            self.fire(image=warped,video=self.video,args=self.args)
         if self.debug:
             warped = self.video.addTimeStamp(warped)
         # do we need to record?

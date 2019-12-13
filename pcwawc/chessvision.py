@@ -86,5 +86,5 @@ class IChessBoardImage(Interface):
     
 class IMoveDetector(Interface):
     """ a detector for moves on a chessboard image"""
-    def analyzeChessBoardImage(self,image,video,args):
+    def onChessBoardImage(self,imageEvent):
         pass    

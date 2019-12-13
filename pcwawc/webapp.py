@@ -21,7 +21,8 @@ class WebApp:
         self.videoStream = None
         self.board = Board()
         self.boardDetector = BoardDetector(self.board, self.video,args.speedup)
-        self.videoAnalyzer=VideoAnalyzer(args,video=self.video,logger=logger,analyzers={self.boardDetector})
+        self.videoAnalyzer=VideoAnalyzer(args,video=self.video,logger=logger)
+        self.videoAnalyzer.subscribe(self.boardDetector.onChessBoardImage)
         self.setDebug(args.debug)
         self.env = Environment()
         if args.game is None:
