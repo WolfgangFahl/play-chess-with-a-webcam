@@ -88,6 +88,8 @@ class VideoAnalyzer(Observable):
         # analyze the board if warping is active
         self.fire(cbImageSet=cbImageSet)
         cbImageSet.prepareGUI()
+        if self.debug:
+            self.vision.video.showImage(cbImageSet.debugImage().image,"debug")
         # do we need to record?
         if self.videopath is not None:
             cbWarped=cbImageSet.cbWarped

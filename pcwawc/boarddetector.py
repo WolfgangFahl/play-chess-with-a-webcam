@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.chessvision import FieldState, IMoveDetector
-from pcwawc.chessimage import ChessBoardImage
+from pcwawc.chessimage import ChessBoardImage   
 from pcwawc.field import Field
 import cv2
 from zope.interface import implementer

@@ -76,7 +76,7 @@ def test_FieldDetector():
             assert analyzer.hasImage()
             start = timer()
             analyzer.processImageSet(cbImageSet)
-            video.showImage(cbImageSet.debugImage(), "BoardDetector", keyWait=200)
+            video.showImage(cbImageSet.debugImage().image, "BoardDetector", keyWait=200)
             end = timer()
         analyzer.close()
 

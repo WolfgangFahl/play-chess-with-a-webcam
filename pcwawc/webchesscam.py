@@ -13,7 +13,6 @@ import platform
 import os.path
 import sys
 
-
 env = Environment()
 
 # prepare the RESTful application
