@@ -16,14 +16,13 @@ testEnv = Environment4Test()
 frameDebug = True
 
 def test_BoardFieldColorDetector():
-    video = Video()
-    board = Board()
-    board.chessboard.clear()
-    image = video.readImage(testEnv.testMedia + "chessBoard011.jpg")
-    # this is a still image
-    frameIndex = 1
-    BoardDetector.debug = True
-    boardDetector = BoardDetector(board, video)
+    imageInfo=testEnv.imageInfos[10]
+    analyzer=testEnv.analyzerFromImageInfo(imageInfo)
+    analyzer.open
+    cbImageSet=analyzer.nextImageSet()
+    boardDetector=analyzer.moveDetector
+    video=analyzer.vision.video
+    warped=cbImageSet.cbWarped.image
     maxDistance = 5
     maxSteps = 7
     stepSteps = 1
@@ -33,9 +32,9 @@ def test_BoardFieldColorDetector():
     waitTime = int(totalWaitTime / (maxDistance * maxSteps / stepSteps))
     for distance in range(1, maxDistance + 1, 1):
         for step in range(1, maxSteps + 1, stepSteps):
-            testImage = image.copy()
+            cbImageSet.cbWarped.image=warped.copy()
             start = timer()
-            testImage = boardDetector.analyze(testImage, frameIndex, distance, step)
+            testImage = boardDetector.analyze(cbImageSet, distance, step)
             end = timer()
             count = (2 * distance + 1) * (2 * distance + 1)
             size = distance * (step + 1)
@@ -109,7 +108,7 @@ def test_MaskFieldStates():
     #boardDetector=webApp.videoAnalyzer.moveDetector
     for imageInfo in testEnv.imageInfos:
         analyzer=testEnv.analyzerFromImageInfo(imageInfo)
-        video=analyzer.video
+        video=analyzer.vision.video
         cbImageSet=analyzer.vision.readChessBoardImage()
         assert analyzer.hasImage()
         analyzer.processImageSet(cbImageSet)
@@ -125,8 +124,8 @@ def test_MaskFieldStates():
         video.close()
         
 
-#test_ColorDistance()
-#test_FieldStates()
-#test_MaskFieldStates()
-#test_BoardFieldColorDetector()
+test_ColorDistance()
+test_FieldStates()
+test_MaskFieldStates()
+test_BoardFieldColorDetector()
 test_FieldDetector()
