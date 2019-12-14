@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.chessvision import FieldState, IMoveDetector
+from pcwawc.chessimage import ChessBoardImage
 from pcwawc.field import Field
 import cv2
 from zope.interface import implementer
@@ -64,18 +65,18 @@ class BoardDetector:
             field.analyzeColor(image, self.hsv, distance, step)
         
     def onChessBoardImage(self,imageEvent):
-        image=imageEvent.image
-        video=imageEvent.video
-        args=imageEvent.args
-        warp=imageEvent.warp
-        frameIndex=video.frames
+        cbImageSet=imageEvent.cbImageSet
+        vision=cbImageSet.vision
+        args=vision.args
         distance=args.distance
         step=args.step
-        return self.analyze(image, frameIndex, distance, step)    
+        return self.analyze(cbImageSet,distance, step)    
     
     # analyze the given image
-    def analyze(self, image, frameIndex, distance=3, step=1):
+    def analyze(self, cbImageSet, distance=3, step=1):
+        frameIndex=cbImageSet.frameIndex
         if (frameIndex % self.speedup==0):
+            image=cbImageSet.cbWarped.image
             self.divideInFields(image)
             self.analyzeColors(image, distance, step)
             sortedFields=self.sortByFieldState()
@@ -93,8 +94,7 @@ class BoardDetector:
                 # Following line overlays transparent rectangle over the image
                 image_new = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
                 image = image_new
-                if BoardDetector.frameDebug:
-                    self.video.showImage(image,"debug")
+                cbImageSet.cbDebug=ChessBoardImage(image,"debug")
                 self.previous=image
         else:
             if self.previous is not None:

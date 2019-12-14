@@ -6,45 +6,46 @@ Created on 2019-12-08
 @author: wf
 '''
 from pcwawc.args import Args
-from pcwawc.video import Video
 from pcwawc.board import Board
+from pcwawc.boardfinder import BoardFinder, Corners
+from pcwawc.chessimage import ChessBoardVision
 from pcwawc.detectorfactory import MoveDetectorFactory
 from pcwawc.eventhandling import Observable
 from pcwawc.environment import Environment
-from pcwawc.boardfinder import BoardFinder, Corners
-from pcwawc.game import Warp
+
 import sys
 
 class VideoAnalyzer(Observable):
     """ analyzer for chessboard videos - may be used from command line or web app"""
-    def __init__(self,args,video=None,logger=None):
+    def __init__(self,args,vision=None,logger=None):
         super(VideoAnalyzer,self).__init__()
-        if video is None:
-            self.video = Video()
+        if vision is None:
+            self.vision=ChessBoardVision(args)
         else:
-            self.video=video;
+            self.vision=vision
         self.logger=logger    
         self.args=args
         self.debug=args.debug
         if self.debug:
             self.log("Warp: %s" % (args.warpPointList))
-        self.warp = Warp(args.warpPointList)
-        self.warp.rotation = args.rotation
+  
         # not recording
         self.videopath=None
         self.videoout=None
         
     def open(self):
-        if self.video.frames == 0:
-            self.video.capture(self.args.input)
+        self.vision.open(self.args.input)
             
     def close(self):
         if self.videoout is not None:
             self.stopVideoRecording()
-        self.video.close()        
+        self.vision.close()
            
     def hasImage(self):
-        return self.video.frame is not None    
+        return self.vision.hasImage 
+    
+    def hasImageSet(self):
+        return self.cbImageSet is not None
             
     def isRecording(self):
         return self.videoout is not None        
@@ -64,27 +65,44 @@ class VideoAnalyzer(Observable):
         return self.videofilename
     
     def videoPause(self):
-        ispaused = not self.video.paused()
-        self.video.pause(ispaused)
+        ispaused = not self.vision.video.paused()
+        self.vision.video.pause(ispaused)
         return ispaused
         
     def analyze(self):
         self.open()
-        quitWanted=False
-        while not quitWanted: 
-            # postProcess=video.addTimeStamp
-            ret, encodedImage, quitWanted = self.video.readJpgImage(show=False, postProcess=self.warpAndRotate)
-            # ensure we got a valid image
-            if not ret:
+        while True:
+            if self.nextImageSet() is None:
                 break
-            # if we got a valid image
-            if encodedImage is not None:
-                # we could do something with it - but postprocess already cares for this
-                pass
         self.close()    
+        
+    def nextImageSet(self):    
+        self.cbImageSet=self.vision.readChessBoardImage()
+        if not self.vision.hasImage:
+            return None
+        self.processImageSet(self.cbImageSet)
+        return self.cbImageSet
+            
+    def processImageSet(self,cbImageSet):   
+        cbImageSet.warpAndRotate() 
+        # analyze the board if warping is active
+        self.fire(cbImageSet=cbImageSet)
+        cbImageSet.prepareGUI()
+        # do we need to record?
+        if self.videopath is not None:
+            cbWarped=cbImageSet.cbWarped
+            # is the output open?
+            if self.videoout is None:
+                # create correctly sized output
+                video=self.vision.video
+                self.videoout=video.prepareRecording(self.videopath,cbWarped.width,cbWarped.height)
+         
+            self.videoout.write(cbWarped.image)   
+            self.log("wrote frame %d to recording " % (self.vision.video.frames)) 
+        return
     
     def findChessBoard(self):
-        return self.findTheChessBoard(self.video.frame,self.video)
+        return self.findTheChessBoard(self.vision.video.frame,self.vision.video)
     
     def findTheChessBoard(self,image,video):
         finder = BoardFinder(image,video=video)
@@ -98,37 +116,9 @@ class VideoAnalyzer(Observable):
             finder.showPolygonDebug(image,title,corners)
             finder.showHistogramDebug(histograms,title,corners)
         trapez=corners.trapez8x8
-        self.warp.pointList=trapez
-        self.warp.updatePoints()    
+        self.vision.warp.pointList=trapez
+        self.vision.warp.updatePoints()    
         return corners
-    
-    def warpAndRotate(self, image):
-        """ warp and rotate the image as necessary - add timestamp if in debug mode """
-        if self.warp.points is None:
-            warped = image
-        else:
-            if len(self.warp.points) < 4:
-                self.video.drawTrapezoid(image, self.warp.points, self.warp.bgrColor)
-                warped = image
-            else:
-                warped = self.video.warp(image, self.warp.points)
-        if self.warp.rotation > 0:
-            warped = self.video.rotate(warped, self.warp.rotation)
-        # analyze the board if warping is active
-        self.fire(image=warped,warp=self.warp,video=self.video,args=self.args)
-        if self.debug:
-            warped = self.video.addTimeStamp(warped)
-        # do we need to record?
-        if self.videopath is not None:
-            # is the output open?
-            if self.videoout is None:
-                # create correctly sized output
-                h, w = warped.shape[:2]
-                self.videoout=self.video.prepareRecording(self.videopath,w,h)
-         
-            self.videoout.write(warped)   
-            self.log("wrote frame %d to recording " % (self.video.frames)) 
-        return warped
     
     def log(self, msg):
         if self.debug:
@@ -141,12 +131,15 @@ class VideoAnalyzer(Observable):
         self.debug=debug
         BoardFinder.debug=debug
         Corners.debug=debug
+        self.vision.debug=debug
         if self.moveDetector is not None:
             self.moveDetector.debug=debug
         
     def setUpDetector(self):
         self.board = Board()
-        self.moveDetector=MoveDetectorFactory.create(self.args.detector,self.board, self.video,self.args)
+        if self.args.fen is not None:
+            self.board.updatePieces(self.args.fen)
+        self.moveDetector=MoveDetectorFactory.create(self.args.detector,self.board, self.vision.video,self.args)
         self.subscribe(self.moveDetector.onChessBoardImage)
 
 if __name__ == '__main__':

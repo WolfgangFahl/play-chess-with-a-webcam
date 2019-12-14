@@ -3,19 +3,16 @@
 from pcwawc.plotlib import PlotLib, PlotType
 from pcwawc.environment4test import Environment4Test
 from pcwawc.environment import Environment
-from pcwawc.webapp import WebApp
-from pcwawc.webchesscam import  WebChessCamArgs
 import cv2
 testEnv = Environment4Test()
 
 def test_Histogram():
-    webApp = WebApp(WebChessCamArgs([]).args)
 
     histogram=PlotLib("Chessboard Colors",PlotLib.A4(turned=True))
     for imageInfo in testEnv.imageInfos:
-        bgr=testEnv.loadFromImageInfo(webApp,imageInfo)
-        rgb=cv2.cvtColor(bgr,cv2.COLOR_BGR2RGB)
-        histogram.addPlot(rgb,imageInfo['title'])
+        cbWarped=testEnv.loadFromImageInfo(imageInfo)
+        rgb=cv2.cvtColor(cbWarped.image,cv2.COLOR_BGR2RGB)
+        histogram.addPlot(rgb,imageInfo.title)
     Environment.checkDir(Environment.debugImagePath)
     histogram.createHistogramPDF(Environment.debugImagePath+'chessboardColors',plotType=PlotType.HISTOGRAMM,infos={'Title': 'Chessboard Histogram'})
 

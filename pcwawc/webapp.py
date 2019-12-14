@@ -15,9 +15,8 @@ class WebApp:
     def __init__(self, args, logger=None):
         """ construct me """
         self.args = args
-        self.video = Video()
         self.videoStream = None
-        self.videoAnalyzer=VideoAnalyzer(args,video=self.video,logger=logger)
+        self.videoAnalyzer=VideoAnalyzer(args,logger=logger)
         self.videoAnalyzer.setUpDetector()
         self.board=self.videoAnalyzer.board
         self.setDebug(args.debug)
@@ -36,7 +35,7 @@ class WebApp:
         self.game = self.webCamGame.game
   
     def createNewCame(self):
-        return WebCamGame("game" + self.video.fileTimeStamp())
+        return WebCamGame("game" + self.videoAnalyzer.vision.video.fileTimeStamp())
         
     def log(self, msg):
         self.videoAnalyzer.log(msg)
@@ -44,13 +43,13 @@ class WebApp:
     # return the index.html template content with the given message
     def index(self, msg):
         self.log(msg)
-        self.webCamGame.warp = self.videoAnalyzer.warp
+        self.webCamGame.warp = self.videoAnalyzer.vision.warp
         self.webCamGame.save()
         gameid = self.webCamGame.gameid
-        return render_template('index.html', message=msg, timeStamp=self.video.timeStamp(), gameid=gameid)
+        return render_template('index.html', message=msg, timeStamp=self.videoAnalyzer.vision.video.timeStamp(), gameid=gameid)
 
     def home(self):
-        self.videoAnalyzer.video = Video()
+        self.videoAnalyzer.vision.video = Video()
         return self.index("Home")
 
     def photoDownload(self, path, filename):
@@ -155,33 +154,37 @@ class WebApp:
 
     # picture has been clicked
     def chessWebCamClick(self, x, y, w, h):
-        px = x * self.videoAnalyzer.video.width // w
-        py = y * self.videoAnalyzer.video.height // h
-        colorInfo=""
-        if self.videoAnalyzer.hasImage() is not None:
-            b, g, r = self.videoAnalyzer.video.frame[py, px]
+        video=self.videoAnalyzer.vision.video
+        if not self.videoAnalyzer.hasImage():
+            msg="no video available"
+        else:    
+            px = x * video.width // w
+            py = y * video.height // h
+            b, g, r = video.frame[py, px]
             colorInfo="r:%x g:%x b:%x" % (r,g,b)
-        warp=self.videoAnalyzer.warp
-        warp.addPoint(px, py)
-        msg = "clicked warppoint %d pixel %d,%d %s mouseclick %d,%d in image %d x %d" % (len(warp.pointList), px, py, colorInfo, x, y, w, h)
-        return self.index(msg)
+            warp=self.videoAnalyzer.vision.warp
+            warp.addPoint(px, py)
+            msg = "clicked warppoint %d pixel %d,%d %s mouseclick %d,%d in image %d x %d" % (len(warp.pointList), px, py, colorInfo, x, y, w, h)
+            return self.index(msg)
 
     def photo(self, path):
         try:
-            self.videoAnalyzer.open()
-            video=self.videoAnalyzer.video
-            filename = 'chessboard_%s.jpg' % (video.fileTimeStamp())
-            # make sure the path exists
-            Environment.checkDir(path)
-            video.still2File(path + filename, postProcess=self.videoAnalyzer.warpAndRotate, close=False)
-            msg = "still image <a href='/photo/%s'>%s</a> taken from input %s" % (filename, filename, self.args.input)
+            if self.videoAnalyzer.hasImageSet():
+                # make sure the path exists
+                Environment.checkDir(path)
+                video=self.videoAnalyzer.vision.video
+                filename = 'chessboard_%s.jpg' % (video.fileTimeStamp())
+                video.writeImage(self.videoAnalyzer.cbImageSet.cbGUI.image, path+filename)
+                msg = "still image <a href='/photo/%s'>%s</a> taken from input %s" % (filename, filename, self.args.input)
+            else:
+                msg="no imageset for photo available"
             return self.index(msg)
         except BaseException as e:
             return self.indexException(e)
     
     def videoRecord(self,path):
         if not self.videoAnalyzer.isRecording():
-            video=self.videoAnalyzer.video
+            video=self.videoAnalyzer.vision.video
             filename=self.videoAnalyzer.startVideoRecording(path,'chessgame_%s.avi' % (video.fileTimeStamp()))
             msg="started recording %s" % (filename)
         else:
@@ -191,7 +194,7 @@ class WebApp:
 
     def videoRotate90(self):
         try:
-            warp=self.videoAnalyzer.warp
+            warp=self.videoAnalyzer.vision.warp
             warp.rotate(90)
             msg = "rotation: %d°" % (warp.rotation)
             return self.index(msg)
@@ -207,8 +210,7 @@ class WebApp:
         self.videoAnalyzer.open()
         # return the response generated along with the specific media
         # type (mime type)
-        video=self.videoAnalyzer.video
-        return Response(self.genVideo(video),
+        return Response(self.genVideo(self.videoAnalyzer),
                         mimetype='multipart/x-mixed-replace; boundary=frame')
 
     # streamed video generator
@@ -229,16 +231,17 @@ class WebApp:
     #                  bytearray(encodedImage) + b'\r\n')
 
     # video generator
-    def genVideo(self, video):
+    def genVideo(self, analyzer):
         while True:
-            # postProcess=video.addTimeStamp
-            postProcess = self.videoAnalyzer.warpAndRotate
-            ret, encodedImage, quitWanted = video.readJpgImage(show=False, postProcess=postProcess)
-            # ensure we got a valid image
-            if not ret:
-                continue
-            if quitWanted:
+            cbImageSet=analyzer.nextImageSet()
+            if cbImageSet is None:
                 break
-            # yield the output frame in the byte format
-            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
+            guiImage=cbImageSet.cbGUI.image
+            if guiImage is not None:
+                (flag, encodedImage) = analyzer.vision.video.imencode(guiImage)
+                if not flag:
+                    self.log("encoding failed")
+                else:    
+                    # yield the output frame in the byte format
+                    yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
                            bytearray(encodedImage) + b'\r\n')

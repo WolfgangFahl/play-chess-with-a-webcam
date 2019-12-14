@@ -16,8 +16,8 @@ def test_findBoard():
     #Corners.debugSorting=True
     startt=timer()
     for imageInfo in testEnv.imageInfos:
-        title=imageInfo["title"]
-        fen=imageInfo["fen"]
+        title=imageInfo.title
+        fen=imageInfo.fen
         image,video,warp=testEnv.prepareFromImageInfo(imageInfo)
         finder = BoardFinder(image,video=video)
         corners=finder.findOuterCorners(searchWidth=360)

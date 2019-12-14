@@ -1,12 +1,26 @@
 #!/usr/bin/python
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-
+from pcwawc.args import Args
 from pcwawc.board import Board
+from pcwawc.chessimage import Warp
 from pcwawc.environment import Environment
 from pcwawc.video import Video
-from pcwawc.game import Warp
+from pcwawc.videoanalyze import VideoAnalyzer
 from timeit import default_timer as timer
 import os
+
+class ImageInfo:
+    """ information about a chessboard test image """
+    def __init__(self,index,title,path,fen,rotation,warpPoints):
+        self.index=index
+        self.title=title
+        self.path=path
+        self.fen=fen
+        self.rotation=rotation
+        self.warpPoints=warpPoints
+      
+    def warpPointsAsString(self):
+        return str(self.warpPoints)     
 
 class Environment4Test(Environment):
     """ Test Environment """
@@ -44,6 +58,7 @@ class Environment4Test(Environment):
         Board.START_FEN,
         Board.START_FEN
     ]
+            
 
     def __init__(self):
         super().__init__()
@@ -56,17 +71,16 @@ class Environment4Test(Environment):
             raise Exception("%d FENs for %d images" %(fenlen,wlen))
         self.imageInfos=[]
         for num in range(1,1000):
-            filename = self.testMedia + "chessBoard%03d.jpg" % (num)
-            if not os.path.isfile(filename):
+            path = self.testMedia + "chessBoard%03d.jpg" % (num)
+            if not os.path.isfile(path):
                 break
             if num-1>=len(Environment4Test.rotations):
                 raise Exception("%d test files for %d warpPoints/rotations" %(num,wlen))
-            imageInfo={'index': num,
-                       'title': "image%03d" % (num),
-                       'filename': filename,
-                       'fen':  Environment4Test.fens[num-1],
-                       'rotation': Environment4Test.rotations[num-1],
-                       'warpPoints': Environment4Test.warpPointList[num-1]}
+            imageInfo=ImageInfo(num,title="image%03d" % (num),
+                path=path,
+                fen=Environment4Test.fens[num-1],
+                rotation=Environment4Test.rotations[num-1],
+                warpPoints=Environment4Test.warpPointList[num-1])
             self.imageInfos.append(imageInfo)
 
     # get image with the given number
@@ -86,19 +100,27 @@ class Environment4Test(Environment):
         return image,video
     
     def prepareFromImageInfo(self,imageInfo):
-        warpPoints=imageInfo['warpPoints']
-        warp = Warp(list(warpPoints))
-        warp.rotation=imageInfo['rotation']
-        image,video = self.getImageWithVideo(imageInfo['index'])
+        warp = Warp(list(imageInfo.warpPoints))
+        warp.rotation=imageInfo.rotation
+        image,video = self.getImageWithVideo(imageInfo.index)
         return image,video,warp
    
-    def loadFromImageInfo(self,webApp,imageInfo):
-        image,webApp.video,webApp.videoAnalyzer.warp=self.prepareFromImageInfo(imageInfo)
+    def loadFromImageInfo(self,imageInfo):
+        analyzer=self.analyzerFromImageInfo(imageInfo)
         start = timer()
-        webApp.board.updatePieces(imageInfo['fen'])
-        bgr = webApp.videoAnalyzer.warpAndRotate(image)
-        height, width = bgr.shape[:2]
+        cbImageSet=analyzer.vision.readChessBoardImage()
+        assert analyzer.hasImage()
+        analyzer.processImageSet(cbImageSet)
         end = timer()
-        title=imageInfo["title"]
-        print("%.3fs for loading image %s: %4d x %4d" % ((end-start),title,width,height))
-        return bgr
+        cbWarped=cbImageSet.cbWarped
+        print("%.3fs for loading image %s: %4d x %4d" % ((end-start),imageInfo.title,cbWarped.width,cbWarped.height))
+        return cbImageSet.cbWarped
+    
+    def analyzerFromImageInfo(self,imageInfo):
+        args=Args("test")
+        args.parse(["--input",imageInfo.path,"--fen",imageInfo.fen,"--warp",imageInfo.warpPointsAsString()])
+        analyzer=VideoAnalyzer(args.args)
+        analyzer.setUpDetector()
+        analyzer.setDebug(True)
+        analyzer.open()
+        return analyzer

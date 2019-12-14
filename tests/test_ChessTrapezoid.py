@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
+from pcwawc.args import Args
 from pcwawc.chesstrapezoid import ChessTrapezoid,ChessTSquare, FieldState, Color, SquareChange
 from pcwawc.detectstate import DetectState, DetectColorState
 from pcwawc.environment4test import Environment4Test
@@ -128,12 +129,12 @@ def test_Stats():
 def test_ColorDistribution():
     imgPath="/tmp/"
     for imageInfo in testEnv.imageInfos:
-        fen=imageInfo["fen"]
+        fen=imageInfo.fen
         if not fen==chess.STARTING_BOARD_FEN:
             continue
         start = timer()
         image,video,warp=testEnv.prepareFromImageInfo(imageInfo)  
-        title=imageInfo["title"]
+        title=imageInfo.title
         trapez=ChessTrapezoid(warp.pointList,rotation=warp.rotation,idealSize=800)  
         warped=trapez.warpedBoardImage(image)
         end = timer()
@@ -165,10 +166,7 @@ def test_ColorDistribution():
 class TestVideo:
     def __init__(self,frames,totalFrames,path,points,rotation=270,idealSize=800,ans=None):
         self.path=path
-        if not Video.is_int(path):
-            self.title=os.path.basename(path)
-        else:
-            self.title="camera %s" % (path)    
+        self.title=Video.title(path)
         self.frames=frames
         self.totalFrames=totalFrames,
         self.points=points
@@ -239,7 +237,9 @@ def test_ChessTrapezoid():
     if debugMoveDetected:
         detectState.onPieceMoveDetected=onPieceMoveDetected
     ChessTSquare.showDebugChange=["e2","e4","e7","e5"]
-    vision=ChessBoardVision(testVideo.title)
+    args=Args("test")
+    args.parse(["--input",testVideo.title])
+    vision=ChessBoardVision(args.args)
     vision.open(testVideo.path)
     start=timer()  
     colorHistory={}

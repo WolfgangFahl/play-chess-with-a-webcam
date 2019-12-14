@@ -284,7 +284,7 @@ class ChessTrapezoid(Trapez2Square):
         return colorStats
                 
     def detectChanges(self,cbImageSet,detectState):
-        """ detect the changes of the given differential image using the given detect state machine"""
+        """ detect the changes of the given imageset using the given detect state machine"""
         detectState.nextFrame()
         changes={}
         validChanges=0

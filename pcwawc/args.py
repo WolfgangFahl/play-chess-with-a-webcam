@@ -20,6 +20,10 @@ class Args:
         self.parser.add_argument('--debug',
                                  action='store_true',
                                  help="show debug output")
+        
+        self.parser.add_argument('--fen',
+                                 default=None,
+                                 help="Forsyth–Edwards Notation to start with")
 
         self.parser.add_argument('--rotation',
                                  type=int,

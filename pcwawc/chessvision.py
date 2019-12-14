@@ -54,6 +54,9 @@ class IPiece(Interface):
     
 class IChessBoardVision(Interface):
     title=Attribute("name/title of the chessboard observation")
+    warp=Attribute("the trapzeoid coordinates for warping to a square image")
+    args=Attribute("the command line arguments/settings")
+    debug=Attribute("true for debugging")
     """ visual observer of a chessboard e.g. with a camera - a video or still image"""
     def open(self,device):
         """ open the access to the chessboard images via the given device e.g. device number or filepath"""
@@ -71,11 +74,18 @@ class IChessBoardImageSet(Interface):
     frameIndex=Attribute("index of image in a sequence")
     timeStamp=Attribute("time")    
     cbImage=Attribute("original chessboard image")
+    cbGUI=Attribute("the chessboard image to be displayed in the GUI")
     cbWarped=Attribute("chessboard image warped to square size")
     cbIdeal=Attribute("ideal chessboard image constructed from parameters")
     cbPreMove=Attribute("chessboard image before move")
     cbDiff=Attribute("chessboard image difference to premove state")
+    
+    def warpAndRotate(self):
+        """ warp and rotate the original image"""
         
+    def prepareGUI(self):
+        """ prepare the gui output e.g. for debugging"""
+        pass
     
 class IChessBoardImage(Interface):
     """ a single image of a chessboard"""
@@ -88,4 +98,5 @@ class IMoveDetector(Interface):
     debug=Attribute("true for debugging")
     """ a detector for moves on a chessboard image"""
     def onChessBoardImage(self,imageEvent):
-        pass    
+        """ event handler for image events"""
+        pass

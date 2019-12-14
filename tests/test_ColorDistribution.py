@@ -10,7 +10,6 @@ from pcwawc.environment4test import Environment4Test
 from pcwawc.environment import Environment
 from pcwawc.histogram import Histogram, Stats
 from pcwawc.chesstrapezoid import ChessTrapezoid
-from pcwawc.chessimage import ChessBoardImage
 import chess
 testEnv = Environment4Test()
 
@@ -35,11 +34,11 @@ def test_Stats():
     
 def test_Histogram():
     for imageInfo in testEnv.imageInfos:
-        fen=imageInfo["fen"]
+        fen=imageInfo.fen
         if not fen==chess.STARTING_BOARD_FEN:
             continue
         image,video,warp=testEnv.prepareFromImageInfo(imageInfo)  
-        title=imageInfo["title"]
+        title=imageInfo.title
         #cbImage=ChessBoardImage(image,"chessboard")
         trapez=ChessTrapezoid(warp.pointList,rotation=warp.rotation,idealSize=800)  
         cbWarped=trapez.warpedBoardImage(image)

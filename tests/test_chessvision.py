@@ -3,6 +3,7 @@ Created on 2019-12-10
 
 @author: wf
 '''
+from pcwawc.args import Args
 from pcwawc.chessimage import ChessBoardVision
 from pcwawc.environment4test import Environment4Test
 
@@ -14,9 +15,11 @@ def test_ReadAvi():
     titles=['scholarsmate','emptyBoard001']
     expectedFrames=[334,52]
     for index,title in enumerate(titles):
-        vision=ChessBoardVision(title)
+        args=Args("test")
+        args.parse(["--input",testEnv.testMedia +title+".avi"])
+        vision=ChessBoardVision(args.args)
         vision.showDebug=debug
-        vision.open(testEnv.testMedia +title+".avi")
+        vision.open(args.args.input)
         frameIndex=0
         while True:
             cbImageSet=vision.readChessBoardImage()

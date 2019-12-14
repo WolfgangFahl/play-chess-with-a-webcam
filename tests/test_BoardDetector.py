@@ -1,16 +1,16 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
+from pcwawc.args import Args
 from pcwawc.board import Board
 from pcwawc.boarddetector import BoardDetector
 from pcwawc.environment4test import Environment4Test
 from pcwawc.video import Video
-from pcwawc.webapp import WebApp
-from pcwawc.webchesscam import WebChessCamArgs
 from pcwawc.chessvision import FieldState
 from pcwawc.runningstats import ColorStats
 from timeit import default_timer as timer
 import cv2
+from pcwawc.videoanalyze import VideoAnalyzer
 
 testEnv = Environment4Test()
 frameDebug = True
@@ -44,45 +44,41 @@ def test_BoardFieldColorDetector():
             video.showImage(testImage, "fields", True, waitTime)
     video.close()
 
-
 def test_FieldDetector():
-    video = Video()
-    webApp = WebApp(WebChessCamArgs(["--debug","--speedup=4"]).args)
     frames = None
     for boardIndex in range(2):
-        BoardDetector.debug = True
         # setup webApp params to reuse warp method
-        webApp.video = video
         if boardIndex == 1:
-            video.open(testEnv.testMedia + 'emptyBoard001.avi')
-            webApp.board.chessboard.clear_board()
+            path=testEnv.testMedia + 'emptyBoard001.avi'
+            fen=Board.EMPTY_FEN
             frames = 16
         if boardIndex == 0:
-            video.open(testEnv.testMedia + 'scholarsmate.avi')
+            path=testEnv.testMedia + 'scholarsmate.avi'
+            fen=Board.START_FEN
             frames = 20
             # @TODO speed up and test all frames again
             # frames=334
-        warp=webApp.videoAnalyzer.warp    
+        args=Args("test")
+        args.parse(["--debug","--speedup=4","--input",path,"--fen",fen])
+        analyzer=VideoAnalyzer(args.args)
+        warp=analyzer.vision.warp    
         warp.rotation = 270
         warp.pointList = []
         warp.addPoint(140, 5)
         warp.addPoint(506, 10)
         warp.addPoint(507, 377)
         warp.addPoint(137, 374)
-
+        analyzer.open()
+        vision=analyzer.vision
+        video=vision.video
         for frame in range(0, frames):
-            ret, bgr, quitWanted = video.readFrame(show=False)
-            assert ret
-            assert bgr is not None
-            # bgr = cv2.cvtColor(jpgImage, cv2.COLOR_RGB2BGR)
-            height, width = bgr.shape[:2]
-            # print ("%d: %d x %d" % (frame,width,height))
+            cbImageSet=vision.readChessBoardImage()
+            assert analyzer.hasImage()
             start = timer()
-            bgr = webApp.videoAnalyzer.warpAndRotate(bgr)
-            image = cv2.resize(bgr, (int(width * 1.5), int(height * 1.5)))
-            video.showImage(image, "BoardDetector", keyWait=200)
+            analyzer.processImageSet(cbImageSet)
+            video.showImage(cbImageSet.debugImage(), "BoardDetector", keyWait=200)
             end = timer()
-    video.close()
+        analyzer.close()
 
 
 def test_ColorDistance():
@@ -108,25 +104,29 @@ def test_FieldStates():
     checkFieldStates(boardDetector, board)
 
 def test_MaskFieldStates():
-    video=Video()
-    webApp = WebApp(WebChessCamArgs([]).args)
-    boardDetector=webApp.videoAnalyzer.moveDetector
+    #video=Video()
+    #webApp = WebApp(WebChessCamArgs([]).args)
+    #boardDetector=webApp.videoAnalyzer.moveDetector
     for imageInfo in testEnv.imageInfos:
-        bgr=testEnv.loadFromImageInfo(webApp,imageInfo)
-        rgba=cv2.cvtColor(bgr,cv2.COLOR_RGB2RGBA)
+        analyzer=testEnv.analyzerFromImageInfo(imageInfo)
+        video=analyzer.video
+        cbImageSet=analyzer.vision.readChessBoardImage()
+        assert analyzer.hasImage()
+        analyzer.processImageSet(cbImageSet)
+        rgba=cv2.cvtColor(cbImageSet.cbWarped.image,cv2.COLOR_RGB2RGBA)
         waitTime=1000
-        board=webApp.board
-        sortedFields=checkFieldStates(boardDetector, board)
+        board=analyzer.board
+        sortedFields=checkFieldStates(analyzer.moveDetector, board)
         whiteFields=sortedFields[FieldState.WHITE_EMPTY]
         print ("%d white fields for %s"  % (len(whiteFields),board.fen))
         for field in whiteFields:
             print("%s: %3d,%3d" % (field.an,field.pcx,field.pcy))
-        video.showImage(rgba, imageInfo['title'],keyWait=waitTime)
+        video.showImage(rgba, imageInfo.title,keyWait=waitTime)
         video.close()
         
 
-test_ColorDistance()
-test_FieldStates()
-test_MaskFieldStates()
-test_BoardFieldColorDetector()
+#test_ColorDistance()
+#test_FieldStates()
+#test_MaskFieldStates()
+#test_BoardFieldColorDetector()
 test_FieldDetector()

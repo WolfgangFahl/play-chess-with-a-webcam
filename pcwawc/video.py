@@ -37,6 +37,14 @@ class Video:
             return True
         except ValueError:
             return False
+        
+    @staticmethod    
+    def title(device):
+        if not Video.is_int(device):
+            deviceTitle=os.path.basename(device)
+        else:
+            deviceTitle="camera %s" % (device)          
+        return deviceTitle
 
     # return if video is paused
     def paused(self):
@@ -292,6 +300,8 @@ class Video:
 
     def drawTrapezoid(self, image, points, color):
         """ loop over the given points and draw them on the image """
+        if points is None:
+            return
         prev = None
         # if there is exactly four points then close the loop
         if len(points)==4:
@@ -391,7 +401,7 @@ class Video:
             text_width, text_height = cv2.getTextSize(
                 now, font, fontScale * fontFactor, lineThickness)[0]
             # https://stackoverflow.com/a/34273603/1497139
-            frame = frame.copy()
+            # frame = frame.copy()
             self.drawText(frame, now, (width - int(text_width * 1.1), int(text_height * 1.2)),
                         font, fontScale * fontFactor, fontBGRColor, lineThickness)
         return frame

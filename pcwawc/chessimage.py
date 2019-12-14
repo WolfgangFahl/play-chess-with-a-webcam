@@ -6,6 +6,7 @@ Created on 2019-12-10
 from pcwawc.chessvision import IChessBoardImageSet, IChessBoardImage, IChessBoardVision
 from pcwawc.environment import Environment
 from pcwawc.jsonablemixin import JsonAbleMixin
+from pcwawc.yamlablemixin import YamlAbleMixin
 from pcwawc.video import Video
 from zope.interface import implementer
 from timeit import default_timer as timer
@@ -16,18 +17,21 @@ import numpy as np
 @implementer(IChessBoardVision) 
 class ChessBoardVision(JsonAbleMixin):   
     """ implements access to chessboard images"""
-    
-    debug=False
  
-    def __init__(self,title="chessboard"):
-        self.title=title
-        self.video=Video(title)
-        self.showDebug=ChessBoardVision.debug
+    def __init__(self,args):
+        self.device=args.input
+        self.title=Video.title(self.device)
+        self.video=Video(self.title)
+        self.args=args
+        self.showDebug=args.debug
         self.start=None
         self.quitWanted=False
         self.hasImage=False
-        self.device=None
         self.timestamps=[]
+        self.debug=args.debug
+        self.warp = Warp(args.warpPointList)
+        self.warp.rotation = args.rotation
+  
         pass
     
     def open(self,device):
@@ -81,17 +85,91 @@ class ChessBoardImageSet:
         # see https://stackoverflow.com/questions/47743246/getting-timestamp-of-each-frame-in-a-video
         self.timeStamp=timeStamp
         self.cbImage=ChessBoardImage(image,"chessboard")
+        self.cbGUI=self.cbImage
         self.cbWarped=None
         self.cbIdeal=None
         self.cbPreMove=None
         self.cbDiff=None
+        self.cbDebug=None
+        
+    def placeHolder(self,cbImage):
+        """ return an empty image if the image is not available"""
+        if cbImage is None:
+            return self.vision.video.createBlank(self.cbWarped.width,self.cbWarped.height,(128,128,128)) 
+        else:
+            return cbImage.image   
         
     def debugImage(self):
-        image=self.vision.video.as2x2(self.cbWarped.image,self.cbIdeal.image,self.cbDiff.image,self.cbPreMove.image)
-        return image
+        if self.cbDebug is None:
+            image=self.vision.video.as2x2(
+            self.placeHolder(self.cbWarped),
+            self.placeHolder(self.cbIdeal),
+            self.placeHolder(self.cbDiff),
+            self.placeHolder(self.cbPreMove))
+            self.cbDebug=ChessBoardImage(image,"debug")
+        return self.cbDebug
         
     def showDebug(self,video=None):
-        video.showImage(self.debugImage(),"debug")
+        video.showImage(self.debugImage().image,"debug")
+        
+    def warpAndRotate(self):
+        """ warp and rotate the image as necessary - add timestamp if in debug mode """
+        video=self.vision.video
+        warp=self.vision.warp
+        if warp.warping:
+            warped=video.warp(self.cbImage.image, warp.points)
+        else:
+            warped=self.cbImage.image.copy()
+        if warp.rotation > 0:
+            warped = video.rotate(warped, warp.rotation)
+        self.cbWarped = ChessBoardImage(warped,"warped")      
+        
+    def prepareGUI(self):
+        video=self.vision.video
+        warp=self.vision.warp
+        if self.vision.debug:
+            self.cbGUI=self.debugImage()
+            video.addTimeStamp(self.cbGUI.image)      
+        else:
+            self.cbGUI=ChessBoardImage(self.cbWarped.image.copy(),"gui")
+            if not warp.warping:
+                video.drawTrapezoid(self.cbGUI.image, warp.points, warp.bgrColor)
+            
+class Warp(YamlAbleMixin, JsonAbleMixin):
+    """ holds the trapezoid points to be use for warping an image take from a peculiar angle """
+
+    # construct me from the given setting
+    def __init__(self, pointList=[], rotation=0, bgrColor=(0, 255, 0)):
+        self.rotation = rotation
+        self.bgrColor = bgrColor
+        self.pointList = pointList
+        self.updatePoints()
+
+    def rotate(self, angle):
+        """ rotate me by the given angle"""
+        self.rotation = self.rotation + angle
+        if self.rotation >= 360:
+            self.rotation = self.rotation % 360
+
+    def updatePoints(self):
+        """ update my points"""
+        pointLen = len(self.pointList)
+        if pointLen == 0:
+            self.points = None
+        else:
+            self.points = np.array(self.pointList)
+        self.warping = pointLen == 4
+
+    def addPoint(self, px, py):
+        """ add a point with the given px,py coordinate
+        to the warp points make sure we have a maximum of 4 warpPoints if warppoints are complete when adding reset them
+        this allows to support click UIs that need an unwarped image before setting new warp points.
+        px,py is irrelevant for reset """
+        if len(self.pointList) >= 4:
+            self.pointList = []
+        else:
+            self.pointList.append([px, py])
+        self.updatePoints()                
         
 @implementer(IChessBoardImage)     
 class ChessBoardImage:
