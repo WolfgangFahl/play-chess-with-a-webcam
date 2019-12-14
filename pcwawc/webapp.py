@@ -6,6 +6,7 @@ from pcwawc.video import Video
 from pcwawc.game import WebCamGame
 from flask import render_template, send_from_directory, Response, jsonify
 from datetime import datetime
+from pcwawc.detectorfactory import MoveDetectorFactory
 
 class WebApp:
     """ actual Play Chess with a WebCam Application - Flask calls are routed here """
@@ -46,7 +47,7 @@ class WebApp:
         self.webCamGame.warp = self.videoAnalyzer.vision.warp
         self.webCamGame.save()
         gameid = self.webCamGame.gameid
-        return render_template('index.html', message=msg, timeStamp=self.videoAnalyzer.vision.video.timeStamp(), gameid=gameid)
+        return render_template('index.html', detector=self.videoAnalyzer.moveDetector,detectors=MoveDetectorFactory.detectors,message=msg, timeStamp=self.videoAnalyzer.vision.video.timeStamp(), gameid=gameid)
 
     def home(self):
         self.videoAnalyzer.vision.video = Video()
@@ -133,6 +134,15 @@ class WebApp:
         fen = self.board.fen
         pgn = self.board.getPgn()
         return jsonify(fen=fen, pgn=pgn, gameid=gameid, debug=WebApp.debug, timestamp=self.timeStamp())
+    
+    def chessSettings(self,args):
+        msg="settings"
+        if "detector" in args:
+            newDetectorName=args["detector"]
+            newDetector=MoveDetectorFactory.create(newDetectorName, self.videoAnalyzer.board, self.videoAnalyzer.vision.video, self.args)
+            self.videoAnalyzer.changeDetector(newDetector)
+            msg="changing detector to %s" % (newDetectorName)
+        return self.index(msg)
     
     def chessFEN(self, fen):
         msg = fen

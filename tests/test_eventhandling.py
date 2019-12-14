@@ -5,7 +5,7 @@ Created on 2019-12-13
 '''
 from pcwawc.eventhandling import Observable
 
-debug=False
+debug=True
 class Counter(Observable):
     def __init__(self):
         super(Counter,self).__init__()
@@ -32,6 +32,8 @@ def test_EventHandling():
     counter.subscribe(observer1.onCount)
     counter.subscribe(observer2.onCount)
     for i in range(5):
+        if i==3:
+            counter.unsubscribe(observer2.onCount)
         counter.count(i)
 
 test_EventHandling()

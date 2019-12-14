@@ -144,6 +144,11 @@ class VideoAnalyzer(Observable):
             self.board.updatePieces(self.args.fen)
         self.moveDetector=MoveDetectorFactory.create(self.args.detector,self.board, self.vision.video,self.args)
         self.subscribe(self.moveDetector.onChessBoardImage)
+        
+    def changeDetector(self,newDetector):
+        self.unsubscribe(self.moveDetector.onChessBoardImage)
+        self.moveDetector=newDetector
+        self.subscribe(self.moveDetector.onChessBoardImage)
 
 if __name__ == '__main__':
     cmdLineArgs = Args("Chessboard Video analyzer")

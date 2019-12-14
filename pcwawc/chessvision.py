@@ -99,8 +99,12 @@ class IChessBoardImage(Interface):
         pass
     
 class IMoveDetector(Interface):
-    debug=Attribute("true for debugging")
     """ a detector for moves on a chessboard image"""
+    name=Attribute("name of the detector")
+    debug=Attribute("true for debugging")
+    def setup(self,name,board,video,args):
+        """ setup the detector with the given board, video and arguments"""
+        
     def onChessBoardImage(self,imageEvent):
         """ event handler for image events"""
         pass

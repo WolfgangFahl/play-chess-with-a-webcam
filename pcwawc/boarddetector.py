@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.chessvision import FieldState, IMoveDetector
-from pcwawc.chessimage import ChessBoardImage   
+from pcwawc.chessimage import ChessBoardImage
 from pcwawc.field import Field
 import cv2
 from zope.interface import implementer
@@ -12,10 +12,14 @@ class BoardDetector:
     frameDebug = False
 
     # construct me from a board and video
-    def __init__(self, board, video,speedup=1):
+    def __init__(self):
+        pass
+    
+    def setup(self,name,board, video,args):
+        self.name=name
         self.board = board
         self.video = video
-        self.speedup=speedup
+        self.speedup=args.speedup if args is not None else 1
         self.hsv = None
         self.previous=None
         self.debug = False

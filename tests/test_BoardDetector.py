@@ -98,7 +98,8 @@ def checkFieldStates(boardDetector,board):
 def test_FieldStates():
     video=Video()
     board = Board()
-    boardDetector = BoardDetector(board, video)
+    boardDetector = BoardDetector()
+    boardDetector.setup("luminance",board, video,None)
     boardDetector.debug = True
     checkFieldStates(boardDetector, board)
 

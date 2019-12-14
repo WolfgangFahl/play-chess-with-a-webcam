@@ -34,11 +34,9 @@ app.logger.info("Running on %s" % (platform.system()))
 if platform.system() == 'Linux' and os.path.exists('/sys/firmware/devicetree/base/model'):
     app.logger.info("Running on Raspberry PI")
 
-
 @app.route("/")
 def root():
     return webApp.home()
-
 
 # https://stackoverflow.com/a/41527903/1497139
 @app.route('/chess/games/')
@@ -70,36 +68,34 @@ def chessFindBoard():
 def videoRotate90():
     return webApp.videoRotate90()
 
-
 @app.route("/chess/pausevideo", methods=['GET'])
 def video_pause():
     return webApp.videoPause()
-
 
 @app.route("/chess/save", methods=['GET'])
 def chessSave():
     return webApp.chessSave()
 
-
 @app.route("/chess/takeback", methods=['GET'])
 def chessTakeback():
     return webApp.chessTakeback()
-
 
 @app.route("/chess/forward", methods=['GET'])
 def chessForward():
     return webApp.chessForward()
 
-
 @app.route("/chess/<gameid>/state", methods=['GET'])
 def chessGameState(gameid):
     return webApp.chessGameState(gameid)
 
+@app.route("/chess/settings", methods=['GET'])
+def chessSettings():
+    args = request.args.to_dict()
+    return webApp.chessSettings(args)
 
 @app.route("/chess/gamecolors", methods=['GET'])
 def chessGameColors():
     return webApp.chessGameColors()
-
 
 @app.route("/chess/update", methods=['GET'])
 def chessUpdate():
@@ -119,7 +115,6 @@ def chessUpdate():
     else:
         return webApp.index("expected updateGame,updateFEN or updateMove but no such request found")
 
-
 @app.route("/chess/chesswebcamclick/<width>/<height>", methods=['GET'])
 def chessWebCamClick(width, height):
     # click info is in an unnamed query parameter
@@ -130,7 +125,6 @@ def chessWebCamClick(width, height):
     h = int(height)
     return webApp.chessWebCamClick(int(x), int(y), w, h)
 
-
 @app.route("/chess/move/<move>", methods=['GET'])
 def chessMove(move):
     return webApp.chessMove(move)
@@ -140,15 +134,12 @@ def chessMove(move):
 def photo():
     return webApp.photo(env.games + '/photos/')
 
-
 # home
 @app.route("/chess/home", methods=['GET'])
 def home():
     return webApp.home()
 
 # default arguments for Web Chess Camera
-
-
 class WebChessCamArgs(Args):
     """This class parses command line arguments and generates a usage."""
 

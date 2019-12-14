@@ -13,7 +13,11 @@ from zope.interface import implementer
 class SimpleDetector:
     """ a simple treshold detector """
     # construct me 
-    def __init__(self,board,video,args):
+    def __init__(self):
+        pass
+    
+    def setup(self,name,board,video,args):
+        self.name=name
         self.board=board
         self.video=video
         self.args=args
@@ -38,3 +42,4 @@ class SimpleDetector:
             pixelChanges=cv2.norm(warpedBW, self.previousBW, cv2.NORM_L1) / cbWarped.pixels
             self.movingAverage.push(pixelChanges)
             print ('Frame: %5d, change: %4.1f, average: %4.1f, pixels: %d' % (cbImageSet.frameIndex,pixelChanges,self.movingAverage.mean(),cbWarped.pixels))  
+

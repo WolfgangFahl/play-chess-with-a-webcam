@@ -18,6 +18,10 @@ class Observable(object):
     def subscribe(self, callback):
         self.callbacks.append(callback)
         
+    def unsubscribe(self,callback):
+        if callback in self.callbacks:
+            self.callbacks.remove(callback)
+        
     def fire(self, **attrs):
         e = Event()
         e.source = self

@@ -22,6 +22,17 @@
 		</div>
 		<!-- game notation -->
 		<div id='notation' class="col-md-3">
+			<form id='settingsform' action='/chess/settings' method='GET'>
+		       <select id='detector' name="detector">
+		         {% for name in detectors.keys() %}
+		         <option value="{{ name }}" {% if (detector is not none) and (name == detector.name) %}selected{% endif %}>
+		         {{ name }}
+		         </option>
+		         {% endfor %}
+		       </select>
+		       <button id="changeDetector" type="submit" value="changeDetector"
+					name="changeDetector">change Detector</button>
+		     </form>   
 			<form action='/chess/gamecolors'>
 				<input type="color" name="WHITE_FIELD" value="#ffffff"> <input
 					type="color" name="BLACK_FIELD" value="#000000"> <input
