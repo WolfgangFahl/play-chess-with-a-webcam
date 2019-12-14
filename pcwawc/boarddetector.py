@@ -8,7 +8,7 @@ from zope.interface import implementer
 @implementer(IMoveDetector) 
 class BoardDetector:
     """ detect a chess board's state from the given image """
-    frameDebug = True
+    frameDebug = False
 
     # construct me from a board and video
     def __init__(self, board, video,speedup=1):

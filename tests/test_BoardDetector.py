@@ -103,14 +103,14 @@ def checkFieldStates(boardDetector,board):
 def test_FieldStates():
     video=Video()
     board = Board()
-    BoardDetector.debug = True
     boardDetector = BoardDetector(board, video)
+    boardDetector.debug = True
     checkFieldStates(boardDetector, board)
 
 def test_MaskFieldStates():
     video=Video()
     webApp = WebApp(WebChessCamArgs([]).args)
-    boardDetector=webApp.boardDetector
+    boardDetector=webApp.videoAnalyzer.moveDetector
     for imageInfo in testEnv.imageInfos:
         bgr=testEnv.loadFromImageInfo(webApp,imageInfo)
         rgba=cv2.cvtColor(bgr,cv2.COLOR_RGB2RGBA)
