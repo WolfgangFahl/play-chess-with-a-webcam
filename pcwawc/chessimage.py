@@ -12,6 +12,7 @@ from zope.interface import implementer
 from timeit import default_timer as timer
 import os
 import numpy as np
+import cv2
 
 
 @implementer(IChessBoardVision) 
@@ -101,13 +102,16 @@ class ChessBoardImageSet:
         
     def debugImage(self):
         if self.cbDebug is None:
-            image=self.vision.video.as2x2(
-            self.placeHolder(self.cbWarped),
-            self.placeHolder(self.cbIdeal),
-            self.placeHolder(self.cbDiff),
-            self.placeHolder(self.cbPreMove))
-            self.cbDebug=ChessBoardImage(image,"debug")
+            self.cbDebug=self.debugImage2x2(self.cbWarped,self.cbIdeal,self.cbDiff,self.cbPreMove)
         return self.cbDebug
+    
+    def debugImage2x2(self,image1,image2,image3,image4):
+        image=self.vision.video.as2x2(
+            self.placeHolder(image1),
+            self.placeHolder(image2),
+            self.placeHolder(image3),
+            self.placeHolder(image4))
+        return ChessBoardImage(image,"debug")
         
     def showDebug(self,video=None):
         video.showImage(self.debugImage().image,"debug")
@@ -178,6 +182,18 @@ class ChessBoardImage:
         self.image=image
         self.title=title
         self.height,self.width = image.shape[:2]
+        self.pixels=self.height*self.width
+        
+    def diffBoardImage(self,cbOther):
+        if cbOther is None:
+            raise Exception("other is None for diff")
+        h, w = self.height,self.width
+        ho, wo = cbOther.height,cbOther.width
+        if not h==ho or not w==wo:
+            raise Exception("image %d x %d has to have same size as other %d x %d for diff" % (w,h,wo,ho))
+        #return np.subtract(self.image,other)
+        diff=cv2.absdiff(self.image,cbOther.image)
+        return ChessBoardImage(diff,"diff")    
         
     def showDebug(self,video=None,keyWait=5):
         if video is None:

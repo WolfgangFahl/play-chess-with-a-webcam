@@ -155,7 +155,7 @@ def test_ColorDistribution():
         endc=timer()
         fcs.showStatsDebug(endc-startc)
         idealImage=trapez.idealColoredBoard(warped.width,warped.height)
-        diffImage=trapez.diffBoardImage(warped,idealImage)
+        diffImage=warped.diffBoardImage(idealImage)
         for tSquare in trapez.genSquares():
             percent="%.0f" % (fcs.colorPercent[tSquare.an]) 
             trapez.drawRCenteredText(diffImage.image, percent, tSquare.rcx,tSquare.rcy,(0,255,0))

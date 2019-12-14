@@ -7,7 +7,6 @@ import tempfile
 
 debug = False
 
-
 def getTestWarp():
     warp = Warp([])
     warp.addPoint(678, 25)

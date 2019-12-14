@@ -92,7 +92,11 @@ class IChessBoardImage(Interface):
     image=Attribute("the chessboard image")
     width=Attribute("width of the image")
     height=Attribute("height of the image")
+    pixels=Attribute("number of pixels of image = widthxheight")
     title=Attribute("title of the image")
+    def diffBoardImage(self,cbOther):
+        """ get the difference image between me an the other chessboard image"""
+        pass
     
 class IMoveDetector(Interface):
     debug=Attribute("true for debugging")

@@ -124,3 +124,9 @@ class Environment4Test(Environment):
         analyzer.setDebug(True)
         analyzer.open()
         return analyzer
+    
+    def getTestVideos(self,exclude=["baxter.avi"]):
+        for file  in os.listdir(self.testMedia):
+            if file.endswith(".avi"):
+                if file not in exclude:
+                    yield file

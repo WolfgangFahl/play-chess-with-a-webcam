@@ -169,25 +169,14 @@ class ChessTrapezoid(Trapez2Square):
         cbIdeal=self.idealColoredBoard(cbWarped.width,cbWarped.height)
         cbImageSet.cbIdeal=cbIdeal
         cbImageSet.cbPreMove=self.preMoveBoard(cbWarped.width,cbWarped.height)
-        cbImageSet.cbDiff=self.diffBoardImage(cbWarped,cbIdeal)
+        cbImageSet.cbDiff=cbWarped.diffBoardImage(cbIdeal)
         return averageColors         
 
     def warpedBoardImage(self,image):
         warped=cv2.warpPerspective(image,self.inverseTransform,(self.idealSize,self.idealSize))
         return ChessBoardImage(warped,"warped")
     
-    def diffBoardImage(self,cbImage,cbOther):
-        if cbImage is None :
-            raise Exception("image is None for diff")
-        if cbOther is None:
-            raise Exception("other is None for diff")
-        h, w = cbImage.height,cbImage.width
-        ho, wo = cbOther.height,cbOther.width
-        if not h==ho or not w==wo:
-            raise Exception("image %d x %d has to have same size as other %d x %d for diff" % (w,h,wo,ho))
-        #return np.subtract(self.image,other)
-        diff=cv2.absdiff(cbImage.image,cbOther.image)
-        return ChessBoardImage(diff,"diff")
+    
     
     def diffSum(self,image,other):
         #diffImage=self.diff(other) 
