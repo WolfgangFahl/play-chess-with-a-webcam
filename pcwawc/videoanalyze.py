@@ -72,8 +72,11 @@ class VideoAnalyzer(Observable):
     def analyze(self):
         self.open()
         while True:
-            if self.nextImageSet() is None:
+            cbImageSet=self.nextImageSet()
+            if cbImageSet is None:
                 break
+            if self.debug:
+                self.vision.video.showImage(cbImageSet.debugImage().image,"debug")
         self.close()    
         
     def nextImageSet(self):    
@@ -88,8 +91,6 @@ class VideoAnalyzer(Observable):
         # analyze the board if warping is active
         self.fire(cbImageSet=cbImageSet)
         cbImageSet.prepareGUI()
-        if self.debug:
-            self.vision.video.showImage(cbImageSet.debugImage().image,"debug")
         # do we need to record?
         if self.videopath is not None:
             cbWarped=cbImageSet.cbWarped

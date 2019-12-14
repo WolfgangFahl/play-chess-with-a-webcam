@@ -118,10 +118,10 @@ class ChessBoardImageSet:
         warp=self.vision.warp
         if warp.warping:
             warped=video.warp(self.cbImage.image, warp.points)
+            if warp.rotation > 0:
+                warped = video.rotate(warped, warp.rotation)
         else:
             warped=self.cbImage.image.copy()
-        if warp.rotation > 0:
-            warped = video.rotate(warped, warp.rotation)
         self.cbWarped = ChessBoardImage(warped,"warped")      
         
     def prepareGUI(self):
