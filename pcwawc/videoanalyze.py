@@ -7,6 +7,8 @@ Created on 2019-12-08
 '''
 from pcwawc.args import Args
 from pcwawc.video import Video
+from pcwawc.board import Board
+from pcwawc.detectorfactory import MoveDetectorFactory
 from pcwawc.eventhandling import Observable
 from pcwawc.environment import Environment
 from pcwawc.boardfinder import BoardFinder, Corners
@@ -77,7 +79,7 @@ class VideoAnalyzer(Observable):
                 break
             # if we got a valid image
             if encodedImage is not None:
-                # we could do something with it - but postprocess already cared for this
+                # we could do something with it - but postprocess already cares for this
                 pass
         self.close()    
     
@@ -113,8 +115,7 @@ class VideoAnalyzer(Observable):
         if self.warp.rotation > 0:
             warped = self.video.rotate(warped, self.warp.rotation)
         # analyze the board if warping is active
-        if self.warp.warping:
-            self.fire(image=warped,video=self.video,args=self.args)
+        self.fire(image=warped,warp=self.warp,video=self.video,args=self.args)
         if self.debug:
             warped = self.video.addTimeStamp(warped)
         # do we need to record?
@@ -140,10 +141,18 @@ class VideoAnalyzer(Observable):
         self.debug=debug
         BoardFinder.debug=debug
         Corners.debug=debug
-
+        if self.moveDetector is not None:
+            self.moveDetector.debug=debug
+        
+    def setUpDetector(self):
+        self.board = Board()
+        self.moveDetector=MoveDetectorFactory.create(self.args.detector,self.board, self.video,self.args)
+        self.subscribe(self.moveDetector.onChessBoardImage)
 
 if __name__ == '__main__':
     cmdLineArgs = Args("Chessboard Video analyzer")
     args = cmdLineArgs.parse(sys.argv[1:])
     videoAnalyzer=VideoAnalyzer(args)
+    videoAnalyzer.setUpDetector()
+    videoAnalyzer.setDebug(args.debug)
     videoAnalyzer.analyze()

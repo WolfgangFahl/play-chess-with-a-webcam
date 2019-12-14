@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-from pcwawc.board import Board
 from pcwawc.videoanalyze import VideoAnalyzer
-from pcwawc.boarddetector import BoardDetector
 from pcwawc.environment import Environment
 from pcwawc.video import Video
 from pcwawc.game import WebCamGame
@@ -19,10 +17,9 @@ class WebApp:
         self.args = args
         self.video = Video()
         self.videoStream = None
-        self.board = Board()
-        self.boardDetector = BoardDetector(self.board, self.video,args.speedup)
         self.videoAnalyzer=VideoAnalyzer(args,video=self.video,logger=logger)
-        self.videoAnalyzer.subscribe(self.boardDetector.onChessBoardImage)
+        self.videoAnalyzer.setUpDetector()
+        self.board=self.videoAnalyzer.board
         self.setDebug(args.debug)
         self.env = Environment()
         if args.game is None:
@@ -62,7 +59,6 @@ class WebApp:
 
     def setDebug(self, debug):
         WebApp.debug = debug
-        BoardDetector.debug = WebApp.debug
         self.videoAnalyzer.setDebug(debug)
  
     # toggle the debug flag

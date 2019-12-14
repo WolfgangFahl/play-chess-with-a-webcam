@@ -85,6 +85,7 @@ class IChessBoardImage(Interface):
     title=Attribute("title of the image")
     
 class IMoveDetector(Interface):
+    debug=Attribute("true for debugging")
     """ a detector for moves on a chessboard image"""
     def onChessBoardImage(self,imageEvent):
         pass    

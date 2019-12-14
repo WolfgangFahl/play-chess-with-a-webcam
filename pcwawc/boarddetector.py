@@ -8,8 +8,7 @@ from zope.interface import implementer
 @implementer(IMoveDetector) 
 class BoardDetector:
     """ detect a chess board's state from the given image """
-    debug = False
-    frameDebug = False
+    frameDebug = True
 
     # construct me from a board and video
     def __init__(self, board, video,speedup=1):
@@ -18,6 +17,7 @@ class BoardDetector:
         self.speedup=speedup
         self.hsv = None
         self.previous=None
+        self.debug = False
      
     def genFields(self):
         for row in range(Field.rows):
@@ -67,6 +67,7 @@ class BoardDetector:
         image=imageEvent.image
         video=imageEvent.video
         args=imageEvent.args
+        warp=imageEvent.warp
         frameIndex=video.frames
         distance=args.distance
         step=args.step
@@ -79,7 +80,7 @@ class BoardDetector:
             self.analyzeColors(image, distance, step)
             sortedFields=self.sortByFieldState()
 
-            if BoardDetector.debug:
+            if self.debug:
                 overlay = image.copy()
     
                 for fieldState,fields in sortedFields.items():
@@ -92,6 +93,8 @@ class BoardDetector:
                 # Following line overlays transparent rectangle over the image
                 image_new = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
                 image = image_new
+                if BoardDetector.frameDebug:
+                    self.video.showImage(image,"debug")
                 self.previous=image
         else:
             if self.previous is not None:

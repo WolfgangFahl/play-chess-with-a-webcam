@@ -40,10 +40,13 @@ class Args:
                                  type=int,
                                  default=3,
                                  help="detection pixel steps - distance*step is the grid size being analyzed")
-        
 
         self.parser.add_argument('--warp',
                                  default="[]",
+                                 help="warp points")
+        
+        self.parser.add_argument('--detector',
+                                 default="luminance",
                                  help="warp points")
         pass
     
