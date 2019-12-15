@@ -41,6 +41,12 @@ inuml {
   className=$0
   inClass=1
 }
+# Attributes
+/.*=Attribute/ {
+  match($0,/[[:space:]]*(.*)=Attribute/,groups)
+  attributes[$0]=groups[1]
+}
+# Operations
 /def / {
   gsub(/def /,"",$0)
   gsub(/:/,"",$0)
@@ -69,12 +75,16 @@ function finishClass() {
       printf("\n  note top of %s: %s%s\n",className,trim(doc),dot)
   }
    printf("  class %s [[%s]] {\n",className,githuburl"/"srcfile)
+   for (attribute in attributes) {
+     printf("    %s\n",attributes[attribute])
+   }
    for (method in methods) {
      printf("    %s\n",methods[method])
    }
    printf("  }\n\n")
    if (match(classLine,"Exception"))
      printf("  %s --|> Exception\n",className)
+  delete attributes
   delete methods
   className=""
   doc=""

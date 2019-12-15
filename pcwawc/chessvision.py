@@ -6,6 +6,9 @@ Created on 2019-10-10
 @author: wf
 see e.g. https://www.fide.com/FIDE/handbook/LawsOfChess.pdf
 '''
+#<uml>
+#IChessBoardImageSet "1" -- "n" IChessBoardImage
+#</uml>
 
 from zope.interface import Interface
 from zope.interface import Attribute
@@ -71,6 +74,7 @@ class IChessBoardVision(Interface):
         pass
     
 class IChessBoardImageSet(Interface):
+    """ a set of Images """
     frameIndex=Attribute("index of image in a sequence")
     timeStamp=Attribute("time")    
     cbImage=Attribute("original chessboard image")

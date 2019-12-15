@@ -176,8 +176,6 @@ class ChessTrapezoid(Trapez2Square):
         warped=cv2.warpPerspective(image,self.inverseTransform,(self.idealSize,self.idealSize))
         return ChessBoardImage(warped,"warped")
     
-    
-    
     def diffSum(self,image,other):
         #diffImage=self.diff(other) 
         #return diffImage.sum()   
