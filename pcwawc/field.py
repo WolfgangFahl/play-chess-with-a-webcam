@@ -5,8 +5,8 @@ import colorsys
 # from colormath.color_conversions import convert_color
 # from colormath.color_diff import delta_e_cie2000
 from zope.interface import implementer
-from pcwawc.runningstats import ColorStats
 from pcwawc.chessvision import ISquare,FieldState
+from pcwawc.runningstats import ColorStats
 import chess
 from enum import IntEnum
 
@@ -88,23 +88,10 @@ class FieldROI:
             for ystep in range(self.grid.ysteps):
                 rx,ry=self.relPixelLambda(self.grid,self.roiIndex,xstep,ystep)
                 rx,ry=self.grid.shiftSafety(rx,ry)
-                pixel=self.interPolate(rx, ry)
+                pixel=self.field.interPolate(rx, ry)
                 yield pixel
                               
-    def interPolate(self,rx,ry):
-        """ interpolate the given relative coordinate """         
-        f=self.field   
-        # interpolate the pixel
-        x=int(f.pcx+f.width*(rx-0.5)+0.5)
-        y=int(f.pcy+f.height*(ry-0.5)+0.5)
-        if self.field.maxX is not None:
-            if x>=self.field.maxX:
-                x=self.field.maxX-1
-        if self.field.maxY is not None:        
-            if y>=self.field.maxY:
-                y=self.field.maxY-1
-        pixel=(x,y)
-        return pixel      
+        
             
 @implementer(ISquare)
 class Field:
@@ -145,6 +132,8 @@ class Field:
         # A1 to H8
         self.an = chess.SQUARE_NAMES[self.squareIndex]
         # center pixel position of field
+        self.px=None
+        self.py=None
         self.pcx = None
         self.pcy = None
         self.width=None
@@ -221,6 +210,40 @@ class Field:
         bgr = (b, g, r)
         # print("(%3d,%3d)=(%3d,%3d,%3d) (%3d,%3d,%3d)" % (self.pcx,self.pcy,h,s,v,r,g,b))
         return bgr
+    
+    def interPolate(self,rx,ry):
+        """ interpolate the given relative coordinate """         
+        # interpolate the pixel
+        x=int(self.pcx+self.width*(rx-0.5)+0.5)
+        y=int(self.pcy+self.height*(ry-0.5)+0.5)
+        return self.limit(x,y)
+    
+    def limit(self,x,y):
+        if self.maxX is not None:
+            if x>=self.maxX:
+                x=self.maxX-1
+        if self.field.maxY is not None:        
+            if y>=self.maxY:
+                y=self.maxY-1
+        if x<0: x=0
+        if y<0: y=0        
+        pixel=(x,y)
+        return pixel      
+    
+    def setRect(self,width,height,fieldWidth,fieldHeight):
+        pcx = int(fieldWidth * (2 * self.col + 1) // 2)
+        pcy = int(fieldHeight * (2 * self.row + 1) // 2)
+        self.width=fieldWidth
+        self.height=fieldHeight
+        self.pcx = pcx
+        self.pcy = pcy
+        self.maxX= width
+        self.maxY= height
+
+    def getSquareImage(self,cbImage):
+        x,y,dh,dw=self.getRect()
+        squareImage=cbImage.image[y:y +dh, x:x +dw]
+        return squareImage
 
     def drawDebug(self, video, image, detectedFieldState):
         pcx = self.pcx

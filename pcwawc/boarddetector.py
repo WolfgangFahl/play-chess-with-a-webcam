@@ -24,28 +24,7 @@ class BoardDetector:
         self.hsv = None
         self.previous=None
         self.debug = False
-     
-    def genFields(self):
-        for row in range(Field.rows):
-            for col in range (Field.cols):
-                field = self.board.fieldAt(row, col)
-                yield field    
-           
-    def divideInFields(self,image):
-        # interpolate the centers of the 8x8 fields from a squared image
-        height, width = image.shape[:2]
-        fieldHeight = height / Field.rows
-        fieldWidth = width / Field.cols
-        for field in self.genFields():   
-            pcx = int(fieldWidth * (2 * field.col + 1) // 2)
-            pcy = int(fieldHeight * (2 * field.row + 1) // 2)
-            field.width=fieldWidth
-            field.height=fieldHeight
-            field.pcx = pcx
-            field.pcy = pcy
-            field.maxX= width
-            field.maxY= height
-    
+                   
     def sortByFieldState(self):            
         # get a dict of fields sorted by field state
         sortedByFieldState = sorted(self.board.fieldsByAn.values(), key=lambda field:field.getFieldState())
@@ -59,14 +38,14 @@ class BoardDetector:
         return sortedFields
     
     def analyzeFields(self,image,grid,roiLambda):    
-        for field in self.genFields():
+        for field in self.board.genSquares():
             field.divideInROIs(grid,roiLambda)
             for roi in field.rois:
                 roi.analyze(image)
                     
     def analyzeColors(self, image, distance=3, step=1):
         self.hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        for field in self.genFields():
+        for field in self.board.genSquares():
             field.analyzeColor(image, self.hsv, distance, step)
         
     def onChessBoardImage(self,imageEvent):
@@ -81,8 +60,9 @@ class BoardDetector:
     def analyze(self, cbImageSet, distance=3, step=1):
         frameIndex=cbImageSet.frameIndex
         if (frameIndex % self.speedup==0):
-            image=cbImageSet.cbWarped.image
-            self.divideInFields(image)
+            cbWarped=cbImageSet.cbWarped
+            image=cbWarped.image
+            self.board.divideInSquares(cbWarped.width,cbWarped.height)
             self.analyzeColors(image, distance, step)
             sortedFields=self.sortByFieldState()
 

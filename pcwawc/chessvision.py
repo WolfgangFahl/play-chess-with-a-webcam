@@ -41,6 +41,9 @@ class IGame(Interface):
 class IChessBoard(Interface):
     """ chessboard """
     fen=Attribute("Forsyth–Edwards Notation")
+    def divideInSquares(self,width,height):
+        """ divide the board in squares based on the given width and height"""
+        pass
     def genSquares(self):
         """ generate all my squares"""
         pass

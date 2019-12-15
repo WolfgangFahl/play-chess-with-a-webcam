@@ -35,6 +35,13 @@ class Board(object):
     def genSquares(self):
         for field in self.fieldsByAn.values():
             yield field
+            
+    def divideInSquares(self,width,height):
+        # interpolate the centers of the 8x8 fields from a squared image
+        fieldHeight = height / Field.rows
+        fieldWidth = width / Field.cols
+        for field in self.genSquares():   
+            field.setRect(width,height,fieldWidth,fieldHeight)
 
     def fieldStateCounts(self):
         # there are 6 different FieldStats

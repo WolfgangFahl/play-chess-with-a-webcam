@@ -4,7 +4,7 @@ Created on 2019-12-14
 @author: wf
 '''
 from pcwawc.boarddetector import BoardDetector
-from pcwawc.simpledetector import SimpleDetector
+from pcwawc.simpledetector import SimpleDetector, Simple8x8Detector
 
 class MoveDetectorFactory:
     detectors={}    
@@ -23,5 +23,6 @@ class MoveDetectorFactory:
         return moveDetector
 
 MoveDetectorFactory.register("simple", SimpleDetector())
+MoveDetectorFactory.register("simple8x8", Simple8x8Detector())
 MoveDetectorFactory.register("luminance", BoardDetector())
 

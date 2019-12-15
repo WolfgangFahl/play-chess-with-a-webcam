@@ -8,7 +8,6 @@ from pcwawc.chessvision import FieldState
 from pcwawc.chessimage import ChessBoardVision
 from pcwawc.environment4test import Environment4Test
 from pcwawc.runningstats import ColorStats
-from pcwawc.video import Video
 from timeit import default_timer as timer
 import cv2
 from pcwawc.videoanalyze import VideoAnalyzer
@@ -126,7 +125,6 @@ def test_MaskFieldStates():
         video.showImage(rgba, imageInfo.title,keyWait=waitTime)
         video.close()
         
-
 test_ColorDistance()
 test_FieldStates()
 test_MaskFieldStates()
