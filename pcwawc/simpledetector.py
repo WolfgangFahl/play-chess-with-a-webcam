@@ -41,6 +41,7 @@ class ImageChange:
         self.movingAverage=MovingAverage(4)
     
     def check(self,cbImage):
+        start=timer()  
         image=cbImage.image
         imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         cbImageGray=ChessBoardImage(cv2.cvtColor(imageGray,cv2.COLOR_GRAY2BGR),"gray")
@@ -54,6 +55,8 @@ class ImageChange:
         cbDiffImage=cbImageBW.diffBoardImage(self.cbPreviousBW)
         self.pixelChanges=cv2.norm(imageBW, self.previousBW, cv2.NORM_L1) / cbImage.pixels
         self.movingAverage.push(self.pixelChanges)
+        endt=timer()    
+        self.time=endt-start  
         return cbImageGray,cbImageBW,cbDiffImage,self.pixelChanges
     
 @implementer(IMoveDetector) 
@@ -79,10 +82,15 @@ class Simple8x8Detector:
             # TODO only do once ...
             start=timer()
             self.board.divideInSquares(cbWarped.width,cbWarped.height)
+            start2=timer()
             for square in self.board.genSquares():
+                starti=timer()
                 squareImage=ChessBoardImage(square.getSquareImage(cbWarped),square.an)
+                self.imageChanges[square.an].timei=timer()-starti
                 for square in self.board.genSquares():
                     self.imageChanges[square.an].check(squareImage)
-            endt=timer()      
-            print ("%4d: %.2f s" % (cbImageSet.frameIndex,endt-start))  
-  
+            endt=timer()  
+            print ("%4d: %.2f/%.2fs" % (cbImageSet.frameIndex,endt-start,endt-start2))  
+            for square in self.board.genSquares():
+                ic=self.imageChanges[square.an]
+                print ("%4d %s: %.5f/%.5fs" % (cbImageSet.frameIndex,square.an,ic.time,ic.timei))

@@ -222,7 +222,7 @@ class Field:
         if self.maxX is not None:
             if x>=self.maxX:
                 x=self.maxX-1
-        if self.field.maxY is not None:        
+        if self.maxY is not None:        
             if y>=self.maxY:
                 y=self.maxY-1
         if x<0: x=0
