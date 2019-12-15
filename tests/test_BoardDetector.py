@@ -4,10 +4,11 @@
 from pcwawc.args import Args
 from pcwawc.board import Board
 from pcwawc.boarddetector import BoardDetector
-from pcwawc.environment4test import Environment4Test
-from pcwawc.video import Video
 from pcwawc.chessvision import FieldState
+from pcwawc.chessimage import ChessBoardVision
+from pcwawc.environment4test import Environment4Test
 from pcwawc.runningstats import ColorStats
+from pcwawc.video import Video
 from timeit import default_timer as timer
 import cv2
 from pcwawc.videoanalyze import VideoAnalyzer
@@ -96,12 +97,13 @@ def checkFieldStates(boardDetector,board):
     return sortedFields    
 
 def test_FieldStates():
-    video=Video()
-    board = Board()
+    args=Args("test")
+    args.parse([])
+    vision=ChessBoardVision(args.args)
     boardDetector = BoardDetector()
-    boardDetector.setup("luminance",board, video,None)
+    boardDetector.setup("luminance",vision)
     boardDetector.debug = True
-    checkFieldStates(boardDetector, board)
+    checkFieldStates(boardDetector, vision.board)
 
 def test_MaskFieldStates():
     #video=Video()
@@ -115,7 +117,7 @@ def test_MaskFieldStates():
         analyzer.processImageSet(cbImageSet)
         rgba=cv2.cvtColor(cbImageSet.cbWarped.image,cv2.COLOR_RGB2RGBA)
         waitTime=1000
-        board=analyzer.board
+        board=analyzer.vision.board
         sortedFields=checkFieldStates(analyzer.moveDetector, board)
         whiteFields=sortedFields[FieldState.WHITE_EMPTY]
         print ("%d white fields for %s"  % (len(whiteFields),board.fen))

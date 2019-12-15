@@ -7,7 +7,15 @@ Created on 2019-10-10
 see e.g. https://www.fide.com/FIDE/handbook/LawsOfChess.pdf
 '''
 #<uml>
+#IChessBoardVision "1" ..> "n" IChessBoardImageSet
+#IMoveDetector "1" ..> "n" IChessBoardImageSet
+#IChessBoardVision "1" -- "1" IChessBoard
+#IChessBoardVision "1" -- "1" IWarp
+#IGame "1" -- "1" IChessBoard
 #IChessBoardImageSet "1" -- "n" IChessBoardImage
+#IChessBoard "1" -- "64" ISquare
+#ISquare "1" -- "1" IPiece
+#ISquare "1" -- "1" FieldState
 #</uml>
 
 from zope.interface import Interface
@@ -27,6 +35,7 @@ class FieldState(IntEnum):
         return titles[self]
 
 class IGame(Interface):
+    """ a chess game """
     pgn=Attribute("Portable game notation")
     
 class IChessBoard(Interface):
@@ -70,7 +79,18 @@ class IChessBoardVision(Interface):
         pass
         
     def close(self):
-        """ close the access to the chessbaord images"""
+        """ close the access to the chessboard images"""
+        pass
+    
+class IWarp(Interface):
+    """ trapez to square warp point handling """
+    def rotate(self, angle):
+        """ rotate me with the given angle"""
+        pass    
+    def updatePoints(self):
+        """ update the points"""
+    def addPoint(self, px, py):
+        """ add the given point to the warp point list """
         pass
     
 class IChessBoardImageSet(Interface):

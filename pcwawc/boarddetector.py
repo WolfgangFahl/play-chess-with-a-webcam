@@ -15,11 +15,12 @@ class BoardDetector:
     def __init__(self):
         pass
     
-    def setup(self,name,board, video,args):
+    def setup(self,name,vision):
         self.name=name
-        self.board = board
-        self.video = video
-        self.speedup=args.speedup if args is not None else 1
+        self.vision=vision
+        self.board = vision.board
+        self.video = vision.video
+        self.speedup=vision.args.speedup if vision.args is not None else 1
         self.hsv = None
         self.previous=None
         self.debug = False

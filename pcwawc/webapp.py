@@ -19,11 +19,11 @@ class WebApp:
         self.videoStream = None
         self.videoAnalyzer=VideoAnalyzer(args,logger=logger)
         self.videoAnalyzer.setUpDetector()
-        self.board=self.videoAnalyzer.board
+        self.board=self.videoAnalyzer.vision.board
         self.setDebug(args.debug)
         self.env = Environment()
         if args.game is None:
-            self.webCamGame = self.createNewCame()
+            self.webCamGame = self.createNewGame()
         else:
             gamepath = args.game
             if not gamepath.startswith("/"):
@@ -31,11 +31,11 @@ class WebApp:
             self.webCamGame = WebCamGame.readJson(gamepath)
             if self.webCamGame is None:
                 self.videoAnalyzer.log("could not read %s " % (gamepath))
-                self.webCamGame = self.createNewCame() 
+                self.webCamGame = self.createNewGame() 
         self.webCamGame.checkEnvironment(self.env)        
         self.game = self.webCamGame.game
   
-    def createNewCame(self):
+    def createNewGame(self):
         return WebCamGame("game" + self.videoAnalyzer.vision.video.fileTimeStamp())
         
     def log(self, msg):
@@ -139,7 +139,7 @@ class WebApp:
         msg="settings"
         if "detector" in args:
             newDetectorName=args["detector"]
-            newDetector=MoveDetectorFactory.create(newDetectorName, self.videoAnalyzer.board, self.videoAnalyzer.vision.video, self.args)
+            newDetector=MoveDetectorFactory.create(newDetectorName, self.videoAnalyzer.vision)
             self.videoAnalyzer.changeDetector(newDetector)
             msg="changing detector to %s" % (newDetectorName)
         return self.index(msg)

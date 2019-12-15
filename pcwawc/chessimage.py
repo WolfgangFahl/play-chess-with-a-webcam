@@ -3,7 +3,8 @@ Created on 2019-12-10
 
 @author: wf
 '''
-from pcwawc.chessvision import IChessBoardImageSet, IChessBoardImage, IChessBoardVision
+from pcwawc.board import Board
+from pcwawc.chessvision import IChessBoardImageSet, IChessBoardImage, IChessBoardVision, IWarp
 from pcwawc.environment import Environment
 from pcwawc.jsonablemixin import JsonAbleMixin
 from pcwawc.yamlablemixin import YamlAbleMixin
@@ -19,7 +20,7 @@ import cv2
 class ChessBoardVision(JsonAbleMixin):   
     """ implements access to chessboard images"""
  
-    def __init__(self,args):
+    def __init__(self,args,board=None):
         self.device=args.input
         self.title=Video.title(self.device)
         self.video=Video(self.title)
@@ -30,9 +31,13 @@ class ChessBoardVision(JsonAbleMixin):
         self.hasImage=False
         self.timestamps=[]
         self.debug=args.debug
+        if board is None:
+            board=Board()
+        self.board = board
+        if self.args.fen is not None:
+            self.board.updatePieces(self.args.fen)
         self.warp = Warp(args.warpPointList)
         self.warp.rotation = args.rotation
-  
         pass
     
     def open(self,device):
@@ -138,7 +143,8 @@ class ChessBoardImageSet:
             self.cbGUI=ChessBoardImage(self.cbWarped.image.copy(),"gui")
             if not warp.warping:
                 video.drawTrapezoid(self.cbGUI.image, warp.points, warp.bgrColor)
-            
+
+@implementer(IWarp)              
 class Warp(YamlAbleMixin, JsonAbleMixin):
     """ holds the trapezoid points to be use for warping an image take from a peculiar angle """
 

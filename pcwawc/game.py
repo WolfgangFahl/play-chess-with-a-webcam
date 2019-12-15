@@ -11,8 +11,7 @@ import os
 
 @implementer(IGame) 
 class Game(JsonAbleMixin):
-    """ keeps track of a games state in a JavaScript compatible way to exchange game State information
-    across platforms e.g. between Python backend and JavaScript frontend"""
+    """ keeps track of a games state """
     
     def __init__(self, gameid):
         self.gameid = gameid
@@ -22,6 +21,20 @@ class Game(JsonAbleMixin):
         self.locked = False
         self.moveIndex = 0 
         
+    #def __getstate__(self):
+    #    state={}
+    #    state["gameid"]=self.gameid
+    #    state["pgn"]=self.pgn
+    #    state["locked"]=self.locked
+    #    state["moveIndex"]=self.moveIndex
+    #    return state
+    
+    #def __setstate__(self, state):
+    #    self.gameid=state["gameid"]
+    #   self.pgn=state["pgn"]   
+    #    self.locked=state["locked"]
+    #    self.moveIndex=state["moveIndex"]
+        
     def showDebug(self):
         print ("fen: %s" % (self.fen))  
         print ("pgn: %s" % (self.pgn))
@@ -29,8 +42,7 @@ class Game(JsonAbleMixin):
 
     
 class WebCamGame(JsonAbleMixin):
-    """ keeps track of a webcam games state in a JavaScript compatible way to exchange game and webcam/board State information
-    across platforms e.g. between Python backend and JavaScript frontend"""
+    """ keeps track of a webcam games state """
     
     def __init__(self, gameid):
         self.gameid = gameid
@@ -72,7 +84,6 @@ class WebCamGame(JsonAbleMixin):
                     webCamGames[webCamGame.gameid] = webCamGame
                 else:
                     raise Exception("invalid json file %s" % filePath)    
-        return webCamGames               
-        
+        return webCamGames
            
 

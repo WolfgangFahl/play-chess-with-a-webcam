@@ -6,7 +6,6 @@ Created on 2019-12-08
 @author: wf
 '''
 from pcwawc.args import Args
-from pcwawc.board import Board
 from pcwawc.boardfinder import BoardFinder, Corners
 from pcwawc.chessimage import ChessBoardVision
 from pcwawc.detectorfactory import MoveDetectorFactory
@@ -139,10 +138,7 @@ class VideoAnalyzer(Observable):
             self.moveDetector.debug=debug
         
     def setUpDetector(self):
-        self.board = Board()
-        if self.args.fen is not None:
-            self.board.updatePieces(self.args.fen)
-        self.moveDetector=MoveDetectorFactory.create(self.args.detector,self.board, self.vision.video,self.args)
+        self.moveDetector=MoveDetectorFactory.create(self.args.detector,self.vision)
         self.subscribe(self.moveDetector.onChessBoardImage)
         
     def changeDetector(self,newDetector):

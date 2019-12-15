@@ -35,6 +35,12 @@ inuml {
 /class .*:/ {
   finishClass()
   classLine=$0
+  match($0,/(Interface)/)
+  if (RLENGTH>=0) {
+    classType="Interface"
+  } else {
+    classType="Class"
+  }
   gsub(/:/,"",$0)
   gsub(/class /,"",$0)
   gsub(/\(.*\)/,"",$0)
@@ -74,7 +80,7 @@ function finishClass() {
          dot=""
       printf("\n  note top of %s: %s%s\n",className,trim(doc),dot)
   }
-   printf("  class %s [[%s]] {\n",className,githuburl"/"srcfile)
+   printf("  %s %s [[%s]] {\n",classType,className,githuburl"/"srcfile)
    for (attribute in attributes) {
      printf("    %s\n",attributes[attribute])
    }

@@ -14,10 +14,10 @@ class MoveDetectorFactory:
         
     """ factory for move detectors"""
     @staticmethod
-    def create(detectorname,board,video,args):
+    def create(detectorname,vision):
         if detectorname in MoveDetectorFactory.detectors:
             moveDetector=MoveDetectorFactory.detectors[detectorname]
-            moveDetector.setup(detectorname,board,video,args)
+            moveDetector.setup(detectorname,vision)
         else:
             raise Exception("MoveDetectorFactory create: unknown detectorname %s" % (detectorname))   
         return moveDetector

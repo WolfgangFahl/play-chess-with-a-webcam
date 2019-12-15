@@ -16,11 +16,9 @@ class SimpleDetector:
     def __init__(self):
         pass
     
-    def setup(self,name,board,video,args):
+    def setup(self,name,vision):
         self.name=name
-        self.board=board
-        self.video=video
-        self.args=args
+        self.vision=vision
         self.cbPreviousBW=None
         self.movingAverage=MovingAverage(4)
         

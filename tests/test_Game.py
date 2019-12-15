@@ -28,15 +28,13 @@ def test_WebCamGame():
     assert "chessBoard001" in json
     #webCamGame.save("testGames") 
 
-    
 def test_WebCamGames():
     # get the testEnvironment    
     testEnv = Environment()
     for webCamGame in WebCamGame.getWebCamGames(testEnv.testMediaPath).values():
         if debug:
             print (webCamGame.asJson())
-        webCamGame.save("testGames")        
-
+        webCamGame.save("testGames")
         
 def test_WebApp():
     webApp = WebApp(WebChessCamArgs(["--debug"]).args)
@@ -56,7 +54,6 @@ def test_WebApp():
     assert game.moveIndex == 2
     webApp.chessSave()
   
-
 test_Game001()
 test_WebCamGame()
 test_WebCamGames()
