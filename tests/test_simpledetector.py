@@ -13,7 +13,7 @@ def test_SimpleDetector():
     for testVideo in testEnv.getTestVideos():       
         path=testEnv.testMedia+testVideo
         cmdlineArgs=Args("test")
-        cmdlineArgs.parse(["--debug","--input",path,"--detect","simple"])
+        cmdlineArgs.parse(["--debug","--input",path,"--detect","simple8x8"])
         analyzer=VideoAnalyzer(cmdlineArgs.args)
         analyzer.open()
         analyzer.nextImageSet()
