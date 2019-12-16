@@ -40,6 +40,13 @@ class MovingAverage():
             return None
         return self.sum / self.n    
     
+    def __str__(self):        
+        return self.format()
+    
+    def format(self,formatM="%.1f"):
+        text=formatM % self.mean()
+        return text
+    
 class MinMaxMixin(object):   
     def initMinMax(self):
         self.min=sys.maxsize

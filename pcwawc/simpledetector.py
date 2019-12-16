@@ -5,7 +5,7 @@ Created on 2019-12-07
 '''
 from pcwawc.chessvision import IMoveDetector
 from pcwawc.chessimage import ChessBoardImage
-from pcwawc.runningstats import MinMaxStats
+from pcwawc.runningstats import MinMaxStats,MovingAverage
 import cv2
 from zope.interface import implementer
 from timeit import default_timer as timer
@@ -16,12 +16,15 @@ class ImageChange:
     thresh=150
     averageWindow=4
     def __init__(self):
-        self.cbPreviousBW=None
-        self.movingAverage=MinMaxStats()
+        self.cbReferenceBW=None
+        self.movingAverage=MovingAverage(ImageChange.averageWindow)
+        self.stats=MinMaxStats()
 
     def check(self,cbImage):
         self.makeGray(cbImage)
-        self.calcPixelChanges()
+        self.calcDifference()
+        if self.hasReference:
+            self.calcPixelChanges()
     
     def makeGray(self,cbImage):
         self.cbImage=cbImage
@@ -32,19 +35,23 @@ class ImageChange:
         thresh=ImageChange.thresh
         (thresh, self.imageBW) = cv2.threshold(imageGray, thresh, 255, cv2.THRESH_TRUNC)
         self.cbImageBW=ChessBoardImage(cv2.cvtColor(self.imageBW,cv2.COLOR_GRAY2BGR),"bw")
-        self.updatePrevious(self.cbImageBW)
-        self.cbDiffImage=self.cbImageBW.diffBoardImage(self.cbPreviousBW)
+    
+    def calcDifference(self):    
+        self.updateReference(self.cbImageBW)
+        self.cbDiffImage=self.cbImageBW.diffBoardImage(self.cbReferenceBW)
         
-    def updatePrevious(self,cbImageBW):    
-        if self.cbPreviousBW is None:
-            self.cbPreviousBW=cbImageBW
+    def updateReference(self,cbImageBW):
+        self.hasReference=not self.cbReferenceBW is None
+        if not self.hasReference:
+            self.cbReferenceBW=cbImageBW
         
     def calcPixelChanges(self):
-        self.pixelChanges=cv2.norm(self.cbImageBW.image, self.cbPreviousBW.image, cv2.NORM_L1) / self.cbImageBW.pixels
+        self.pixelChanges=cv2.norm(self.cbImageBW.image, self.cbReferenceBW.image, cv2.NORM_L1) / self.cbImageBW.pixels
         self.movingAverage.push(self.pixelChanges)
+        self.stats.push(self.pixelChanges)
         
     def __str__(self):    
-        text="change: %4.1f, average: %s, pixels: %d" % (self.pixelChanges,self.movingAverage,self.cbImageBW.pixels)
+        text="change: %5.1f, average: %s/%s, pixels: %d" % (self.pixelChanges,self.movingAverage.format(formatM="%5.1f"),self.stats.formatMinMax(formatR="%4d: %5.1f ± %5.1f",formatM=" %5.1f - %5.1f"),self.cbImageBW.pixels)
         return text
     
 @implementer(IMoveDetector) 
@@ -67,9 +74,11 @@ class SimpleDetector:
             start=timer()
             self.imageChange.check(cbWarped)
             ic=self.imageChange
+            endt=timer()   
             cbImageSet.cbDebug=cbImageSet.debugImage2x2(cbWarped,ic.cbImageGray,ic.cbImageBW,ic.cbDiffImage)
-            endt=timer()    
-            print ('Frame %5d %.3f s:%s' % (cbImageSet.frameIndex,endt-start,ic))  
+            if self.imageChange.hasReference: 
+                if vision.debug:
+                    print ('Frame %5d %.3f s:%s' % (cbImageSet.frameIndex,endt-start,ic))  
 
 @implementer(IMoveDetector) 
 class Simple8x8Detector(SimpleDetector):
@@ -97,7 +106,8 @@ class Simple8x8Detector(SimpleDetector):
             for square in self.board.genSquares():
                 ic=self.imageChanges[square.an]
                 ic.cbImageBW=ChessBoardImage(square.getSquareImage(self.imageChange.cbImageBW),square.an)
-                ic.updatePrevious(ic.cbImageBW)
-                ic.calcPixelChanges()
-                
-                print ("%4d %s: %s" % (cbImageSet.frameIndex,square.an,ic))
+                ic.updateReference(ic.cbImageBW)
+                if ic.hasReference:
+                    ic.calcPixelChanges()
+                    if self.vision.debug:
+                        print ("%4d %s: %s" % (cbImageSet.frameIndex,square.an,ic))
