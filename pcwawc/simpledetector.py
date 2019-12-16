@@ -5,7 +5,7 @@ Created on 2019-12-07
 '''
 from pcwawc.chessvision import IMoveDetector
 from pcwawc.chessimage import ChessBoardImage
-from pcwawc.runningstats import MovingAverage
+from pcwawc.runningstats import MinMaxStats
 import cv2
 from zope.interface import implementer
 from timeit import default_timer as timer
@@ -17,7 +17,7 @@ class ImageChange:
     averageWindow=4
     def __init__(self):
         self.cbPreviousBW=None
-        self.movingAverage=MovingAverage(ImageChange.averageWindow)
+        self.movingAverage=MinMaxStats()
 
     def check(self,cbImage):
         self.makeGray(cbImage)
@@ -44,7 +44,7 @@ class ImageChange:
         self.movingAverage.push(self.pixelChanges)
         
     def __str__(self):    
-        text="change: %4.1f, average: %4.1f, pixels: %d" % (self.pixelChanges,self.movingAverage.mean(),self.cbImageBW.pixels)
+        text="change: %4.1f, average: %s, pixels: %d" % (self.pixelChanges,self.movingAverage,self.cbImageBW.pixels)
         return text
     
 @implementer(IMoveDetector) 
