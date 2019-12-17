@@ -78,6 +78,8 @@ class ImageChange:
 @implementer(IMoveDetector) 
 class SimpleDetector(Observable):
     """ a simple treshold detector """
+    calibrationWindow=3
+     
     def __init__(self):
         """ construct me """
         # make me observable
@@ -106,13 +108,12 @@ class SimpleDetector(Observable):
                     print ('Frame %5d %.3f s:%s' % (cbImageSet.frameIndex,endt-start,ic))               
                     
     def updateState(self,cbImageSet):
-        calibrationWindow=5
         
         ic=self.imageChange
         ics=ic.changeState
         if ics==ChangeState.CALIBRATING:
             # leave calibrating when enough stable values are available
-            if ic.isStable() and ic.stableCounter>=calibrationWindow:
+            if ic.isStable() and ic.stableCounter>=SimpleDetector.calibrationWindow:
                 ic.changeState=ChangeState.PRE_MOVE
                 ic.minInMove=ic.pixelChanges
                 ic.maxInMove=ic.pixelChanges
@@ -174,24 +175,34 @@ class Simple8x8Detector(SimpleDetector):
                 #if self.vision.debug:
                     #print ("%4d %s: %s" % (cbImageSet.frameIndex,square.an,ic))
     
-    def showDebug(self):
-        for square in self.board.genSquares():
-            ic=self.imageChanges[square.an]
-            print ("%s: %s" % (square.an,ic))  
+    def showDebug(self,limit=6):
+        changesByValue=OrderedDict(sorted(self.imageChanges.items(),key=lambda x:x[1].pixelChanges,reverse=True))
+        ans=list(changesByValue.keys())[:limit]
+        for an in ans:
+            ic=self.imageChanges[an]
+            print ("%s: %s" % (an,ic))  
+        pass    
                     
     def onMoveDetected(self,cbImageSet):
         self.calcChanges(cbImageSet)
         changesByValue=OrderedDict(sorted(self.imageChanges.items(),key=lambda x:x[1].pixelChanges,reverse=True))
         keys=list(changesByValue.keys())
-        change=(keys[0],keys[1])
-        if self.vision.debug:
-            print ("frame %4d: potential move for squares %s" % (cbImageSet.frameIndex,str(change))) 
-            if self.debug:
-                self.showDebug()
-        move=self.vision.board.changeToMove(change)
+        for changeIndex in range(4):
+            change=(keys[0],keys[changeIndex+1])
+            if self.vision.debug:
+                print ("frame %4d: potential move for squares %s" % (cbImageSet.frameIndex,str(change))) 
+            move=self.vision.board.changeToMove(change)
+            # did we find a move?
+            if move is None:
+                if self.vision.debug:
+                    print ("change %s has no valid move" % (str(change)))
+            else:
+                break
+        if self.debug:
+            self.showDebug()
         if move is None:
             if self.vision.debug:
-                print ("change %s has no valid move" % (str(change)))
+                    print ("frame %4d: giving up on move detection" % (cbImageSet.frameIndex))
         else:
             super().onMoveDetected(cbImageSet)  
             for square in self.board.genSquares():

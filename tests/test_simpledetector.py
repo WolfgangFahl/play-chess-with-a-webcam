@@ -4,6 +4,7 @@ Created on 2019-12-14
 @author: wf
 '''
 from pcwawc.args import Args
+from pcwawc.simpledetector import SimpleDetector
 from pcwawc.videoanalyze import VideoAnalyzer
 from pcwawc.environment4test import Environment4Test
 
@@ -28,6 +29,7 @@ def test_SimpleDetector():
                    ]
     rotation=[0,0,90]
     index=0
+    SimpleDetector.calibrationWindow=3
     for testVideo in testEnv.getTestVideos():
         path=testEnv.testMedia+testVideo
         print (testVideo)
