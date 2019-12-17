@@ -118,7 +118,7 @@ class VideoAnalyzer(Observable):
             finder.showPolygonDebug(image,title,corners)
             finder.showHistogramDebug(histograms,title,corners)
         trapez=corners.trapez8x8
-        self.vision.warp.pointList=trapez
+        self.vision.warp.pointList=trapez.tolist()
         self.vision.warp.updatePoints()    
         return corners
     

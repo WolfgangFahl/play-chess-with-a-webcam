@@ -2,6 +2,7 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import math
 import sys
+import numpy as np
 from collections import deque
 from zope.interface import Interface,implementer
 
@@ -34,6 +35,13 @@ class MovingAverage():
         else:
             self.sum-=self.d.popleft()
         self.d.append(value)
+        
+    def gradient(self):
+        if self.n>=2:
+            g=(self.d[self.n-1]-self.d[0])/(self.n-1)
+            return g
+        else:
+            return 0
      
     def mean(self):    
         if self.n==0:
@@ -123,6 +131,10 @@ class MinMaxStats(RunningStats,MinMaxMixin):
     def push(self,value):    
         super().push(value)
         super().pushMinMax(value)
+        
+    def clear(self):
+        super().clear()
+        super().initMinMax()    
         
     def formatMinMax(self,formatR="%d: %.1f ± %.1f",formatM=" %.1f - %.1f"):
         text=super().format(formatR)

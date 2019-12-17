@@ -39,14 +39,16 @@ def test_ColorStats():
     assert sB == pytest.approx(17.078251, prec)
 
 def test_MovingAverage():
-    values=[10,12,8,13,15,14]
-    means=[10,11,10,11,12,14]
+    values=[10,12,17,19,24,17,13,12,8]
+    means=[10,11,13,16,20,20,18,14,11]
+    gs=[0,2,3.5,3.5,3.5,-1,-5.5,-2.5,-2.5]
     ma=MovingAverage(3)
     index=0
     for value in values:
         ma.push(value)
-        print ("%d: %f %f" % (index,value,ma.mean()))
+        print ("%d: %f %f %f" % (index,value,ma.mean(),ma.gradient()))
         assert means[index]==ma.mean()
+        assert gs[index]==ma.gradient()
         index+=1
     
 test_RunningStats()

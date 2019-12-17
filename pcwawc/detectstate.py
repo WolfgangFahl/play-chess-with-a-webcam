@@ -11,6 +11,20 @@ but we don't for the time being
 '''
 from timeit import default_timer as timer
 from pcwawc.environment import Environment
+from enum import IntEnum    
+
+class ChangeState(IntEnum):
+    """  """
+    CALIBRATING = 0
+    VALID = 1
+    VALID_STABLE = 2
+    INVALID = 3
+    INVALID_STABLE =4
+    POTENTIAL_MOVE=5
+    
+    def title(self,titles=["calibrating", "valid", "valid stable","invalid","invalid stable","potential move"]):
+        return titles[self]
+
 
 class DetectState(object):
     '''
