@@ -10,6 +10,7 @@ import argparse
 from threading import Thread
 import os
 import sys
+import threading
 
 class Video:
     """ Video handling e.g. recording/writing """
@@ -27,6 +28,7 @@ class Video:
         # still image ass video feature for jpg
         self.autoPause=False
         self.fpsCheck = None
+        self.debug=False
         pass
 
     # check whether s is an int
@@ -88,6 +90,10 @@ class Video:
 
     # show the image with the given title
     def showImage(self, image, title, keyCheck=True, keyWait=5):
+        if not threading.current_thread() is threading.main_thread():
+            if self.debug:
+                print ("can't show image %s since not on mainthread" % (title))
+            return True
         cv2.imshow(title, image)
         if keyCheck:
             return not cv2.waitKey(keyWait) & 0xFF == ord('q')
