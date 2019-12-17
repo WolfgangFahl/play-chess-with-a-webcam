@@ -2,17 +2,19 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.chessvision import FieldState, IMoveDetector
 from pcwawc.chessimage import ChessBoardImage
-from pcwawc.field import Field
+from pcwawc.eventhandling import Observable
 import cv2
 from zope.interface import implementer
 
 @implementer(IMoveDetector) 
-class BoardDetector:
+class BoardDetector(Observable):
     """ detect a chess board's state from the given image """
     frameDebug = False
 
-    # construct me from a board and video
     def __init__(self):
+        """ construct me """
+        # make me observable
+        super(BoardDetector,self).__init__()
         pass
     
     def setup(self,name,vision):
