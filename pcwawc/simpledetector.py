@@ -30,6 +30,11 @@ class ImageChange:
         self.stats.clear()
         self.changeState=newState
         self.stableCounter=0
+        
+    def transitionToPreMove(self):
+        self.changeState=ChangeState.PRE_MOVE
+        self.minInMove=self.pixelChanges
+        self.maxInMove=self.pixelChanges          
 
     def check(self,cbImage):
         self.makeGray(cbImage)
@@ -85,6 +90,7 @@ class SimpleDetector(Observable):
         # make me observable
         super(SimpleDetector,self).__init__()
         self.debug=False
+        self.frameDebug=False
         pass
     
     def setup(self,name,vision):
@@ -104,25 +110,21 @@ class SimpleDetector(Observable):
             cbImageSet.cbDebug=cbImageSet.debugImage2x2(cbWarped,ic.cbImageGray,ic.cbImageBW,ic.cbDiffImage)
             if self.imageChange.hasReference: 
                 self.updateState(cbImageSet)
-                if self.debug:
-                    print ('Frame %5d %.3f s:%s' % (cbImageSet.frameIndex,endt-start,ic))               
+                if self.frameDebug:
+                    print ('Frame %5d %.3f s:%s' % (cbImageSet.frameIndex,endt-start,ic))                         
                     
     def updateState(self,cbImageSet):
-        
         ic=self.imageChange
         ics=ic.changeState
         if ics==ChangeState.CALIBRATING:
             # leave calibrating when enough stable values are available
             if ic.isStable() and ic.stableCounter>=SimpleDetector.calibrationWindow:
-                ic.changeState=ChangeState.PRE_MOVE
-                ic.minInMove=ic.pixelChanges
-                ic.maxInMove=ic.pixelChanges
+                ic.transitionToPreMove()
         elif ics==ChangeState.PRE_MOVE:
             if not ic.isStable():
                 ic.changeState=ChangeState.IN_MOVE
-            else:   
-                ic.minInMove=ic.pixelChanges
-                ic.maxInMove=ic.pixelChanges
+            else:  
+                ic.transitionToPreMove() 
         elif ics==ChangeState.IN_MOVE:
             ic.maxInMove=max(ic.maxInMove,ic.pixelChanges)
             peak=ic.maxInMove-ic.minInMove
