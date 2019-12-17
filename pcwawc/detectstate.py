@@ -16,13 +16,11 @@ from enum import IntEnum
 class ChangeState(IntEnum):
     """  """
     CALIBRATING = 0
-    VALID = 1
-    VALID_STABLE = 2
-    INVALID = 3
-    INVALID_STABLE =4
+    PRE_MOVE = 1
+    IN_MOVE = 2
     POTENTIAL_MOVE=5
     
-    def title(self,titles=["calibrating", "valid", "valid stable","invalid","invalid stable","potential move"]):
+    def title(self,titles=["calibrating", "pre move", "in move","potential move"]):
         return titles[self]
 
 

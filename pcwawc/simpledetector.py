@@ -16,20 +16,19 @@ class ImageChange:
     """ detect change of a single image """
     
     thresh=150
+    gradientDelta=0.5
     averageWindow=4
     
     def __init__(self):
         self.stats=MinMaxStats()
         self.movingAverage=MovingAverage(ImageChange.averageWindow)
-        self.validLowerLimit=None
         self.clear()
         
     def clear(self,newState=ChangeState.CALIBRATING):
         self.cbReferenceBW=None
         self.stats.clear()
         self.changeState=newState
-        self.validCounter=0
-        self.invalidCounter=0
+        self.stableCounter=0
 
     def check(self,cbImage):
         self.makeGray(cbImage)
@@ -61,26 +60,14 @@ class ImageChange:
         self.movingAverage.push(self.pixelChanges)
         self.stats.push(self.pixelChanges)
         
-    def setLowerLimit(self):   
-        self.validMax=self.stats.max
-        self.validStdv=self.stats.standard_deviation()    
-        pass
-    
-    def isValid(self,factor=4):
-        self.validLowerLimit=self.validMax+self.validStdv*factor
-        valid=self.pixelChanges<=self.validLowerLimit
-        return valid
-    
-    def setUpperLimit(self):
-        if self.validLowerLimit is not None:
-            self.invalidMin=(self.pixelChanges+self.validLowerLimit)/2
+    def isStable(self):
+        delta=abs(self.movingAverage.gradient())
+        stable=delta<ImageChange.gradientDelta
+        if stable:
+            self.stableCounter+=1
         else:
-            self.invalidMin=self.pixelChanges    
-        pass
-        
-    def isInvalid(self,factor=4):
-        invalid=self.pixelChanges>=self.invalidMin-self.validStdv*factor
-        return invalid
+            self.stableCounter=0    
+        return stable  
         
     def __str__(self):    
         delta=self.movingAverage.gradient()
@@ -116,58 +103,27 @@ class SimpleDetector:
                     
     def updateState(self,cbImageSet):
         calibrationWindow=5
-        validWindow=4
-        invalidWindow=3
-        factor=3
         
         ic=self.imageChange
-        if ic.changeState==ChangeState.CALIBRATING:
-            # leave calibrating when enough values are available
-            if ic.stats.n>calibrationWindow:
-                ic.changeState=ChangeState.VALID
-                ic.validCounter=1
-                ic.setLowerLimit()
-        elif ic.changeState==ChangeState.VALID:
-            if ic.isValid(2.5):
-                ic.validCounter+=1
-                ic.setLowerLimit()
-                if ic.validCounter>=validWindow:
-                    ic.changeState=ChangeState.VALID_STABLE 
-            else:    
-                ic.changeState=ChangeState.INVALID
-        elif ic.changeState==ChangeState.VALID_STABLE:
-            if ic.isValid(factor):
-                ic.validCounter+=1
-            else:    
-                ic.changeState=ChangeState.INVALID
-                ic.invalidCounter=1
-        elif ic.changeState==ChangeState.INVALID:
-            if ic.isValid(factor):
-                ic.changeState=ChangeState.VALID
-                ic.validCounter=1
-            else:
-                ic.invalidCounter+=1
-                if ic.invalidCounter==2:
-                    ic.setUpperLimit()
-                if ic.invalidCounter>=invalidWindow:
-                    ic.changeState=ChangeState.INVALID_STABLE
-                    ic.validCounter=0
-        elif ic.changeState==ChangeState.INVALID_STABLE:
-            if not ic.isInvalid(factor):
-                ic.changeState=ChangeState.POTENTIAL_MOVE
-                ic.validCounter=1
-            else:    
-                ic.invalidCounter+=1
-        elif ic.changeState==ChangeState.POTENTIAL_MOVE:
-            if not ic.isInvalid(factor):
-                ic.validCounter+=1
-                delta=abs(ic.movingAverage.gradient())
-                if delta<0.5:
-                    # This should be a move detect ....
-                    self.onMoveDetected(cbImageSet)
-            else:
-                ic.changeState=ChangeState.INVALID_STABLE
-                ic.validCounter=0    
+        ics=ic.changeState
+        if ics==ChangeState.CALIBRATING:
+            # leave calibrating when enough stable values are available
+            if ic.isStable() and ic.stableCounter>=calibrationWindow:
+                ic.changeState=ChangeState.PRE_MOVE
+        elif ics==ChangeState.PRE_MOVE:
+            if not ic.isStable():
+                ic.changeState=ChangeState.IN_MOVE
+                ic.minInMove=ic.pixelChanges
+                ic.maxInMove=ic.pixelChanges
+        elif ics==ChangeState.IN_MOVE:
+            ic.maxInMove=max(ic.maxInMove,ic.pixelChanges)
+            peak=ic.maxInMove-ic.minInMove
+            dist=ic.pixelChanges-ic.minInMove
+            if peak>0:
+                relativePeak=dist/peak
+                if ic.isStable():
+                    if relativePeak<0.1:
+                        self.onMoveDetected(cbImageSet)
             
     def onMoveDetected(self,cbImageSet):
         self.imageChange.clear()
@@ -192,7 +148,7 @@ class Simple8x8Detector(SimpleDetector):
         cbImageSet=imageEvent.cbImageSet
         vision=cbImageSet.vision
         cs=self.imageChange.changeState
-        if vision.warp.warping and cs==ChangeState.VALID_STABLE or cs==ChangeState.POTENTIAL_MOVE:
+        if vision.warp.warping and cs==ChangeState.PRE_MOVE or cs==ChangeState.POTENTIAL_MOVE:
             cbWarped=cbImageSet.cbWarped
             # TODO only do once ...
             self.board.divideInSquares(cbWarped.width,cbWarped.height)
