@@ -46,7 +46,7 @@ def test_SimpleDetector():
             analyzer.findChessBoard()
         analyzer.setUpDetector()
         analyzer.moveDetector.subscribe(moveChecker.onMove)
-        #analyzer.moveDetector.debug=True
+        analyzer.moveDetector.debug=True
         analyzer.analyze()      
         index+=1 
 

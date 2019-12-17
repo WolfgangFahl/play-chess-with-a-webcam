@@ -17,7 +17,7 @@ class ImageChange:
     """ detect change of a single image """
     
     thresh=150
-    gradientDelta=0.5
+    gradientDelta=0.725
     averageWindow=4
     
     def __init__(self):
@@ -51,9 +51,9 @@ class ImageChange:
         self.updateReference(self.cbImageBW)
         self.cbDiffImage=self.cbImageBW.diffBoardImage(self.cbReferenceBW)
         
-    def updateReference(self,cbImageBW):
+    def updateReference(self,cbImageBW, force=False):
         self.hasReference=not self.cbReferenceBW is None
-        if not self.hasReference:
+        if not self.hasReference or force:
             self.cbReferenceBW=cbImageBW
         
     def calcPixelChanges(self):
@@ -114,9 +114,12 @@ class SimpleDetector(Observable):
             # leave calibrating when enough stable values are available
             if ic.isStable() and ic.stableCounter>=calibrationWindow:
                 ic.changeState=ChangeState.PRE_MOVE
+                ic.minInMove=ic.pixelChanges
+                ic.maxInMove=ic.pixelChanges
         elif ics==ChangeState.PRE_MOVE:
             if not ic.isStable():
                 ic.changeState=ChangeState.IN_MOVE
+            else:   
                 ic.minInMove=ic.pixelChanges
                 ic.maxInMove=ic.pixelChanges
         elif ics==ChangeState.IN_MOVE:
@@ -126,7 +129,7 @@ class SimpleDetector(Observable):
             if peak>0:
                 relativePeak=dist/peak
                 if ic.isStable():
-                    if relativePeak<0.1:
+                    if relativePeak<0.16:
                         self.onMoveDetected(cbImageSet)
             
     def onMoveDetected(self,cbImageSet):
@@ -151,9 +154,11 @@ class Simple8x8Detector(SimpleDetector):
         super().onChessBoardImage(imageEvent)
         cbImageSet=imageEvent.cbImageSet
         vision=cbImageSet.vision
-        cs=self.imageChange.changeState
+        ic=self.imageChange
+        cs=ic.changeState
         if vision.warp.warping and cs==ChangeState.PRE_MOVE:
             self.calcChanges(cbImageSet)
+            ic.updateReference(ic.cbImageBW, force=True)
         
     def calcChanges(self,cbImageSet):
         cbWarped=cbImageSet.cbWarped
@@ -181,6 +186,8 @@ class Simple8x8Detector(SimpleDetector):
         change=(keys[0],keys[1])
         if self.vision.debug:
             print ("frame %4d: potential move for squares %s" % (cbImageSet.frameIndex,str(change))) 
+            if self.debug:
+                self.showDebug()
         move=self.vision.board.changeToMove(change)
         if move is None:
             if self.vision.debug:

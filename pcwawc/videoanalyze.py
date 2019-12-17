@@ -70,6 +70,8 @@ class VideoAnalyzer(Observable):
         
     def analyze(self):
         self.open()
+        if self.args.autowarp:
+            self.autoWarp()
         while True:
             cbImageSet=self.nextImageSet()
             if cbImageSet is None:
@@ -140,6 +142,10 @@ class VideoAnalyzer(Observable):
     def onMove(self,event):
         move=event.move
         self.vision.board.move(move)
+        
+    def autoWarp(self):
+        self.nextImageSet()
+        self.findChessBoard()    
         
     def setUpDetector(self):
         self.moveDetector=MoveDetectorFactory.create(self.args.detector,self.vision)
