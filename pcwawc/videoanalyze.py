@@ -136,10 +136,15 @@ class VideoAnalyzer(Observable):
         self.vision.debug=debug
         if self.moveDetector is not None:
             self.moveDetector.debug=debug
+            
+    def onMove(self,event):
+        move=event.move
+        self.vision.board.move(move)
         
     def setUpDetector(self):
         self.moveDetector=MoveDetectorFactory.create(self.args.detector,self.vision)
         self.subscribe(self.moveDetector.onChessBoardImage)
+        self.moveDetector.subscribe(self.onMove)
         
     def changeDetector(self,newDetector):
         self.unsubscribe(self.moveDetector.onChessBoardImage)

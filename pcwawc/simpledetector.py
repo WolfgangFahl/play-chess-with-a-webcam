@@ -6,6 +6,7 @@ Created on 2019-12-07
 from pcwawc.chessvision import IMoveDetector
 from pcwawc.chessimage import ChessBoardImage
 from pcwawc.detectstate import ChangeState
+from pcwawc.eventhandling import Observable
 from pcwawc.runningstats import MinMaxStats,MovingAverage
 import cv2
 from zope.interface import implementer
@@ -75,10 +76,13 @@ class ImageChange:
         return text
     
 @implementer(IMoveDetector) 
-class SimpleDetector:
+class SimpleDetector(Observable):
     """ a simple treshold detector """
-    # construct me 
     def __init__(self):
+        """ construct me """
+        # make me observable
+        super(SimpleDetector,self).__init__()
+        self.debug=False
         pass
     
     def setup(self,name,vision):
@@ -98,7 +102,7 @@ class SimpleDetector:
             cbImageSet.cbDebug=cbImageSet.debugImage2x2(cbWarped,ic.cbImageGray,ic.cbImageBW,ic.cbDiffImage)
             if self.imageChange.hasReference: 
                 self.updateState(cbImageSet)
-                if vision.debug:
+                if self.debug:
                     print ('Frame %5d %.3f s:%s' % (cbImageSet.frameIndex,endt-start,ic))               
                     
     def updateState(self,cbImageSet):
@@ -148,32 +152,42 @@ class Simple8x8Detector(SimpleDetector):
         cbImageSet=imageEvent.cbImageSet
         vision=cbImageSet.vision
         cs=self.imageChange.changeState
-        if vision.warp.warping and cs==ChangeState.PRE_MOVE or cs==ChangeState.POTENTIAL_MOVE:
-            cbWarped=cbImageSet.cbWarped
-            # TODO only do once ...
-            self.board.divideInSquares(cbWarped.width,cbWarped.height)
-            # calculate pixelChanges per square based on parts of the bigger images created by the super class
-            for square in self.board.genSquares():
-                ic=self.imageChanges[square.an]
-                ic.cbImageBW=ChessBoardImage(square.getSquareImage(self.imageChange.cbImageBW),square.an)
-                ic.updateReference(ic.cbImageBW)
-                if ic.hasReference:
-                    ic.calcPixelChanges()
-                    #if self.vision.debug:
-                        #print ("%4d %s: %s" % (cbImageSet.frameIndex,square.an,ic))
-                        
-    def onMoveDetected(self,cbImageSet):
-        if self.vision.debug:
-            print ("potential move detected")
-            for square in self.board.genSquares():
-                ic=self.imageChanges[square.an]
-                print ("%4d %s: %s" % (cbImageSet.frameIndex,square.an,ic))
-        changesByValue=OrderedDict(sorted(self.imageChanges.items(),key=lambda x:x[1].pixelChanges,reverse=True))
-        keys=list(changesByValue.keys())
-        ans=(keys[0],keys[1])
-        print ("potential move for squares %s" % (str(ans))) 
-        # TODO - check if move is legal before accepting it with the following call:
-        super().onMoveDetected(cbImageSet)  
+        if vision.warp.warping and cs==ChangeState.PRE_MOVE:
+            self.calcChanges(cbImageSet)
+        
+    def calcChanges(self,cbImageSet):
+        cbWarped=cbImageSet.cbWarped
+        # TODO only do once ...
+        self.board.divideInSquares(cbWarped.width,cbWarped.height)
+        # calculate pixelChanges per square based on parts of the bigger images created by the super class
         for square in self.board.genSquares():
             ic=self.imageChanges[square.an]
-            ic.clear()                  
+            ic.cbImageBW=ChessBoardImage(square.getSquareImage(self.imageChange.cbImageBW),square.an)
+            ic.updateReference(ic.cbImageBW)
+            if ic.hasReference:
+                ic.calcPixelChanges()
+                #if self.vision.debug:
+                    #print ("%4d %s: %s" % (cbImageSet.frameIndex,square.an,ic))
+    
+    def showDebug(self):
+        for square in self.board.genSquares():
+            ic=self.imageChanges[square.an]
+            print ("%s: %s" % (square.an,ic))  
+                    
+    def onMoveDetected(self,cbImageSet):
+        self.calcChanges(cbImageSet)
+        changesByValue=OrderedDict(sorted(self.imageChanges.items(),key=lambda x:x[1].pixelChanges,reverse=True))
+        keys=list(changesByValue.keys())
+        change=(keys[0],keys[1])
+        if self.vision.debug:
+            print ("frame %4d: potential move for squares %s" % (cbImageSet.frameIndex,str(change))) 
+        move=self.vision.board.changeToMove(change)
+        if move is None:
+            if self.vision.debug:
+                print ("change %s has no valid move" % (str(change)))
+        else:
+            super().onMoveDetected(cbImageSet)  
+            for square in self.board.genSquares():
+                ic=self.imageChanges[square.an]
+                ic.clear()
+            self.fire(move=move)    

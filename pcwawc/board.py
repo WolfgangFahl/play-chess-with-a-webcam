@@ -66,17 +66,19 @@ class Board(object):
 
     # perform the given move
     def performMove(self, move):
-        fromCell = move[0].lower()
-        toCell = move[1].lower()
-        return self.move(fromCell + toCell)
+        fromCell,toCell=move
+        return self.ucimove(fromCell + toCell)
     
-    def move(self, ucimove):    
-        move = Move.from_uci(ucimove)
+    def ucimove(self, ucimove):    
+        move = Move.from_uci(ucimove.lower())
+        self.move(move)
+    
+    def move(self,move):
         san = self.chessboard.san(move)
         self.chessboard.push(move)
         self.updateFen()
         if Board.debug:
-            print ("move %s" % (ucimove))
+            print ("move %s" % (san))
             print ("%s" % (self.unicode()))
         return san
     
@@ -119,3 +121,12 @@ class Board(object):
     def unicode(self):
         unicode = self.chessboard.unicode()
         return unicode
+    
+    def changeToMove(self,change):
+        sq1,sq2=change
+        """ convert the given change in the physical board to a move """
+        for move in self.chessboard.legal_moves:
+            movestr=str(move)
+            if sq1+sq2==movestr or sq2+sq1==movestr:
+                return move
+        return None

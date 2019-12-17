@@ -129,8 +129,17 @@ def test_PieceAt():
                     assert piece.color == chess.BLACK
                     # black symbols are lower case
                     assert ord(piece.symbol()) > ord('a') and ord(piece.symbol()) < ord('z')
+    
+def test_ValidMove():
+    board = Board()
+    board.debug=True
+    changes=[("e4","e2"),("e5","e7")]
+    for change in changes:
+        move=board.changeToMove(change)
+        assert move is not None
+        board.move(move)
 
-
+test_ValidMove()
 test_PieceAt()
 test_Pieces()
 test_cellNames()
