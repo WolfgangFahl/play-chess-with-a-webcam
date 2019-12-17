@@ -134,8 +134,8 @@ class VideoAnalyzer(Observable):
         BoardFinder.debug=debug
         Corners.debug=debug
         self.vision.debug=debug
-        #if self.moveDetector is not None:
-        #    self.moveDetector.debug=debug
+        if self.moveDetector is not None:
+            self.moveDetector.debug=debug
             
     def onMove(self,event):
         move=event.move

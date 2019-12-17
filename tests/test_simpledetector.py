@@ -17,6 +17,8 @@ class MoveChecker():
     def onMove(self,event):
         move=event.move
         self.moveCount+=1
+        if str(move)=="d1h5":
+            self.analyzer.moveDetector.debug=True
         pass
 
 def test_SimpleDetector():

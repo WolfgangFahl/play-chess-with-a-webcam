@@ -116,7 +116,7 @@ class WebApp:
         try:
             if "-" in move:
                 move = move.replace('-', '')
-            self.board.move(move)
+            self.board.ucimove(move)
             self.game.moveIndex = self.game.moveIndex + 1
             self.game.fen = self.board.fen
             self.game.pgn = self.board.getPgn()
