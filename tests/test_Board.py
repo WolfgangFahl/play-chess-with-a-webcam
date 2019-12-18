@@ -20,7 +20,7 @@ def checkEndPosition(board, expectedFen):
     print (fen)
     unicode = board.unicode()
     print (unicode)
-    pgn = board.getPgn()
+    pgn = board.game.pgn
     print (pgn)
     assert expectedFen == fen
 
@@ -51,21 +51,6 @@ def test_BoardPgn():
     board.setPgn(pgn)
     expectedFen = "rnbq1rk1/p1Pp1ppp/3bpn2/8/Q2P4/8/PP2PPPP/RNB1KBNR"
     checkEndPosition(board, expectedFen)
-
-
-def test_cellNames():
-    board = Board()
-    astr = ""
-    for row in range(0, 8):
-        for col in range(0, 8):
-            fieldName = board.GetCellName(col, row)
-            field = board.fieldAt(row, col)
-            # print (row,col,fieldName,field.an)
-            assert field.an.upper() == fieldName
-            astr = astr + fieldName
-    print (astr)
-    assert astr == "A8B8C8D8E8F8G8H8A7B7C7D7E7F7G7H7A6B6C6D6E6F6G6H6A5B5C5D5E5F5G5H5A4B4C4D4E4F4G4H4A3B3C3D3E3F3G3H3A2B2C2D2E2F2G2H2A1B1C1D1E1F1G1H1"
-
 
 def test_Pieces():
     board = Board()
@@ -138,10 +123,15 @@ def test_ValidMove():
         move=board.changeToMove(change)
         assert move is not None
         board.move(move)
+        
+def test_PGN():
+    board=Board()
+    print (board.game.pgn)
+    pass 
 
-test_ValidMove()
-test_PieceAt()
-test_Pieces()
-test_cellNames()
-test_BoardEasy()
-test_BoardPgn()
+test_PGN()
+#test_ValidMove()
+#test_PieceAt()
+#test_Pieces()
+#test_BoardEasy()
+#test_BoardPgn()

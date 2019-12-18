@@ -8,4 +8,4 @@ fi
 export PYTHONPATH=".:$PYTHONPATH"
 scriptdir=$(dirname $0)
 srcdir=$scriptdir/../pcwawc
-python3 $srcdir/videoanalyze.py $@
+python3 $srcdir/videoanalyze.py "$@"

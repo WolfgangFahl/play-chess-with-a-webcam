@@ -154,11 +154,6 @@ class WebChessCamArgs(Args):
                                  default="0.0.0.0",
                                  help="host to allow access for")
 
-        self.parser.add_argument('--game',
-                                 default=None,
-                                 help="game to initialize with")
-
-
         self.args = self.parse(argv)
 
 if __name__ == '__main__':

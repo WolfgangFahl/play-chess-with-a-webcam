@@ -22,21 +22,6 @@ class WebApp:
         self.board=self.videoAnalyzer.vision.board
         self.setDebug(args.debug)
         self.env = Environment()
-        if args.game is None:
-            self.webCamGame = self.createNewGame()
-        else:
-            gamepath = args.game
-            if not gamepath.startswith("/"):
-                gamepath = self.env.games + "/" + gamepath
-            self.webCamGame = WebCamGame.readJson(gamepath)
-            if self.webCamGame is None:
-                self.videoAnalyzer.log("could not read %s " % (gamepath))
-                self.webCamGame = self.createNewGame() 
-        self.webCamGame.checkEnvironment(self.env)        
-        self.game = self.webCamGame.game
-  
-    def createNewGame(self):
-        return WebCamGame("game" + self.videoAnalyzer.vision.video.fileTimeStamp())
         
     def log(self, msg):
         self.videoAnalyzer.log(msg)
@@ -82,10 +67,7 @@ class WebApp:
     def chessTakeback(self):
         try:
             msg = "take back"
-            self.board.takeback()
-            if self.game.moveIndex > 0:
-                self.game.moveIndex = self.game.moveIndex - 1
-            else:
+            if not self.board.takeback():
                 msg = "can not take back any more moves"    
             if WebApp.debug:
                 self.game.showDebug()
@@ -94,9 +76,7 @@ class WebApp:
             return self.indexException(e)
     
     def chessSave(self): 
-        # @TODO implement locking of a saved game to make it immutable
-        gameid = self.webCamGame.gameid
-        self.game.locked = True
+        gameid=self.board.lockGame()
         msg = "chess game <a href='/chess/games/%s'>%s</a> saved(locked)" % (gameid, gameid)
         return self.index(msg)
     
@@ -117,10 +97,7 @@ class WebApp:
             if "-" in move:
                 move = move.replace('-', '')
             self.board.ucimove(move)
-            self.game.moveIndex = self.game.moveIndex + 1
-            self.game.fen = self.board.fen
-            self.game.pgn = self.board.getPgn()
-            msg = "move %s -> fen= %s" % (move, self.game.fen)
+            msg = "move %s -> fen= %s" % (move, self.board.fen)
             if WebApp.debug:
                 self.game.showDebug()
             return self.index(msg)
@@ -149,7 +126,6 @@ class WebApp:
         try:
             self.board.updatePieces(fen)
             msg = "game update from fen %s" % (fen)
-            self.game.fen = fen
             return self.index(msg)
         except BaseException as e:
             return self.indexException(e)

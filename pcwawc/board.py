@@ -6,24 +6,26 @@ import chess.pgn
 import io
 from chess import Move
 from pcwawc.chessvision import IChessBoard
-from pcwawc.game import Game
+from pcwawc.game import WebCamGame
 from pcwawc.field import Field
 from zope.interface import implementer
 
 @implementer(IChessBoard)
 class Board(object):
     """This class is used to hold the state of a chessboard with pieces positions and the current player's color which player needs to play. It uses the python-chess library by default"""
-    debug = True
+    debug = False
     EMPTY_FEN='8/8/8/8/8/8/8/8 w - -'
     START_FEN = chess.STARTING_BOARD_FEN
     
     # initialize the board 
-    def __init__(self):
+    def __init__(self,args=None):
         self.chessboard = chess.Board()
         self.fieldsByAn = {}
+        self.args=args
+        self.game=WebCamGame.fromArgs(args)
         self.updateFen()
-        #self.game=Game()
-
+        self.game.update(self)
+        
         self.fields = [[0 for x in range(Field.rows)] for y in range(Field.cols)]
         for row in range(Field.rows):
             for col in range(Field.cols):
@@ -61,11 +63,6 @@ class Board(object):
                 count = count + 1
         return count
 
-    def GetCellName(self, col, row):
-        """Returns the cell name string given 0-based column and row"""
-        field = self.fieldAt(row, col)
-        return  field.an.upper()
-
     # perform the given move
     def performMove(self, move):
         fromCell,toCell=move
@@ -78,28 +75,31 @@ class Board(object):
     def move(self,move):
         san = self.chessboard.san(move)
         self.chessboard.push(move)
+        self.game.move(self)
         self.updateFen()
-        if Board.debug:
+        if self.args is not None and not self.args.nomoves:
             print ("move %s" % (san))
             print ("%s" % (self.unicode()))
         return san
     
     def takeback(self):
-        self.chessboard.pop()
-        self.updateFen()
-
-    # get my pgn description
-    def getPgn(self):
-        try:
-            game = chess.pgn.Game.from_board(self.chessboard)
-            self.pgn = str(game)
-        except BaseException as e:
-            print ("pgn error: %s", str(e))    
-        return self.pgn
+        if self.game.moveIndex > 0:
+            self.game.moveIndex = self.game.moveIndex - 1
+            self.chessboard.pop()
+            self.updateFen()
+            return True
+        else:
+            return False
+        
+    def lockGame(self):
+        # @TODO implement locking of a saved game to make it immutable
+        gameid = self.game.gameid
+        self.game.locked = True
+        return gameid
 
     # set my board and game from the given pgn
     def setPgn(self, pgn):
-        self.pgn = pgn
+        self.game.pgn = pgn
         pgnIo = io.StringIO(pgn)
         game = chess.pgn.read_game(pgnIo)
         if game is None:
@@ -117,6 +117,7 @@ class Board(object):
     # get my fen description
     def updateFen(self):
         self.fen = self.chessboard.board_fen()
+        self.game.fen=self.fen
         return self.fen
 
     # get my unicode representation

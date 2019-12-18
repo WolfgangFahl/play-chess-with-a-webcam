@@ -19,7 +19,7 @@ def test_Game001():
     
 def test_WebCamGame():
     webCamGame = WebCamGame("chessBoard001")    
-    webCamGame.game.fen = "8/8/8/8/8/8/8/8 w - -"
+    webCamGame.fen = "8/8/8/8/8/8/8/8 w - -"
     json = webCamGame.asJson()
     if debug:
         print (json)
@@ -38,8 +38,8 @@ def test_WebCamGames():
 def test_WebApp():
     webApp = WebApp(WebChessCamArgs(["--debug"]).args)
     WebApp.index = Mock(return_value="")
-    game = webApp.game
-    fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -'
+    game = webApp.videoAnalyzer.vision.board.game
+    fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
     webApp.chessFEN(fen)
     assert game.fen == fen
     assert game.moveIndex == 0
@@ -52,6 +52,8 @@ def test_WebApp():
     webApp.chessTakeback()
     assert game.moveIndex == 2
     webApp.chessSave()
+    
+   
   
 test_Game001()
 test_WebCamGame()

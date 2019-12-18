@@ -78,7 +78,7 @@ class VideoAnalyzer(Observable):
                 break
             if self.debug:
                 self.vision.video.showImage(cbImageSet.debugImage().image,"debug")
-        pgn=self.vision.board.getPgn()        
+        pgn=self.vision.board.game.pgn     
         self.close()
         return pgn
         

@@ -28,9 +28,33 @@ class Args:
                                  action='store_true',
                                  help="chessboard vision is already squared e.g. recorded that way")
         
+        self.parser.add_argument('--nomoves',
+                                 action='store_true',
+                                 help="do not show each individual move")
+              
         self.parser.add_argument('--fen',
                                  default=None,
                                  help="Forsyth–Edwards Notation to start with")
+        
+        self.parser.add_argument('--event',
+                                 default=None,
+                                 help="PGN Event header")
+        
+        self.parser.add_argument('--site',
+                                 default=None,
+                                 help="PGN Site header")
+        
+        self.parser.add_argument('--round',
+                                 default=None,
+                                 help="PGN Round header")
+        
+        self.parser.add_argument('--black',
+                                 default=None,
+                                 help="PGN Black header")
+        
+        self.parser.add_argument('--white',
+                                 default=None,
+                                 help="PGN White header")
 
         self.parser.add_argument('--rotation',
                                  type=int,
@@ -59,6 +83,10 @@ class Args:
         self.parser.add_argument('--detector',
                                  default="simple8x8",
                                  help="move detector to be used")
+        
+        self.parser.add_argument('--game',
+                                 default=None,
+                                 help="game to initialize with")
         pass
     
     def parse(self,argv):

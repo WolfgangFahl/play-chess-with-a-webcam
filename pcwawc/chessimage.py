@@ -32,7 +32,7 @@ class ChessBoardVision(JsonAbleMixin):
         self.timestamps=[]
         self.debug=args.debug
         if board is None:
-            board=Board()
+            board=Board(args=args)
         self.board = board
         if self.args.fen is not None:
             self.board.updatePieces(self.args.fen)
