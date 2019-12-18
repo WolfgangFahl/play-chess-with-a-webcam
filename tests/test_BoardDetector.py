@@ -17,7 +17,7 @@ frameDebug = True
 
 def test_BoardFieldColorDetector():
     imageInfo=testEnv.imageInfos[10]
-    analyzer=testEnv.analyzerFromImageInfo(imageInfo)
+    analyzer=getAnalyzerForImageInfo(imageInfo)
     analyzer.open
     cbImageSet=analyzer.nextImageSet()
     boardDetector=analyzer.moveDetector
@@ -58,7 +58,7 @@ def test_FieldDetector():
             # @TODO speed up and test all frames again
             # frames=334
         args=Args("test")
-        args.parse(["--debug","--speedup=4","--input",path,"--fen",fen])
+        args.parse(["--debug","--speedup=4","--detector","luminance","--input",path,"--fen",fen])
         analyzer=VideoAnalyzer(args.args)
         warp=analyzer.vision.warp    
         warp.rotation = 270
@@ -104,12 +104,15 @@ def test_FieldStates():
     boardDetector.debug = True
     checkFieldStates(boardDetector, vision.board)
 
+def getAnalyzerForImageInfo(imageInfo):
+    analyzer=testEnv.analyzerFromImageInfo(imageInfo)
+    analyzer.args.detector="luminance"
+    analyzer.setUpDetector()
+    return analyzer
+    
 def test_MaskFieldStates():
-    #video=Video()
-    #webApp = WebApp(WebChessCamArgs([]).args)
-    #boardDetector=webApp.videoAnalyzer.moveDetector
     for imageInfo in testEnv.imageInfos:
-        analyzer=testEnv.analyzerFromImageInfo(imageInfo)
+        analyzer=getAnalyzerForImageInfo(imageInfo)
         video=analyzer.vision.video
         cbImageSet=analyzer.vision.readChessBoardImage()
         assert analyzer.hasImage()
