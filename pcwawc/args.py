@@ -36,7 +36,7 @@ class Args:
         self.parser.add_argument('--rotation',
                                  type=int,
                                  default=0,
-                                 help="rotation of chessboard")
+                                 help="rotation of chessboard 0,90,180 or 270")
         
         self.parser.add_argument('--speedup',
                                  type=int,
@@ -58,8 +58,8 @@ class Args:
                                  help="warp points")
         
         self.parser.add_argument('--detector',
-                                 default="luminance",
-                                 help="warp points")
+                                 default="simple8x8",
+                                 help="move detector to be used")
         pass
     
     def parse(self,argv):

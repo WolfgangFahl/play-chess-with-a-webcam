@@ -67,13 +67,13 @@ class ImageChange:
         self.stats.push(self.pixelChanges)
         
     def isStable(self):
-        delta=abs(self.movingAverage.gradient())
-        stable=delta<ImageChange.gradientDelta
+        self.delta=abs(self.movingAverage.gradient())
+        stable=self.delta<ImageChange.gradientDelta
         if stable:
             self.stableCounter+=1
         else:
             self.stableCounter=0    
-        return stable  
+        return stable
         
     def __str__(self):    
         delta=self.movingAverage.gradient()
@@ -132,7 +132,10 @@ class SimpleDetector(Observable):
             if peak>0:
                 relativePeak=dist/peak
                 if ic.isStable():
-                    if relativePeak<0.16:
+                    if self.frameDebug:
+                        print ("%.1f %%" % (relativePeak*100))
+                    # @TODO make configurable
+                    if relativePeak<0.16 or (relativePeak<0.35 and ic.delta<0.1):
                         self.onMoveDetected(cbImageSet)
             
     def onMoveDetected(self,cbImageSet):
@@ -161,7 +164,8 @@ class Simple8x8Detector(SimpleDetector):
         cs=ic.changeState
         if vision.warp.warping and cs==ChangeState.PRE_MOVE:
             self.calcChanges(cbImageSet)
-            ic.updateReference(ic.cbImageBW, force=True)
+            if ic.delta<ImageChange.gradientDelta/2:
+                ic.updateReference(ic.cbImageBW, force=True)
         
     def calcChanges(self,cbImageSet):
         cbWarped=cbImageSet.cbWarped
@@ -210,4 +214,6 @@ class Simple8x8Detector(SimpleDetector):
             for square in self.board.genSquares():
                 ic=self.imageChanges[square.an]
                 ic.clear()
-            self.fire(move=move)    
+            self.fire(move=move)
+            # @TODO - is this really necessary?
+            #self.imageChange.transitionToPreMove()    

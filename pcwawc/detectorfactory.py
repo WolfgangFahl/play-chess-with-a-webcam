@@ -22,7 +22,7 @@ class MoveDetectorFactory:
             raise Exception("MoveDetectorFactory create: unknown detectorname %s" % (detectorname))   
         return moveDetector
 
-MoveDetectorFactory.register("simple", SimpleDetector())
+#MoveDetectorFactory.register("simple", SimpleDetector())
 MoveDetectorFactory.register("simple8x8", Simple8x8Detector())
 MoveDetectorFactory.register("luminance", BoardDetector())
 

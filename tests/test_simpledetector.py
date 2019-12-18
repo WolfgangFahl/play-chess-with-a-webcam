@@ -18,35 +18,48 @@ class MoveChecker():
     def onMove(self,event):
         move=event.move
         self.moveCount+=1
-        if str(move) in ["f1c4","g8f6"]:
-            self.analyzer.moveDetector.frameDebug=True
-            # fake calibration to pre move transition (time to short in this video)
-            ic=self.analyzer.moveDetector.imageChange
-            ic.transitionToPreMove()
+        #if str(move) in ["f1c4","g8f6"]:
+        #    self.analyzer.moveDetector.frameDebug=True
+        #    # fake calibration to pre move transition (time to short in this video)
+        #    ic=self.analyzer.moveDetector.imageChange
+        #    #ic.transitionToPreMove()
         pass
 
 def test_SimpleDetector():
-    warpPointList=[ ([0,610],[0,0],[610,0],[610, 610]),
+    warpPointList=[ 
+                   (),
+                   ([0,610],[0,0],[610,0],[610, 610]),
                    ([143,9],[503,9],[505,375],[137,373]),
                    ([143,9],[503,9],[505,375],[137,373]),
                    ]
     rotation=[0,0,90]
-    index=0
-    for testVideo in testEnv.getTestVideos():
-        if getpass.getuser()=="wf":
-            if index==1:
-                break;
+    #index=-1
+    #for testVideo in testEnv.getTestVideos():
+    #    index+=1 
+    #    if getpass.getuser()=="wf":
+    #        if index==0:
+    #            continue
+    #        if index==2:
+    #            break
+    if getpass.getuser()!="travis":
+        index=0
+        testVideo="scholarsMate2019-12-18.avi"
         path=testEnv.testMedia+testVideo
         print (testVideo)
         cmdlineArgs=Args("test")
-        cmdlineArgs.parse(["--debug","--input",path,"--detect","simple8x8"])
+        cmdlineArgs.parse(["--input",path,"--detect","simple8x8"])
         analyzer=VideoAnalyzer(cmdlineArgs.args)
         moveChecker=MoveChecker(analyzer)
         analyzer.open()
         vision=analyzer.vision
         if index<len(warpPointList):
-            vision.warp.pointList=warpPointList[index]
-            vision.warp.updatePoints() 
+            warpPoints=warpPointList[index]
+            if len(warpPoints)>0:
+                vision.warp.pointList=warpPoints
+                vision.warp.updatePoints() 
+            else:
+                vision.warp.warping=True
+                cmdlineArgs.args.nowarp=True    
             vision.warp.rotation=rotation[index]
         else:
             analyzer.nextImageSet()
@@ -54,8 +67,8 @@ def test_SimpleDetector():
         analyzer.setUpDetector()
         analyzer.moveDetector.subscribe(moveChecker.onMove)
         #analyzer.moveDetector.debug=True
-        analyzer.analyze()      
-        index+=1 
+        #analyzer.moveDetector.frameDebug=True
+        analyzer.analyze()
 
 test_SimpleDetector()
     

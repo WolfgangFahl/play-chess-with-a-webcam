@@ -242,6 +242,8 @@ class WebApp:
 
     # video generator
     def genVideo(self, analyzer):
+        if self.args.autowarp:
+            analyzer.autoWarp()
         while True:
             cbImageSet=analyzer.nextImageSet()
             if cbImageSet is None:
