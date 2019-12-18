@@ -111,7 +111,10 @@ class WebApp:
     def chessGameState(self, gameid):
         fen = self.board.fen
         pgn = self.board.game.pgn
-        return jsonify(fen=fen, pgn=pgn, gameid=gameid, debug=WebApp.debug, timestamp=self.timeStamp())
+        gameStateJson=jsonify(fen=fen, pgn=pgn, gameid=gameid, debug=WebApp.debug, timestamp=self.timeStamp())
+        #if WebApp.debug:
+        #    self.log(gameStateJson)
+        return gameStateJson
     
     def chessSettings(self,args):
         msg="settings"

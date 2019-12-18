@@ -78,8 +78,9 @@ function showMove(movefrom, moveto) {
 function addServerSideEventHandler() {
 	var targetContainer = document.getElementById("eventtarget");
 	var eventSource = new EventSource("/eventstream")
-	  eventSource.onmessage = function(e) {
-	  targetContainer.innerHTML = e.data;
+	eventSource.onmessage = function(event) {
+	  targetContainer.innerHTML = event.data;
+	  #handleQuery()
 	};
 }
 
