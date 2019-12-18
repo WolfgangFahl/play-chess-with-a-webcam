@@ -74,6 +74,15 @@ function showMove(movefrom, moveto) {
 	document.getElementById('updateMove').click();
 }
 
+// add an event handler for server side effents
+function addServerSideEventHandler() {
+	var targetContainer = document.getElementById("eventtarget");
+	var eventSource = new EventSource("/eventstream")
+	  eventSource.onmessage = function(e) {
+	  targetContainer.innerHTML = e.data;
+	};
+}
+
 // add a click hander for the webcam
 function addChessWebCamClickHandler() {
 	// https://stackoverflow.com/questions/34867066/javascript-mouse-click-coordinates-for-image
@@ -186,4 +195,5 @@ var config = {
 	onSnapEnd : onSnapEnd
 }
 // addChessWebCamClickHandler()
+
 

@@ -5,6 +5,7 @@ from pcwawc.environment import Environment
 from pcwawc.video import Video
 from flask import render_template, send_from_directory, Response, jsonify
 from datetime import datetime
+import time
 from pcwawc.detectorfactory import MoveDetectorFactory
 
 class WebApp:
@@ -198,6 +199,22 @@ class WebApp:
         # type (mime type)
         return Response(self.genVideo(self.videoAnalyzer),
                         mimetype='multipart/x-mixed-replace; boundary=frame')
+    
+    # https://html.spec.whatwg.org/multipage/server-sent-events.html  
+    # https://stackoverflow.com/a/51969441/1497139  
+    def getEvent(self):
+        '''this could be any function that blocks until data is ready'''
+        time.sleep(1.0)
+        s=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        return s    
+    
+    def eventFeed(self):
+        return Response(self.genEventStream(), mimetype="text/event-stream")
+    
+    def genEventStream(self):
+        while True:
+            # wait for source data to be available, then push it
+            yield 'data: {}\n\n'.format(self.getEvent())
 
     # streamed video generator
     # @TODO fix this non working code

@@ -5,7 +5,7 @@
 from pcwawc.args import Args
 from pcwawc.environment import Environment
 from pcwawc.webapp import WebApp
-from flask import Flask, request
+from flask import Flask, request, Response
 from flask_autoindex import AutoIndex
 from flask_restful import Api
 import logging
@@ -52,6 +52,10 @@ def video_record():
 def video_feed():
     return webApp.videoFeed()
 
+@app.route('/eventstream')
+def eventstream():
+    return webApp.eventFeed()
+    
 @app.route('/photo/<path:filename>', methods=['GET', 'POST'])
 def photoDownload(filename):
     return webApp.photoDownload(env.games + '/photos/', filename)
@@ -159,4 +163,4 @@ class WebChessCamArgs(Args):
 if __name__ == '__main__':
     args = WebChessCamArgs(sys.argv[1:]).args
     webApp = WebApp(args, app.logger)
-    app.run(port='%d' % (args.port), host=args.host)
+    app.run(port='%d' % (args.port), host=args.host, threaded=True)
