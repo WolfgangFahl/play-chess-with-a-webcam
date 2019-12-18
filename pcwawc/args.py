@@ -8,7 +8,6 @@ Created on 2019-12-08
 import argparse
 import ast
 
-
 class Args:
     """ Command Line argument handling """
     

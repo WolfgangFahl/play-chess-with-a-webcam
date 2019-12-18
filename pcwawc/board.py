@@ -22,7 +22,6 @@ class Board(object):
         self.chessboard = chess.Board()
         self.fieldsByAn = {}
         self.updateFen()
-        #@TODO refactor to integrate game here
         #self.game=Game()
 
         self.fields = [[0 for x in range(Field.rows)] for y in range(Field.cols)]

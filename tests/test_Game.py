@@ -8,7 +8,6 @@ from unittest.mock import Mock
 
 debug = True
 
-
 def test_Game001():
     game = Game('test001')
     game.fen = "8/8/8/8/8/8/8/8 w - -"

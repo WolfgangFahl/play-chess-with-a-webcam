@@ -7,6 +7,7 @@ from time import strftime
 from zope.interface import implementer
 
 import chess
+import chess.pgn
 import os
 
 @implementer(IGame) 
@@ -85,5 +86,4 @@ class WebCamGame(JsonAbleMixin):
                 else:
                     raise Exception("invalid json file %s" % filePath)    
         return webCamGames
-           
 

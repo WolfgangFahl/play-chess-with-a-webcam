@@ -68,7 +68,8 @@ def test_SimpleDetector():
         analyzer.moveDetector.subscribe(moveChecker.onMove)
         #analyzer.moveDetector.debug=True
         #analyzer.moveDetector.frameDebug=True
-        analyzer.analyze()
+        pgn=analyzer.analyze()
+        print (pgn)
 
 test_SimpleDetector()
     

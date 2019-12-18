@@ -78,7 +78,9 @@ class VideoAnalyzer(Observable):
                 break
             if self.debug:
                 self.vision.video.showImage(cbImageSet.debugImage().image,"debug")
-        self.close()    
+        pgn=self.vision.board.getPgn()        
+        self.close()
+        return pgn
         
     def nextImageSet(self):    
         self.cbImageSet=self.vision.readChessBoardImage()
@@ -163,4 +165,5 @@ if __name__ == '__main__':
     videoAnalyzer=VideoAnalyzer(args)
     videoAnalyzer.setUpDetector()
     videoAnalyzer.setDebug(args.debug)
-    videoAnalyzer.analyze()
+    pgn=videoAnalyzer.analyze()
+    print (pgn)
