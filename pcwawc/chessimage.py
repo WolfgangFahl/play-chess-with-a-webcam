@@ -38,6 +38,8 @@ class ChessBoardVision(JsonAbleMixin):
             self.board.updatePieces(self.args.fen)
         self.warp = Warp(args.warpPointList)
         self.warp.rotation = args.rotation
+        if self.args.nowarp:
+            self.warp.warping=True
         pass
     
     def open(self,device):
@@ -121,12 +123,15 @@ class ChessBoardImageSet:
     def showDebug(self,video=None):
         video.showImage(self.debugImage().image,"debug")
         
-    def warpAndRotate(self):
+    def warpAndRotate(self,nowarp=False):
         """ warp and rotate the image as necessary - add timestamp if in debug mode """
         video=self.vision.video
         warp=self.vision.warp
-        if warp.warping:
-            warped=video.warp(self.cbImage.image, warp.points)
+        if warp.warping or nowarp:
+            if nowarp:
+                warped=self.cbImage.image.copy()
+            else:    
+                warped=video.warp(self.cbImage.image, warp.points)
             if warp.rotation > 0:
                 warped = video.rotate(warped, warp.rotation)
         else:

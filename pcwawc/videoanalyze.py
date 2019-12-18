@@ -88,7 +88,7 @@ class VideoAnalyzer(Observable):
         return self.cbImageSet
             
     def processImageSet(self,cbImageSet):   
-        cbImageSet.warpAndRotate() 
+        cbImageSet.warpAndRotate(self.args.nowarp) 
         # analyze the board if warping is active
         self.fire(cbImageSet=cbImageSet)
         cbImageSet.prepareGUI()

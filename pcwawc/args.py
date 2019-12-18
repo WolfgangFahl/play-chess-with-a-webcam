@@ -25,6 +25,10 @@ class Args:
                                  action='store_true',
                                  help="automatically find and warp chessboard")
         
+        self.parser.add_argument('--nowarp',
+                                 action='store_true',
+                                 help="chessboard vision is already squared e.g. recorded that way")
+        
         self.parser.add_argument('--fen',
                                  default=None,
                                  help="Forsyth–Edwards Notation to start with")
