@@ -3,7 +3,6 @@
 from pcwawc.videoanalyze import VideoAnalyzer
 from pcwawc.environment import Environment
 from pcwawc.video import Video
-from pcwawc.game import WebCamGame
 from flask import render_template, send_from_directory, Response, jsonify
 from datetime import datetime
 from pcwawc.detectorfactory import MoveDetectorFactory
@@ -29,9 +28,10 @@ class WebApp:
     # return the index.html template content with the given message
     def index(self, msg):
         self.log(msg)
-        self.webCamGame.warp = self.videoAnalyzer.vision.warp
-        self.webCamGame.save()
-        gameid = self.webCamGame.gameid
+        game=self.board.game
+        game.warp = self.videoAnalyzer.vision.warp
+        game.save()
+        gameid = game.gameid
         return render_template('index.html', detector=self.videoAnalyzer.moveDetector,detectors=MoveDetectorFactory.detectors,message=msg, timeStamp=self.videoAnalyzer.vision.video.timeStamp(), gameid=gameid)
 
     def home(self):

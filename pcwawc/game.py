@@ -82,16 +82,16 @@ class WebCamGame(Game):
         jsonFile = savedir + "/" + self.gameid + "-webcamgame"
         self.writeJson(jsonFile)
         gameJsonFile = savedir + "/" + self.gameid
-        self.game.writeJson(gameJsonFile)
+        self.writeJson(gameJsonFile)
         
-        if self.game.locked is not None and not self.game.locked:
-            if self.game.fen is not None:
+        if self.locked is not None and not self.locked:
+            if self.fen is not None:
                 fenFile = savedir + "/" + self.gameid + ".fen"
-                print (self.game.fen, file=open(fenFile, 'w'))
-            if self.game.pgn is not None:
+                print (self.fen, file=open(fenFile, 'w'))
+            if self.pgn is not None:
                 pgnFile = savedir + "/" + self.gameid + ".pgn"
                 # see https://python-chess.readthedocs.io/en/latest/pgn.html
-                print (self.game.pgn, file=open(pgnFile, 'w'), end="\n\n")
+                print (self.pgn, file=open(pgnFile, 'w'), end="\n\n")
         return savedir    
     
     @staticmethod
