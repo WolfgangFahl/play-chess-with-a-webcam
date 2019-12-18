@@ -109,7 +109,7 @@ class WebApp:
                         
     def chessGameState(self, gameid):
         fen = self.board.fen
-        pgn = self.board.getPgn()
+        pgn = self.board.game.pgn
         return jsonify(fen=fen, pgn=pgn, gameid=gameid, debug=WebApp.debug, timestamp=self.timeStamp())
     
     def chessSettings(self,args):
