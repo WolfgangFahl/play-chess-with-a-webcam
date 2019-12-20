@@ -80,7 +80,7 @@ function addServerSideEventHandler() {
 	var eventSource = new EventSource("/eventstream")
 	eventSource.onmessage = function(event) {
 	  targetContainer.innerHTML = event.data;
-	  #handleQuery()
+	  // handleQuery()
 	};
 }
 

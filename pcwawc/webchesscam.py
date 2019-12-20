@@ -5,7 +5,7 @@
 from pcwawc.args import Args
 from pcwawc.environment import Environment
 from pcwawc.webapp import WebApp
-from flask import Flask, request, Response
+from flask import Flask, request
 from flask_autoindex import AutoIndex
 from flask_restful import Api
 import logging
