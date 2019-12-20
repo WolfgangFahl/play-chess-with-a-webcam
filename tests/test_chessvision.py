@@ -4,6 +4,7 @@ Created on 2019-12-10
 @author: wf
 '''
 from pcwawc.args import Args
+from pcwawc.video import Video
 from pcwawc.chessimage import ChessBoardVision
 from pcwawc.environment4test import Environment4Test
 
@@ -12,11 +13,18 @@ testEnv = Environment4Test()
 # test reading video as jpg frames
 def test_ReadAvi():
     debug=False
+    # "0","1"
     titles=['scholarsmate','emptyBoard001']
     expectedFrames=[334,52]
+    # (1920,1080),(1280,720),
+    expectedSize=[(640,480),(640,480)]
     for index,title in enumerate(titles):
         args=Args("test")
-        args.parse(["--input",testEnv.testMedia +title+".avi"])
+        if Video.is_int(title):
+            device=title
+        else:
+            testEnv.testMedia +title+".avi"
+        args.parse(["--input",device])
         vision=ChessBoardVision(args.args)
         vision.showDebug=debug
         vision.open(args.args.input)
@@ -27,7 +35,8 @@ def test_ReadAvi():
                 break
             frameIndex+=1
             cbImage=cbImageSet.cbImage
-            assert (cbImage.width,cbImage.height)==(640,480)
+            if debug: print("%d x %d" % (cbImage.width,cbImage.height))
+            assert (cbImage.width,cbImage.height)==expectedSize[index]
             assert (cbImageSet.frameIndex == frameIndex)
             if debug: print("%3d %.2fs" % (cbImageSet.frameIndex,cbImageSet.timeStamp))
         assert frameIndex==expectedFrames[index]   
