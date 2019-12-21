@@ -23,7 +23,7 @@ def test_ReadAvi():
         if Video.is_int(title):
             device=title
         else:
-            testEnv.testMedia +title+".avi"
+            device=testEnv.testMedia +title+".avi"
         args.parse(["--input",device])
         vision=ChessBoardVision(args.args)
         vision.showDebug=debug
