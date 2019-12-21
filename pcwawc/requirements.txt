@@ -7,6 +7,11 @@ opencv-python
 # python-chess
 # https://buildmedia.readthedocs.org/media/pdf/python-chess/latest/python-chess.pdf
 python-chess
+# lichess APIs
+# https://github.com/rhgrant10/berserk
+berserk
+# https://github.com/cyanfish/python-lichess
+python-lichess
 # image utils
 imutils
 # Image Processing in Python - Alternative to opencv e.g. for perspective Transformation
