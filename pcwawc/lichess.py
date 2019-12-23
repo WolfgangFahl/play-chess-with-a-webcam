@@ -6,6 +6,7 @@ Created on 2019-12-21
 # https://github.com/rhgrant10/berserk
 # https://berserk.readthedocs.io/en/master/
 import berserk
+import lichess.api
 import os
 import yaml
 import requests
@@ -59,5 +60,9 @@ class Lichess():
         res = requests.post('https://lichess.org/import', data=payload)
         print(res.url)
         pass
+    
+    def game(self,gameid):
+        game=lichess.api.game(gameid)
+        return game
         
         

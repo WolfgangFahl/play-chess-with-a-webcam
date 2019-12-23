@@ -23,4 +23,12 @@ def test_lichess():
         lichess.pgnImport(pgn)
     pass
 
+def test_game():
+    gameid="cpOszEMY"
+    lichess=Lichess()
+    game=lichess.game(gameid)
+    assert game["id"]==gameid
+    assert game["moves"]=="e4 e5 Bc4 Nc6 Qh5 Nf6 Qxf7#"
+    
 test_lichess()
+test_game()
