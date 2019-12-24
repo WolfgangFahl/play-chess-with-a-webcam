@@ -4,7 +4,9 @@ Created on 2019-12-21
 @author: wf
 '''
 from pcwawc.lichess import Lichess
+from pcwawc.lichess import Game as LichessGame
 import getpass
+import lichess.api
 
 debug=True
 def test_lichess():
@@ -27,20 +29,34 @@ def test_lichess():
     pass
 
 def test_game():
-    gameid="cpOszEMY"
+    game_id="cpOszEMY"
     lichess=Lichess()
-    game=lichess.game(gameid)
-    assert game["id"]==gameid
+    game=lichess.game(game_id)
+    assert game["id"]==game_id
     assert game["moves"]=="e4 e5 Bc4 Nc6 Qh5 Nf6 Qxf7#"
     
-def test_stream():
+def test_OTB_stream():
     if getpass.getuser()=="wf":
-        gameid="20XfiEMn"
         lichess=Lichess(debug=True)
-        gameid=lichess.waitForChallenge()
-        lichess.streamGame(gameid)
+        # challenge my self
+        lichess.challenge(lichess.getAccount().username)
+        game_id=lichess.waitForChallenge()
+        game=LichessGame(lichess,game_id,debug=True)
+        game.start()
+        game.move('e2e4')
+        #game.move('e7e5')  
+        #game.move('f1c4')
+        #game.move('b8c6')
+        #game.abort()
+        # game.move('b8c6')
+        #game.resign()
        
-    
-test_lichess()
-test_game()
-test_stream()
+def test_rating():
+    user = lichess.api.user('thibault')
+    rating=user['perfs']['blitz']['rating']
+    assert rating>1000   
+
+#test_rating()    
+#test_lichess()
+#test_game()
+test_OTB_stream()
