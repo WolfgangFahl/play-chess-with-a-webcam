@@ -4,12 +4,15 @@ Created on 2019-12-21
 @author: wf
 '''
 from pcwawc.lichess import Lichess
+import getpass
 
+debug=True
 def test_lichess():
     lichess=Lichess()
     if lichess.client is not None:
         account=lichess.getAccount()
-        #print(account)
+        if debug:
+            print(account)
         #print(account.adict)
         pgn="""[Event "Play Chess With a WebCam"]
 [Site "Willich, Germany"]
@@ -30,5 +33,14 @@ def test_game():
     assert game["id"]==gameid
     assert game["moves"]=="e4 e5 Bc4 Nc6 Qh5 Nf6 Qxf7#"
     
+def test_stream():
+    if getpass.getuser()=="wf":
+        gameid="20XfiEMn"
+        lichess=Lichess(debug=True)
+        gameid=lichess.waitForChallenge()
+        lichess.streamGame(gameid)
+       
+    
 test_lichess()
 test_game()
+test_stream()
