@@ -5,6 +5,7 @@ Created on 2019-12-21
 '''
 # https://github.com/rhgrant10/berserk
 # https://berserk.readthedocs.io/en/master/
+from pcwawc.eventhandling import Observable
 import berserk
 import lichess.api
 import os
@@ -28,12 +29,30 @@ class Account():
     def __str__(self):
         text="%s - (%s)" % (self.username,self.id)
         return text
+    
+class State():
+    """Lichess state wrapper"""    
+    def __init__(self,adict):
+        self.adict=adict
+        self.type=adict["type"]
+        if self.type=="gameState":
+            self.moves=adict["moves"]
+            self.wtime=adict["wtime"]
+            self.btime=adict["btime"]
+            self.winc=adict["winc"]
+            self.binc=adict["binc"]
+            self.wdraw=adict["wdraw"]
+            self.bdraw=adict["bdraw"]
+            self.moveList=self.moves.split()
+            self.moveIndex=len(self.moveList)-1
+    
  
 #https://berserk.readthedocs.io/en/master/usage.html#being-a-bot    
-class Game(threading.Thread):
+class Game(threading.Thread, Observable):
     """ Lichess game """
     def __init__(self, lichess,game_id,debug=False,**kwargs):
         super().__init__(**kwargs)
+        Observable.__init__(self)
         self.debug=debug
         self.game_id = game_id
         self.lichess=lichess
@@ -41,6 +60,7 @@ class Game(threading.Thread):
         self.client=lichess.client
         self.stream = self.client.bots.stream_game_state(game_id)
         self.current_state = None    
+        self.isOn=False
         
     def postChat(self,msg):    
         if self.debug:
@@ -73,13 +93,21 @@ class Game(threading.Thread):
         if self.debug:
             print (httpError)
         return False
+    
+    def stop(self):
+        self.isOn=False
         
     def run(self):
         if self.debug:
             print ("started thread for game %s" % (self.game_id))
+        self.isOn=True    
         # https://lichess.org/api#operation/botGameStream
         for event in self.stream:
+            # stop if we are flagged to
+            if not self.isOn:
+                break
             self.current_state=event
+            state=None
             eventtype=event['type']     
             if self.debug:
                 print (eventtype,event)  
@@ -87,7 +115,15 @@ class Game(threading.Thread):
                 self.white=Account(event['white'])
                 self.black=Account(event['black'])
                 msg="white:%s black:%s" % (self.white.username,self.black.username)
-                self.postChat(msg)     
+                self.postChat(msg)
+                state=State(event["state"])
+            elif eventtype=='gameState':    
+                state=State(event)     
+            if state is not None:    
+                self.fire(state=state)    
+        if self.debug:
+            print ("stopped thread for game %s" % (self.game_id))    
+                
 
 class Lichess():
     """ Lichess adapter """
