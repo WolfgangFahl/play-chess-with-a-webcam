@@ -7,7 +7,6 @@ from pcwawc.lichess import Lichess
 from pcwawc.lichess import Game as LichessGame
 import getpass
 import lichess.api
-import time
 
 debug=True
 def test_lichess():
@@ -37,18 +36,26 @@ def test_game():
     assert game["moves"]=="e4 e5 Bc4 Nc6 Qh5 Nf6 Qxf7#"
     
 class MoveHandler():
-    def __init__(self,game,movesToPlay):
+    def __init__(self,lichess,game,movesToPlay):
+        self.lichess=lichess
+        self.account=lichess.getAccount()
         self.game=game
         self.movesToPlay=movesToPlay
         pass
     
+    def myTurn(self,moveIndex):
+        iAmWhite=self.game.white.username==self.account.username
+        myTurnIndex=0 if iAmWhite else 1
+        return moveIndex%2 == myTurnIndex
+    
     def onState(self,event):
-        state=event.state    
-        print ("%3d moves played: %s" % (state.moveIndex+1,state.moves))
-        index=state.moveIndex+1
-        if index<len(self.movesToPlay):
-            self.game.move(self.movesToPlay[index])
-        
+        state=event.state 
+        # next moveIndex
+        moveIndex=state.moveIndex+1
+        if self.myTurn(moveIndex):  
+            print ("%3d moves played: %s" % (moveIndex,state.moves))
+            if moveIndex<len(self.movesToPlay):
+                self.game.move(self.movesToPlay[moveIndex])
         
 def test_OTB_stream1():
     # test letting a bot play against himself
@@ -79,9 +86,9 @@ def test_OTB_stream2():
         lichessOther.challenge(lichessMe.getAccount().username)
         gameMe=LichessGame(lichessMe,game_id,debug=True)
         gameOther=LichessGame(lichessOther,game_id,debug=True)
-        moveList=["e2e4","e7e5","f1c4","b8c6"]
-        moveHandlerMe=MoveHandler(gameMe,moveList)
-        moveHandlerOther=MoveHandler(gameOther,moveList)
+        moveList=["e2e4","e7e5","f1c4","b8c6","d1h5","g8f6","h5f7"]
+        moveHandlerMe=MoveHandler(lichessMe,gameMe,moveList)
+        moveHandlerOther=MoveHandler(lichessOther,gameOther,moveList)
         gameMe.subscribe(moveHandlerMe.onState)
         gameOther.subscribe(moveHandlerOther.onState)
         gameMe.start()

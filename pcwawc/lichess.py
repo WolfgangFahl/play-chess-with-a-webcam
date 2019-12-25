@@ -122,7 +122,7 @@ class Game(threading.Thread, Observable):
             if state is not None:    
                 self.fire(state=state)    
         if self.debug:
-            print ("stopped thread for game %s" % (self.game_id))    
+            print ("%s stopped thread for game %s" % (self.account.username,self.game_id))    
                 
 
 class Lichess():
