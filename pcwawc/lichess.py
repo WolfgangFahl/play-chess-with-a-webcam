@@ -99,7 +99,7 @@ class Game(threading.Thread, Observable):
         
     def run(self):
         if self.debug:
-            print ("started thread for game %s" % (self.game_id))
+            print ("started thread for user %s game %s" % (self.account.username,self.game_id))
         self.isOn=True    
         # https://lichess.org/api#operation/botGameStream
         for event in self.stream:
@@ -136,10 +136,12 @@ class Lichess():
             self.client=berserk.Client(self.session)
         else:
             self.client=None
+        self.account=None    
     
     def getAccount(self):
-        account=Account(self.client.account.get())
-        return account
+        if self.account is None:
+            self.account=Account(self.client.account.get())
+        return self.account
     
     def getToken(self,tokenname="token"):
         home=os.getenv("HOME")
@@ -169,16 +171,23 @@ class Lichess():
     
     def challenge(self,oponentUserName):
         if self.debug:
-            print ("challenge %s" % (oponentUserName))
+            print ("challenge %s by %s" % (self.getAccount().username,oponentUserName))
         client=self.client
         client.challenges.create(username=oponentUserName,rated=False)
     
-    def waitForChallenge(self):
+    def waitForChallenge(self,timeout=1000,pollInterval=0.5):
+        """ wait for a challend and return the corresponding game"""
         # Stream whats happening and continue when we are challenged
         in_game = False
         client=self.client
+        account=self.getAccount()
+        if self.debug:
+            print ("%s waiting for challenge (max %d secs, polling every %.1f secs)" % (account.username,timeout,pollInterval))
         while(not in_game):
-            time.sleep(0.5)
+            time.sleep(pollInterval)
+            timeout-=pollInterval
+            if timeout<=0:
+                raise Exception("time out waiting for challenge")
             for event in client.bots.stream_incoming_events():
                 eventtype=event['type']
                 if self.debug:
@@ -188,9 +197,15 @@ class Lichess():
                     in_game = True
                     break
                 elif eventtype == 'challenge':
-                    game_id = event['challenge']['id']
-                    client.bots.accept_challenge(game_id)
-                    in_game = True
+                    challenge=event['challenge']
+                    game_id = challenge['id']
+                    challenger=challenge['challenger']
+                    # don't try to play against myself
+                    if not challenger==account.username:
+                        client.bots.accept_challenge(game_id)
+                        in_game = True
+                    elif self.debug:
+                        print ("%s avoiding to play against myself in game %s" % (account.username,game_id))
         if self.debug:            
             print("The game %s has started!" % (game_id))
         return game_id

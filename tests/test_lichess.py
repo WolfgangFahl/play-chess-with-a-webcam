@@ -7,6 +7,7 @@ from pcwawc.lichess import Lichess
 from pcwawc.lichess import Game as LichessGame
 import getpass
 import lichess.api
+import time
 
 debug=True
 def test_lichess():
@@ -49,7 +50,8 @@ class MoveHandler():
             self.game.move(self.movesToPlay[index])
         
         
-def test_OTB_stream():
+def test_OTB_stream1():
+    # test letting a bot play against himself
     if getpass.getuser()=="wf":
         lichess=Lichess(debug=True)
         # challenge my self
@@ -67,6 +69,24 @@ def test_OTB_stream():
         # game.move('b8c6')
         #game.resign()
         #game.stop()
+        
+def test_OTB_stream2():
+    # test letting a bot play against anotherbot
+    if getpass.getuser()=="wf":
+        lichessMe=Lichess(debug=True)
+        lichessOther=Lichess(debug=True,tokenName="token2")   
+        game_id=lichessMe.waitForChallenge()
+        lichessOther.challenge(lichessMe.getAccount().username)
+        gameMe=LichessGame(lichessMe,game_id,debug=True)
+        gameOther=LichessGame(lichessOther,game_id,debug=True)
+        moveList=["e2e4","e7e5","f1c4","b8c6"]
+        moveHandlerMe=MoveHandler(gameMe,moveList)
+        moveHandlerOther=MoveHandler(gameOther,moveList)
+        gameMe.subscribe(moveHandlerMe.onState)
+        gameOther.subscribe(moveHandlerOther.onState)
+        gameMe.start()
+        gameOther.start()
+        
        
 def test_rating():
     user = lichess.api.user('thibault')
@@ -76,4 +96,5 @@ def test_rating():
 #test_rating()    
 #test_lichess()
 #test_game()
-test_OTB_stream()
+#test_OTB_stream1()
+test_OTB_stream2()
