@@ -3,51 +3,48 @@
 # runtime dependencies
 #
 # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_tutorials.html
-opencv-python
+opencv-python==4.1.2.30
 # python-chess
 # https://buildmedia.readthedocs.org/media/pdf/python-chess/latest/python-chess.pdf
-python-chess
+python-chess==0.29.0
 # lichess APIs
 # https://github.com/rhgrant10/berserk
-berserk
+berserk==0.3.1
 # https://github.com/cyanfish/python-lichess
-python-lichess
+python-lichess==0.9
 # image utils
-imutils
+imutils==0.5.3
 # Image Processing in Python - Alternative to opencv e.g. for perspective Transformation
 # https://scikit-image.org/
 # scikit-image
 # web tools
-Flask
-Flask-RESTful
-Flask-AutoIndex
+Flask==1.1.1
+Flask-RESTful==0.3.7
+Flask-AutoIndex==0.6.4
 # config and state saving
-PyYAML
+PyYAML==3.13
 # mss https://pypi.org/project/mss/ An ultra fast cross-platform multiple screenshots module in pure python using ctypes.
-mss
+mss==4.0.3
 # PIL Python Image Library fork see https://pillow.readthedocs.io/en/stable/
-Pillow
+Pillow==6.2.1
 # https://kivy.org Kivy - Open source Python library for rapid development of applications
 # that make use of innovative user interfaces, such as multi-touch apps.
 # uncommented and not used (yet) due to issues on ubuntu
 # kivy
 # Json pickle
-jsonpickle
-#  statemachine
-# https://github.com/pytransitions/transitions
-transitions
+jsonpickle==1.2
 #
-# interfaces
+# zope interfaces
 #
-interface
+interface==2.11.1
 #
 # test dependencies
 #
 # python tests
-pytest
+pytest==3.8.2
 # matplotlib
-matplotlib
+matplotlib==2.2.3
 # scipy
-scipy
+scipy==1.2.2
 # pytest-cov
-pytest-cov
+pytest-cov==2.8.1

@@ -3,6 +3,7 @@ Created on 2019-11-29
 
 @author: wf
 '''
+# part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import cv2
 from timeit import default_timer as timer
 from matplotlib import pyplot as plt

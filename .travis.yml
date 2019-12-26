@@ -7,6 +7,8 @@ python:
 # allow gui output
 services:
   - xvfb
+before_install:
+  - sudo apt-get -y install gnuchess
 # command to install dependencies
 install:
   - pip install -r pcwawc/requirements.txt

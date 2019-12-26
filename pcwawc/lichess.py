@@ -3,7 +3,9 @@ Created on 2019-12-21
 
 @author: wf
 '''
-# https://github.com/rhgrant10/berserk
+# part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
+# 
+# uses https://github.com/rhgrant10/berserk
 # https://berserk.readthedocs.io/en/master/
 from pcwawc.eventhandling import Observable
 import berserk
