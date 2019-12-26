@@ -38,6 +38,10 @@ class Engine:
         self.name=engineConfig["name"]
         self.url=engineConfig["url"]
         
+    def start(self):
+        # https://python-chess.readthedocs.io/en/latest/engine.html
+        pass    
+        
     def __str__(self):
         text="chess engine %s called via %s at %s" % (self.name,self.engineCmd,self.enginePath)
         return text    
