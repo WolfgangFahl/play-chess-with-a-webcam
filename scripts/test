@@ -9,7 +9,7 @@ scriptdir=$(dirname $0)
 python=python3
 if [ "$USER" = "travis" ]
 then
-  pytest
+  pytest -s
 else
   $python -m pytest --cov=./ .
 fi
