@@ -30,11 +30,12 @@ def findEngines():
         
 # http://julien.marcel.free.fr/macchess/Chess_on_Mac/Engines.html
 def test_engines():
-    engineConfigs=Engine.findEngines()
+    engineConfigs=findEngines()
     for key,engineConfig in engineConfigs.items():
-        engine=Engine(engineConfig,timeout=1.5)
-        print (engine)
-        engine.open()
+        chessEngine=Engine(engineConfig,timeout=1.5)
+        print (chessEngine)
+        engine=chessEngine.open()
+        
         
 def test_play():
     engineConfigs=findEngines() 
@@ -71,5 +72,5 @@ def test_play():
     # try pasting resulting pgn to
     # https://lichess.org/paste
             
-test_play()
-#test_engines()
+#test_play()
+test_engines()

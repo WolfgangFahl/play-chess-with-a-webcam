@@ -16,4 +16,7 @@ install:
   - pip install -r pcwawc/requirements.txt
 # command to run tests
 script:
-  - python -m pytest -s .
+#  with print output
+#  - python -m pytest -s .
+#  without print output
+   - python -m pytest .

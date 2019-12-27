@@ -19,21 +19,25 @@ class Engine:
             "name": "Crafty Computer Chess",
             "command":"crafty",
             "url": "http://www.craftychess.com/",
+            "protocol": "?"
         },
         {
             "name": "GNU Chess",
             "command":"gnuchess",
             "url":"https://www.gnu.org/software/chess/",
+            "protocol":"uci"
         },
         {
             "name": "Stockfish Chess",
             "command":"stockfish",
-            "url":"https://stockfishchess.org/"
+            "url":"https://stockfishchess.org/",
+            "protocol":"uci"
         },
         {
             "name": "XBoard",
             "command":"xboard",
-            "url":"https://www.gnu.org/software/xboard/manual/xboard.html"
+            "url":"https://www.gnu.org/software/xboard/manual/xboard.html",
+            "protocol":"xboard"
         }  
         ]
     
@@ -42,8 +46,13 @@ class Engine:
         self.enginePath=engineConfig["path"]
         self.name=engineConfig["name"]
         self.url=engineConfig["url"]
-        if "tested" in engineConfig:
-            self.tested=engineConfig["tested"]
+        self.protocolName=engineConfig["protocol"]
+        if self.protocolName=="uci":
+            self.protocol=chess.engine.UciProtocol
+        elif self.protocolName=="xboard":
+            self.protocol=chess.engine.XBoardProtocol
+        else:
+            self.protocol=None
         self.timeout=timeout
         #asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())       
         # https://python-chess.readthedocs.io/en/latest/engine.html
