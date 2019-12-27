@@ -8,7 +8,9 @@ python:
 services:
   - xvfb
 before_install:
+  # install some chess engines
   - sudo apt-get -y install gnuchess
+  - sudo apt-get -y install stockfish 
 # command to install dependencies
 install:
   - pip install -r pcwawc/requirements.txt
