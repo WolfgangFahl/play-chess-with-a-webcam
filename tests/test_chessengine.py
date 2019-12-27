@@ -15,11 +15,12 @@ def fix_path():
     """ fixes PATH issues e.g. on MacOS macports environment - adopt to your needs as you see fit"""
     home=os.environ["HOME"]
     homebin=home+"/bin"
-    # is a home/bin directory available?
-    if os.path.isdir(homebin):
-        if debug:
-            print ("found %s - adding it to PATH" % homebin)
-        os.environ["PATH"]="%s:%s" % (os.environ["PATH"],homebin)
+    # is a home/bin and/or /usr/games directory available?
+    for path in [ homebin, "/usr/games"]:
+        if os.path.isdir(path):
+            if debug:
+                print ("found %s - adding it to PATH" % path)    
+            os.environ["PATH"]="%s:%s" % (os.environ["PATH"],path)
         
 def findEngines():
     fix_path()
