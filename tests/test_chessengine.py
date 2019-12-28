@@ -16,10 +16,12 @@ def fix_path():
     home=os.environ["HOME"]
     homebin=home+"/bin"
     # is a home/bin and/or /usr/games directory available?
-    for path in [ homebin, "/usr/games"]:
+    # priority is last in list as higher priority
+    for path in [ "/usr/games", homebin ]:
+        # if the path is available
         if os.path.isdir(path):
             if debug:
-                print ("found %s - adding it to PATH" % path)    
+                print ("found %s - prepending it to PATH" % path)    
             os.environ["PATH"]="%s:%s" % (path,os.environ["PATH"])
         
 def findEngines():
