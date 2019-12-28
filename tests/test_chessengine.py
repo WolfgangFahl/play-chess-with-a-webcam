@@ -20,7 +20,7 @@ def fix_path():
         if os.path.isdir(path):
             if debug:
                 print ("found %s - adding it to PATH" % path)    
-            os.environ["PATH"]="%s:%s" % (os.environ["PATH"],path)
+            os.environ["PATH"]="%s:%s" % (path,os.environ["PATH"])
         
 def findEngines():
     fix_path()
