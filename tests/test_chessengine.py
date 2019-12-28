@@ -4,6 +4,7 @@ Created on 2019-12-26
 @author: wf
 '''
 from pcwawc.chessengine import Engine
+import pytest
 import chess
 import chess.pgn
 from datetime import datetime
@@ -36,7 +37,11 @@ def test_engines():
     for key,engineConfig in engineConfigs.items():
         chessEngine=Engine(engineConfig)
         print (chessEngine)
-        engine=chessEngine.open()
+        try:
+            engine=chessEngine.open()
+        except Exception as e:
+            print ("opening %s failed with " % (engine.name,str(e)))
+            #pytest.fail(str(e))
         
         
 def test_play():

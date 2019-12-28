@@ -60,6 +60,7 @@ class Engine:
     
     def open(self):
         self.engine=None
+        self.error=None
         if self.protocol is None:
             self.error=Exception("unknown protocol for %s" % self.name)
         else:    
