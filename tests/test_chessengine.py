@@ -53,7 +53,7 @@ def test_play():
         chessEngine=Engine(engineConfigs[engineCmd])
         engine=chessEngine.open()
         if engine is None:
-            raise Exception("Could not open %s engine" % engineCmd)
+            raise Exception("Could not open %s engine: %s" % (chessEngine.name,str(chessEngine.error)))
         board = chess.Board()
         game = chess.pgn.Game() 
         game.headers["Event"] = "test_chessengine %s" % (chessEngine.name)
