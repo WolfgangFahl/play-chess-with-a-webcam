@@ -3,8 +3,8 @@ Created on 2019-12-21
 
 @author: wf
 '''
-from pcwawc.lichess import Lichess
-from pcwawc.lichess import Game as LichessGame
+from pcwawc.lichessbridge import Lichess
+from pcwawc.lichessgridge import Game as LichessGame
 import getpass
 import lichess.api
 

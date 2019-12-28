@@ -11,6 +11,7 @@ from pcwawc.chessimage import ChessBoardVision
 from pcwawc.detectorfactory import MoveDetectorFactory
 from pcwawc.eventhandling import Observable
 from pcwawc.environment import Environment
+from pcwawc.lichessbridge import Lichess
 
 import sys
 
@@ -167,3 +168,7 @@ if __name__ == '__main__':
     videoAnalyzer.setDebug(args.debug)
     pgn=videoAnalyzer.analyze()
     print (pgn)
+    if args.lichess:
+        lichess=Lichess()
+        if lichess.client is not None:
+            lichess.pgnImport(pgn)
