@@ -4,7 +4,8 @@ Created on 2019-12-26
 @author: wf
 '''
 from pcwawc.chessengine import Engine
-import pytest
+import asyncio
+import threading
 import chess
 import chess.pgn
 from datetime import datetime
@@ -78,7 +79,13 @@ def test_play():
         engine.quit()    
         print (game)   
         # try pasting resulting pgn to
-        # https://lichess.org/paste            
+        # https://lichess.org/paste
 
 test_engines()
-test_play()
+#test_play()
+print ("trying to cancel all threads and tasks")
+for thread in threading.enumerate(): 
+    print("%s" % (thread.name)) 
+for task in asyncio.Task.all_tasks():
+    print ("cancelling %s" % (str(task)))
+    task.cancel()      
