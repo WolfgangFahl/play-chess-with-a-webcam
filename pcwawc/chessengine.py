@@ -5,6 +5,7 @@ Created on 2019-12-16
 '''
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 import chess.engine
+import concurrent.futures
 import shutil
 
 class Engine:
@@ -70,6 +71,17 @@ class Engine:
                 self.error=te
                 pass
         return self.engine
+    
+    def close(self):
+        if self.engine is not None:
+            try:
+                self.engine.quit()
+            except concurrent.futures._base.TimeoutError:
+                # so what?
+                if self.debug:
+                    print ("timeout after %1.f secs for %s on close forcing close now ..." % (self.timeout,self.name))
+                self.engine.close()    
+                pass
         
     def __str__(self):
         text="chess engine %s called via %s at %s" % (self.name,self.engineCmd,self.enginePath)

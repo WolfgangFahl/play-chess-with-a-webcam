@@ -10,6 +10,7 @@ import chess
 import chess.pgn
 from datetime import datetime
 import os
+import time
 
 debug=True
 
@@ -42,8 +43,9 @@ def test_engines():
             engine=chessEngine.open()
         except Exception as e:
             print ("opening %s failed with " % (engine.name,str(e)))
-            #pytest.fail(str(e))
-        
+        #pytest.fail(str(e))
+        chessEngine.close()    
+    
         
 def test_play():
     engineConfigs=findEngines() 
@@ -83,6 +85,7 @@ def test_play():
 
 test_engines()
 #test_play()
+time.sleep(5)
 print ("trying to cancel all threads and tasks")
 for thread in threading.enumerate(): 
     print("%s" % (thread.name)) 
