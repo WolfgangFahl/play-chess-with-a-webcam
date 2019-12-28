@@ -32,45 +32,46 @@ def findEngines():
 def test_engines():
     engineConfigs=findEngines()
     for key,engineConfig in engineConfigs.items():
-        chessEngine=Engine(engineConfig,timeout=1.5)
+        chessEngine=Engine(engineConfig)
         print (chessEngine)
         engine=chessEngine.open()
         
         
 def test_play():
     engineConfigs=findEngines() 
-    engineCmd="stockfish"
-    if engineCmd not in engineConfigs:
-        raise Exception("%s engine not found" % engineCmd)
-    chessEngine=Engine(engineConfigs[engineCmd])
-    engine=chessEngine.open()
-    if engine is None:
-        raise Exception("Could not open %s engine" % engineCmd)
-    board = chess.Board()
-    game = chess.pgn.Game() 
-    game.headers["Event"] = "test_chessengine %s" % (chessEngine.name)
-    game.headers["Site"] = "http://wiki.bitplan.com/index.php/PlayChessWithAWebCam" 
-    game.headers["White"] = "%s" % (chessEngine.name)
-    game.headers["Black"] = "%s" % (chessEngine.name)
-    game.headers["Date"] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    moveIndex=0
-    node=None
-    while not board.is_game_over():
-        result = engine.play(board, chess.engine.Limit(time=0.1))
-        move=str(result.move)
-        board.push(result.move)
-        print ("%d-%s: %s" % (moveIndex//2+1,"white" if moveIndex%2==0 else "black",move))
-        print (board.unicode())
-        if moveIndex == 0:
-            node = game.add_variation(chess.Move.from_uci(move))
-        else:
-            node = node.add_variation(chess.Move.from_uci(move))
-        moveIndex+=1
+    engineCmds=["gnuchess","stockfish"]
+    for engineCmd in engineCmds:
+        if engineCmd not in engineConfigs:
+            raise Exception("%s engine not found" % engineCmd)
+        chessEngine=Engine(engineConfigs[engineCmd])
+        engine=chessEngine.open()
+        if engine is None:
+            raise Exception("Could not open %s engine" % engineCmd)
+        board = chess.Board()
+        game = chess.pgn.Game() 
+        game.headers["Event"] = "test_chessengine %s" % (chessEngine.name)
+        game.headers["Site"] = "http://wiki.bitplan.com/index.php/PlayChessWithAWebCam" 
+        game.headers["White"] = "%s" % (chessEngine.name)
+        game.headers["Black"] = "%s" % (chessEngine.name)
+        game.headers["Date"] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        moveIndex=0
+        node=None
+        while not board.is_game_over():
+            result = engine.play(board, chess.engine.Limit(time=0.1))
+            move=str(result.move)
+            board.push(result.move)
+            print ("%d-%s: %s" % (moveIndex//2+1,"white" if moveIndex%2==0 else "black",move))
+            print (board.unicode())
+            if moveIndex == 0:
+                node = game.add_variation(chess.Move.from_uci(move))
+            else:
+                node = node.add_variation(chess.Move.from_uci(move))
+            moveIndex+=1
+    
+        engine.quit()    
+        print (game)   
+        # try pasting resulting pgn to
+        # https://lichess.org/paste            
 
-    engine.quit()    
-    print (game)   
-    # try pasting resulting pgn to
-    # https://lichess.org/paste
-            
-#test_play()
 test_engines()
+test_play()

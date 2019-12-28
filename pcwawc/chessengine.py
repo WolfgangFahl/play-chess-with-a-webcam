@@ -59,12 +59,15 @@ class Engine:
         self.error=None
     
     def open(self):
-        try:
-            self.engine = chess.engine.SimpleEngine.popen_uci(self.engineCmd,timeout=self.timeout,debug=Engine.debug)
-        except Exception as te:
-            self.engine=None
-            self.error=te
-            pass
+        self.engine=None
+        if self.protocol is None:
+            self.error=Exception("unknown protocol for %s" % self.name)
+        else:    
+            try:
+                self.engine = chess.engine.SimpleEngine.popen(self.protocol,self.engineCmd,timeout=self.timeout,debug=Engine.debug)
+            except Exception as te:
+                self.error=te
+                pass
         return self.engine
         
     def __str__(self):

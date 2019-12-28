@@ -57,17 +57,17 @@ class MoveHandler():
             if moveIndex<len(self.movesToPlay):
                 self.game.move(self.movesToPlay[moveIndex])
         
-def test_OTB_stream1():
+#def test_OTB_stream1():
     # test letting a bot play against himself
-    if getpass.getuser()=="wf":
-        lichess=Lichess(debug=True)
+#    if getpass.getuser()=="wf":
+#        lichess=Lichess(debug=True)
         # challenge my self
-        lichess.challenge(lichess.getAccount().username)
-        game_id=lichess.waitForChallenge()
-        game=LichessGame(lichess,game_id,debug=True)
-        moveHandler=MoveHandler(game,["e2e4","e7e5","f1c4","b8c6"])
-        game.subscribe(moveHandler.onState)
-        game.start()
+#        lichess.challenge(lichess.getAccount().username)
+ #       game_id=lichess.waitForChallenge()
+ #       game=LichessGame(lichess,game_id,debug=True)
+ #       moveHandler=MoveHandler(lichess,game,["e2e4","e7e5","f1c4","b8c6"])
+ #       game.subscribe(moveHandler.onState)
+ #       game.start()
         #game.move('e2e4')
         #game.move('e7e5')  
         #game.move('f1c4')
@@ -77,11 +77,9 @@ def test_OTB_stream1():
         #game.resign()
         #game.stop()
         
-def test_OTB_stream2():
-    # test letting a bot play against anotherbot
-    if getpass.getuser()=="wf":
-        lichessMe=Lichess(debug=True)
-        lichessOther=Lichess(debug=True,tokenName="token2")   
+def test_Botplay(tokenName1="token",tokenName2="token2"):
+        lichessMe=Lichess(debug=True,tokenName=tokenName1)
+        lichessOther=Lichess(debug=True,tokenName=tokenName2)   
         game_id=lichessMe.waitForChallenge()
         lichessOther.challenge(lichessMe.getAccount().username)
         gameMe=LichessGame(lichessMe,game_id,debug=True)
@@ -94,14 +92,19 @@ def test_OTB_stream2():
         gameMe.start()
         gameOther.start()
         
-       
+        
+def test_OTB_stream():
+    # test letting a bot play against anotherbot
+    if not getpass.getuser()=="travis":
+        test_Botplay()
+        #test_Botplay("token","token")
+        
 def test_rating():
     user = lichess.api.user('thibault')
     rating=user['perfs']['blitz']['rating']
     assert rating>1000   
 
-#test_rating()    
-#test_lichess()
-#test_game()
-#test_OTB_stream1()
-test_OTB_stream2()
+test_rating()    
+test_lichess()
+test_game()
+test_OTB_stream()
