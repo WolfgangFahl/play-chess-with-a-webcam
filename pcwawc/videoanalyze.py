@@ -14,7 +14,6 @@ from pcwawc.environment import Environment
 from pcwawc.lichessbridge import Lichess
 
 import sys
-from webob import static
 
 class VideoAnalyzer(Observable):
     """ analyzer for chessboard videos - may be used from command line or web app"""
