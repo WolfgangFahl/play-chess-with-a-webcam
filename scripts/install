@@ -249,12 +249,13 @@ pythonModules() {
   pip=pip3
   if [ "$USER" = "travis" ]
   then
-    pip=pip
+    cmd=pip
   else
     autoinstall python3 python3.7 python37
     autoinstall pip3 python3-pip py37-pip
+    cmd=sudo -H pip3
   fi
-  sudo -H $pip install -r requirements.txt
+  $cmd install -r requirements.txt
 }
 
 # install large testMedia files
