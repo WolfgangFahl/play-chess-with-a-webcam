@@ -35,6 +35,12 @@ class VideoAnalyzer(Observable):
         
     def open(self):
         self.vision.open(self.args.input)
+        video=self.vision.video
+        if args.startframe>0:
+            if self.debug:
+                print ("skipping first %d frames" % (args.startframe))
+            while video.frames<=args.startframe:
+                self.vision.video.readFrame()
             
     def close(self):
         if self.videoout is not None:

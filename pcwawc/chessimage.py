@@ -40,16 +40,19 @@ class ChessBoardVision(JsonAbleMixin):
         self.warp.rotation = args.rotation
         if self.args.nowarp:
             self.warp.warping=True
+        self.firstFrame=True    
         pass
     
     def open(self,device):
         self.video.capture(device)
         self.device=device
+        self.firstFrame=True
         
     def readChessBoardImage(self):
         self.hasImage, image, self.quitWanted = self.video.readFrame(self.showDebug)
-        if self.video.frames==1:
+        if self.firstFrame:
             self.start=timer()
+            self.firstFrame=False
         timestamp=timer()-self.start
         frameIndex=self.video.frames
         self.chessBoardImageSet=ChessBoardImageSet(self,image,frameIndex,timestamp)

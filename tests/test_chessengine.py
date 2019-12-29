@@ -20,7 +20,7 @@ def fix_path():
     homebin=home+"/bin"
     # is a home/bin and/or /usr/games directory available?
     # priority is last in list as higher priority
-    for path in [ "/usr/games", homebin ]:
+    for path in [ "/opt/local/bin","/usr/games", homebin ]:
         # if the path is available
         if os.path.isdir(path):
             if debug:

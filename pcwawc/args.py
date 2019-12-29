@@ -68,6 +68,11 @@ class Args:
         self.parser.add_argument('--site',
                                  default=None,
                                  help="PGN Site header")
+        
+        self.parser.add_argument('--startframe',
+                                 type=int,
+                                 default=0,
+                                 help="video frame at which to start detection")
  
         self.parser.add_argument('--speedup',
                                  type=int,

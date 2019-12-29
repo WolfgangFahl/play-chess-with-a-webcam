@@ -26,6 +26,7 @@ class Engine:
             "name": "GNU Chess",
             "command":"gnuchess",
             "url":"https://www.gnu.org/software/chess/",
+            "options": "--uci",
             "protocol":"uci"
         },
         {
@@ -48,6 +49,7 @@ class Engine:
         self.name=engineConfig["name"]
         self.url=engineConfig["url"]
         self.protocolName=engineConfig["protocol"]
+        self.options=engineConfig["options"] if "options" in engineConfig else None
         if self.protocolName=="uci":
             self.protocol=chess.engine.UciProtocol
         elif self.protocolName=="xboard":
@@ -66,7 +68,10 @@ class Engine:
             self.error=Exception("unknown protocol for %s" % self.name)
         else:    
             try:
-                self.engine = chess.engine.SimpleEngine.popen(self.protocol,self.engineCmd,timeout=self.timeout,debug=Engine.debug)
+                cmd=[self.engineCmd]
+                if self.options:
+                    cmd.append(self.options)
+                self.engine = chess.engine.SimpleEngine.popen(self.protocol,cmd,timeout=self.timeout,debug=Engine.debug)
             except Exception as te:
                 self.error=te
                 pass
