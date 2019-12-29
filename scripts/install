@@ -253,7 +253,7 @@ pythonModules() {
   else
     autoinstall python3 python3.7 python37
     autoinstall pip3 python3-pip py37-pip
-    cmd=sudo -H pip3
+    cmd="sudo -H pip3"
   fi
   $cmd install -r requirements.txt
 }
