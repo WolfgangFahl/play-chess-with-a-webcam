@@ -54,9 +54,7 @@ def test_FieldDetector():
         if boardIndex == 0:
             path=testEnv.testMedia + 'scholarsmate.avi'
             fen=Board.START_FEN
-            frames = 20
-            # @TODO speed up and test all frames again
-            # frames=334
+            frames=334
         args=Args("test")
         args.parse(["--debug","--speedup=4","--detector","luminance","--input",path,"--fen",fen])
         analyzer=VideoAnalyzer(args.args)
@@ -72,7 +70,8 @@ def test_FieldDetector():
         video=vision.video
         for frame in range(0, frames):
             cbImageSet=vision.readChessBoardImage()
-            assert analyzer.hasImage()
+            if not analyzer.hasImage():
+                break
             start = timer()
             analyzer.processImageSet(cbImageSet)
             video.showImage(cbImageSet.debugImage().image, "BoardDetector", keyWait=200)
@@ -128,8 +127,8 @@ def test_MaskFieldStates():
         video.showImage(rgba, imageInfo.title,keyWait=waitTime)
         video.close()
         
-test_ColorDistance()
-test_FieldStates()
-test_MaskFieldStates()
-test_BoardFieldColorDetector()
+#test_ColorDistance()
+#test_FieldStates()
+#test_MaskFieldStates()
+#test_BoardFieldColorDetector()
 test_FieldDetector()
