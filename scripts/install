@@ -76,7 +76,7 @@ download() {
   local l_url="$1"
   local l_output="$2"
   local l_status=$(curl -Is "$l_url" | head -n 1 | tr -d '\r')
-  echo $l_status | grep "200" > /dev/null
+  echo $l_status | grep -E "200|302" > /dev/null
   if [ $? -ne 0 ]
   then
     color_msg $red "$l_status: $l_url"
@@ -257,6 +257,15 @@ pythonModules() {
   sudo -H $pip install -r requirements.txt
 }
 
+# install large testMedia files
+testMedia() {
+  local l_target="$1"
+  for video in scholarsMate2019-12-18.avi
+  do
+    checkPart "$l_target" https://github.com/SteinscheisserKarl/Chess-Testmedia/raw/master $video
+  done
+}
+
 scriptdir=$(dirname $0)
 
 # get bootstrap
@@ -269,5 +278,7 @@ materialDesignIcons "$scriptdir/../web/mdi"
 chessBoardJs "$scriptdir/../web/chessboard"
 # get chess.js
 chessJs "$scriptdir/../web/chess"
+# download large testMedia
+testMedia "$scriptdir/../testMedia"
 # install required python modules
 pythonModules

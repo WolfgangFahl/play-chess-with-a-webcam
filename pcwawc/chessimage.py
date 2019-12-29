@@ -41,6 +41,7 @@ class ChessBoardVision(JsonAbleMixin):
         if self.args.nowarp:
             self.warp.warping=True
         self.firstFrame=True    
+        self.speedup=args.speedup
         pass
     
     def open(self,device):
@@ -49,13 +50,16 @@ class ChessBoardVision(JsonAbleMixin):
         self.firstFrame=True
         
     def readChessBoardImage(self):
-        self.hasImage, image, self.quitWanted = self.video.readFrame(self.showDebug)
+        frames=self.video.frames
+        for i in range(self.speedup):
+            self.hasImage, image, self.quitWanted = self.video.readFrame(self.showDebug)
+            if self.quitWanted:
+                return self.previous
         if self.firstFrame:
             self.start=timer()
-            self.firstFrame=False
         timestamp=timer()-self.start
-        frameIndex=self.video.frames
-        self.chessBoardImageSet=ChessBoardImageSet(self,image,frameIndex,timestamp)
+        self.chessBoardImageSet=ChessBoardImageSet(self,image,frames//self.speedup,timestamp)
+        self.firstFrame=False
         self.timestamps.append(timestamp)
         return self.chessBoardImageSet
         

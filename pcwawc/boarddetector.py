@@ -22,9 +22,7 @@ class BoardDetector(Observable):
         self.vision=vision
         self.board = vision.board
         self.video = vision.video
-        self.speedup=vision.args.speedup if vision.args is not None else 1
         self.hsv = None
-        self.previous=None
         self.debug = False
                    
     def sortByFieldState(self):            
@@ -61,30 +59,24 @@ class BoardDetector(Observable):
     # analyze the given image
     def analyze(self, cbImageSet, distance=3, step=1):
         frameIndex=cbImageSet.frameIndex
-        if (frameIndex % self.speedup==0):
-            cbWarped=cbImageSet.cbWarped
-            image=cbWarped.image
-            self.board.divideInSquares(cbWarped.width,cbWarped.height)
-            self.analyzeColors(image, distance, step)
-            sortedFields=self.sortByFieldState()
+        cbWarped=cbImageSet.cbWarped
+        image=cbWarped.image
+        self.board.divideInSquares(cbWarped.width,cbWarped.height)
+        self.analyzeColors(image, distance, step)
+        sortedFields=self.sortByFieldState()
 
-            if self.debug:
-                overlay = image.copy()
-    
-                for fieldState,fields in sortedFields.items():
-                    for field in fields:
-                        l = field.luminance
-                        if BoardDetector.frameDebug:
-                            print ("frame %5d: %s luminance: %3.0f ± %3.0f (%d) rgbColorKey: %3.0f colorKey: %.0f" % (frameIndex, field.an, l.mean(), l.standard_deviation(), l.n, field.rgbColorKey, field.colorKey))
-                        field.drawDebug(self.video, overlay, fieldState)
-                alpha = 0.6  # Transparency factor.
-                # Following line overlays transparent rectangle over the image
-                image_new = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
-                image = image_new
-                cbImageSet.cbDebug=ChessBoardImage(image,"debug")
-                self.previous=image
-        else:
-            if self.previous is not None:
-                image=self.previous
-                
+        if self.debug:
+            overlay = image.copy()
+
+        for fieldState,fields in sortedFields.items():
+            for field in fields:
+                l = field.luminance
+                if BoardDetector.frameDebug:
+                    print ("frame %5d: %s luminance: %3.0f ± %3.0f (%d) rgbColorKey: %3.0f colorKey: %.0f" % (frameIndex, field.an, l.mean(), l.standard_deviation(), l.n, field.rgbColorKey, field.colorKey))
+                field.drawDebug(self.video, overlay, fieldState)
+        alpha = 0.6  # Transparency factor.
+        # Following line overlays transparent rectangle over the image
+        image_new = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
+        image = image_new
+        cbImageSet.cbDebug=ChessBoardImage(image,"debug")                
         return image

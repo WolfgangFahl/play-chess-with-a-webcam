@@ -14,6 +14,7 @@ from pcwawc.environment import Environment
 from pcwawc.lichessbridge import Lichess
 
 import sys
+from webob import static
 
 class VideoAnalyzer(Observable):
     """ analyzer for chessboard videos - may be used from command line or web app"""
@@ -36,10 +37,10 @@ class VideoAnalyzer(Observable):
     def open(self):
         self.vision.open(self.args.input)
         video=self.vision.video
-        if args.startframe>0:
+        if self.args.startframe>0:
             if self.debug:
-                print ("skipping first %d frames" % (args.startframe))
-            while video.frames<=args.startframe:
+                print ("skipping first %d frames" % (self.args.startframe))
+            while video.frames<=self.args.startframe:
                 self.vision.video.readFrame()
             
     def close(self):
@@ -165,16 +166,21 @@ class VideoAnalyzer(Observable):
         self.unsubscribe(self.moveDetector.onChessBoardImage)
         self.moveDetector=newDetector
         self.subscribe(self.moveDetector.onChessBoardImage)
-
+      
+    @staticmethod  
+    def fromArgs(argv):    
+        cmdLineArgs = Args("Chessboard Video analyzer")
+        args = cmdLineArgs.parse(argv)
+        videoAnalyzer=VideoAnalyzer(args)
+        videoAnalyzer.setUpDetector()
+        videoAnalyzer.setDebug(args.debug)
+        return videoAnalyzer
+    
 if __name__ == '__main__':
-    cmdLineArgs = Args("Chessboard Video analyzer")
-    args = cmdLineArgs.parse(sys.argv[1:])
-    videoAnalyzer=VideoAnalyzer(args)
-    videoAnalyzer.setUpDetector()
-    videoAnalyzer.setDebug(args.debug)
+    videoAnalyzer=VideoAnalyzer.fromArgs(sys.argv[1:])
     pgn=videoAnalyzer.analyze()
     print (pgn)
-    if args.lichess:
+    if videoAnalyzer.args.lichess:
         lichess=Lichess()
         if lichess.client is not None:
             lichess.pgnImport(pgn)
