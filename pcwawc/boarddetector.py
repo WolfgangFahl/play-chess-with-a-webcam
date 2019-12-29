@@ -73,10 +73,11 @@ class BoardDetector(Observable):
                 l = field.luminance
                 if BoardDetector.frameDebug:
                     print ("frame %5d: %s luminance: %3.0f ± %3.0f (%d) rgbColorKey: %3.0f colorKey: %.0f" % (frameIndex, field.an, l.mean(), l.standard_deviation(), l.n, field.rgbColorKey, field.colorKey))
-                field.drawDebug(self.video, overlay, fieldState)
-        alpha = 0.6  # Transparency factor.
-        # Following line overlays transparent rectangle over the image
-        image_new = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
-        image = image_new
-        cbImageSet.cbDebug=ChessBoardImage(image,"debug")                
+                if self.debug:    
+                    field.drawDebug(self.video, overlay, fieldState)
+                    alpha = 0.6  # Transparency factor.
+                    # Following line overlays transparent rectangle over the image
+                    image_new = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
+                    image = image_new
+                    cbImageSet.cbDebug=ChessBoardImage(image,"debug")                
         return image
