@@ -150,7 +150,7 @@ class Lichess():
         #print(home)
         configPath=home+"/.pcwawc/config.yaml"
         if not os.path.isfile(configPath):
-            print ("%s is missing please create it" % (configPath))
+            print ("%s is missing please create it if you'd like to use the lichess bot api" % (configPath))
             return None
         config=yaml.load(open(configPath),Loader=yaml.FullLoader)
         if not tokenname in config:
