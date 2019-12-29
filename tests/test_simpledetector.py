@@ -10,6 +10,7 @@ import getpass
 
 testEnv=Environment4Test()
 
+debug=True
 class MoveChecker():
     def __init__(self,analyzer):
         self.analyzer=analyzer
@@ -69,7 +70,11 @@ def test_SimpleDetector():
         #analyzer.moveDetector.debug=True
         #analyzer.moveDetector.frameDebug=True
         pgn=analyzer.analyze()
-        print (pgn)
+        if debug:
+            print (pgn)
+            print ("%d half-moves detected" % (moveChecker.moveCount))
+        assert 7==moveChecker.moveCount    
+        assert "1. e4 e5 2. Bc4 Nc6 3. Qh5 Nf6 4. Qxf7# 1-0" in pgn
 
 test_SimpleDetector()
     

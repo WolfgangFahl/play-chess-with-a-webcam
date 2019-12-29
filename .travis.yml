@@ -18,6 +18,6 @@ install:
 # command to run tests
 script:
 #  with print output
-#  - python -m pytest -s .
+   - python -m pytest -s .
 #  without print output
-   - python -m pytest .
+#  - python -m pytest .
