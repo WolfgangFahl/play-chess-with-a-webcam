@@ -22,6 +22,7 @@ class Board(object):
         self.chessboard = chess.Board()
         self.fieldsByAn = {}
         self.args=args
+        self.debug=self.args is not None and self.args.debug
         self.game=WebCamGame.fromArgs(args)
         self.updateFen()
         self.game.update(self)
@@ -73,6 +74,10 @@ class Board(object):
         self.move(move)
     
     def move(self,move):
+        """ perform the given move"""
+        if self.debug:
+            print ("will perform move %s on" % (str(move)))
+            print ("%s" % (self.unicode()))        
         san = self.chessboard.san(move)
         self.chessboard.push(move)
         self.game.move(self)

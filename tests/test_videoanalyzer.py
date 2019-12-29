@@ -15,7 +15,8 @@ def test_videoanalyzer():
     else:
         testVideo="scholarsMate2019-12-18.avi"
         path=testEnv.testMedia+testVideo
-        argv=["--input",path,"--nowarp","--nomove"]    
+        #argv=["--input",path,"--nowarp","--nomove"]   
+        argv=["--input",path,"--nowarp","--debug"]    
     videoAnalyzer=VideoAnalyzer.fromArgs(argv)
     pgn=videoAnalyzer.analyze()
     #print (pgn)
