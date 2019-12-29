@@ -50,11 +50,11 @@ class ChessBoardVision(JsonAbleMixin):
         self.firstFrame=True
         
     def readChessBoardImage(self):
-        frames=self.video.frames
         for i in range(self.speedup):
             self.hasImage, image, self.quitWanted = self.video.readFrame(self.showDebug)
             if self.quitWanted:
                 return self.previous
+        frames=self.video.frames    
         if self.firstFrame:
             self.start=timer()
         timestamp=timer()-self.start
