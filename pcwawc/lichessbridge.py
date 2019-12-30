@@ -141,7 +141,7 @@ class Lichess():
         self.account=None    
     
     def getAccount(self):
-        if self.account is None:
+        if self.account is None and self.client is not None:
             self.account=Account(self.client.account.get())
         return self.account
     

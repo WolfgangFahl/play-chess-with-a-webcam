@@ -4,6 +4,7 @@ Created on 2019-12-13
 @author: wf
 '''
 from pcwawc.eventhandling import Observable
+from unittest import TestCase
 
 debug=True
 class Counter(Observable):
@@ -25,15 +26,15 @@ class Observer():
         assert e.counter.value==e.value    
         assert e.counter.inc==e.inc
 
-def test_EventHandling():
-    counter=Counter()
-    observer1=Observer("observer 1")
-    observer2=Observer("observer 2")
-    counter.subscribe(observer1.onCount)
-    counter.subscribe(observer2.onCount)
-    for i in range(5):
-        if i==3:
-            counter.unsubscribe(observer2.onCount)
-        counter.count(i)
+class EventHandlingTest(TestCase):
+    def test_EventHandling(self):
+        counter=Counter()
+        observer1=Observer("observer 1")
+        observer2=Observer("observer 2")
+        counter.subscribe(observer1.onCount)
+        counter.subscribe(observer2.onCount)
+        for i in range(5):
+            if i==3:
+                counter.unsubscribe(observer2.onCount)
+            counter.count(i)
 
-test_EventHandling()
