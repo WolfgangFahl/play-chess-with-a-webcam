@@ -75,10 +75,16 @@ class Board(object):
     
     def move(self,move):
         """ perform the given move"""
-        if self.debug:
-            print ("will perform move %s on" % (str(move)))
-            print ("%s" % (self.unicode()))        
-        san = self.chessboard.san(move)
+        try:     
+            if self.debug:
+                print ("trying to perform move %s on" % (str(move)))
+                print ("%s" % (self.unicode()))
+            san = self.chessboard.san(move)
+        except Exception as e:
+            if self.debug:
+                print ("failed with error: %s" % (str(e)))
+            return None    
+            
         self.chessboard.push(move)
         self.game.move(self)
         self.updateFen()

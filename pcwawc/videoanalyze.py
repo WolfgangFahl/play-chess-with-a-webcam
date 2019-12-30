@@ -150,7 +150,10 @@ class VideoAnalyzer(Observable):
             
     def onMove(self,event):
         move=event.move
-        self.vision.board.move(move)
+        san=self.vision.board.move(move)
+        if san is None:
+            if self.debug:
+                print ("invalid move %s" % (str(move)) )
         
     def autoWarp(self):
         self.nextImageSet()
