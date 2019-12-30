@@ -42,7 +42,7 @@ def test_SimpleDetector():
     #            continue
     #        if index==2:
     #            break
-    if getpass.getuser()!="travis":
+    if not getpass.getuser()=="travis":
         index=0
         testVideo="scholarsMate2019-12-18.avi"
         path=testEnv.testMedia+testVideo
