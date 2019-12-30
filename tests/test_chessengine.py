@@ -6,7 +6,6 @@ Created on 2019-12-26
 from pcwawc.chessengine import Engine
 import asyncio
 import threading
-import chess
 import chess.pgn
 from datetime import datetime
 import os
