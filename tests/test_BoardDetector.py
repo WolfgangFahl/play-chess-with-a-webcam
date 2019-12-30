@@ -103,7 +103,7 @@ class BoardDetectorTest(TestCase):
         boardDetector = BoardDetector()
         boardDetector.setup("luminance",vision)
         boardDetector.debug = True
-        checkFieldStates(boardDetector, vision.board)
+        self.checkFieldStates(boardDetector, vision.board)
     
     def getAnalyzerForImageInfo(self,imageInfo):
         analyzer=testEnv.analyzerFromImageInfo(imageInfo)
@@ -113,7 +113,7 @@ class BoardDetectorTest(TestCase):
     
     def test_MaskFieldStates(self):
         for imageInfo in testEnv.imageInfos:
-            analyzer=getAnalyzerForImageInfo(imageInfo)
+            analyzer=self.getAnalyzerForImageInfo(imageInfo)
             video=analyzer.vision.video
             cbImageSet=analyzer.vision.readChessBoardImage()
             assert analyzer.hasImage()
