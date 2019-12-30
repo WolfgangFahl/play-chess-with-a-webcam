@@ -4,24 +4,27 @@ from pcwawc.board import Board
 from pcwawc.chessvision import FieldState
 import chess
 
-# check the sequence of  moves end positon against the expected FEN notation string
+debug = False
+# check the sequence of  moves end position against the expected FEN notation string
 def checkMovesEndPosition(moves, expectedFen):
     board = Board()
     for move in moves:
         san = board.performMove(move)
-        print (san)
+        if debug:
+            print ("%s %s" % (str(move),san))
     checkEndPosition(board, expectedFen)
 
 
 # check the expected end position
 def checkEndPosition(board, expectedFen):
-    print("---Final positions---")
     fen = board.updateFen()
-    print (fen)
     unicode = board.unicode()
-    print (unicode)
     pgn = board.game.pgn
-    print (pgn)
+    if debug:
+        print("---Final positions---")
+        print (fen)
+        print (unicode)
+        print (pgn)
     assert expectedFen == fen
 
 
@@ -65,8 +68,8 @@ def test_Pieces():
     assert counts[FieldState.BLACK_EMPTY] == 16
     assert counts[FieldState.BLACK_BLACK] == 8
     assert counts[FieldState.BLACK_WHITE] == 8
-
-    print (board.unicode())
+    if debug:
+        print (board.unicode())
     bstr = ""
     for row in range(0, 8):
         for col in range(0, 8):
@@ -89,7 +92,6 @@ def test_PieceAt():
     """
     see https://stackoverflow.com/questions/55650138/how-to-get-a-piece-in-python-chess
     see https://python-chess.readthedocs.io/en/latest/core.html """
-    debug = False
     board = chess.Board()
     if debug:
         print (board.unicode())
@@ -117,7 +119,7 @@ def test_PieceAt():
     
 def test_ValidMove():
     board = Board()
-    board.debug=True
+    board.debug=debug
     changes=[("e4","e2"),("e5","e7")]
     for change in changes:
         move=board.changeToMove(change)
@@ -126,12 +128,14 @@ def test_ValidMove():
         
 def test_PGN():
     board=Board()
-    print (board.game.pgn)
-    pass 
+    pgn=board.game.pgn
+    if debug:
+        print (pgn)
+    assert '[Result "*"]' in pgn
 
 test_PGN()
-#test_ValidMove()
-#test_PieceAt()
-#test_Pieces()
-#test_BoardEasy()
-#test_BoardPgn()
+test_ValidMove()
+test_PieceAt()
+test_Pieces()
+test_BoardEasy()
+test_BoardPgn()

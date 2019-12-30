@@ -71,7 +71,7 @@ class Board(object):
     
     def ucimove(self, ucimove):    
         move = Move.from_uci(ucimove.lower())
-        self.move(move)
+        return self.move(move)
     
     def move(self,move):
         """ perform the given move"""
