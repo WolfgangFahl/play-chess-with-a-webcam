@@ -127,8 +127,8 @@ def test_MaskFieldStates():
         video.showImage(rgba, imageInfo.title,keyWait=waitTime)
         video.close()
         
-#test_ColorDistance()
-#test_FieldStates()
-#test_MaskFieldStates()
-#test_BoardFieldColorDetector()
+test_ColorDistance()
+test_FieldStates()
+test_MaskFieldStates()
+test_BoardFieldColorDetector()
 test_FieldDetector()
