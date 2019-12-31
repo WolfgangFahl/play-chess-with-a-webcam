@@ -14,7 +14,9 @@ class YamlAbleMixin(object):
     # read me from a yaml file
     @staticmethod
     def readYaml(name):
-        yamlFile = name + ".yaml"
+        yamlFile = name
+        if not yamlFile.endswith(".yaml"):
+            yamlFile = yamlFile + ".yaml"
         # is there a yamlFile for the given name
         if os.path.isfile(yamlFile):
             with io.open(yamlFile, 'r') as stream:
@@ -29,7 +31,9 @@ class YamlAbleMixin(object):
 
     # write me to my yaml file
     def writeYaml(self, name):
-        yamlFile = name + ".yaml"
+        yamlFile = name
+        if not yamlFile.endswith(".yaml"):
+            yamlFile = yamlFile + ".yaml"
         with io.open(yamlFile, 'w', encoding='utf-8') as stream:
             yaml.dump(self, stream)
             if YamlAbleMixin.debug:

@@ -8,10 +8,9 @@ Created on 2019-12-21
 # uses https://github.com/rhgrant10/berserk
 # https://berserk.readthedocs.io/en/master/
 from pcwawc.eventhandling import Observable
+from pcwawc.config import Config
 import berserk
 import lichess.api
-import os
-import yaml
 import requests
 import time
 import threading
@@ -146,17 +145,11 @@ class Lichess():
         return self.account
     
     def getToken(self,tokenname="token"):
-        home=os.getenv("HOME")
-        #print(home)
-        configPath=home+"/.pcwawc/config.yaml"
-        if not os.path.isfile(configPath):
-            print ("%s is missing please create it if you'd like to use the lichess bot api" % (configPath))
+        config=Config.default()
+        if not tokenname in config.config:
+            print ("no token found in %s please add it" % (config.configFile))
             return None
-        config=yaml.load(open(configPath),Loader=yaml.FullLoader)
-        if not tokenname in config:
-            print ("no token found in %s please add it" % (configPath))
-            return None
-        return config[tokenname]
+        return config.config[tokenname]
     
     def pgnImport(self,pgn):
         payload = {

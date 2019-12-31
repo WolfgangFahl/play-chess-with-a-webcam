@@ -110,3 +110,6 @@ class LichessTest(TestCase):
         user = lichess.api.user('thibault')
         rating=user['perfs']['blitz']['rating']
         assert rating>1000
+        
+    def test_broadcast(self):
+           
