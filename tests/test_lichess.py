@@ -112,4 +112,4 @@ class LichessTest(TestCase):
         assert rating>1000
         
     def test_broadcast(self):
-           
+        pass
