@@ -251,7 +251,7 @@ pythonModules() {
   then
     cmd=pip
   else
-    autoinstall python3 python3.7 python37
+    autoinstall python3 python3.7 python37 python3-setuptools python3-wheel virtualenvwrapper python3-tk
     autoinstall pip3 python3-pip py37-pip
     cmd="sudo -H pip3"
   fi
