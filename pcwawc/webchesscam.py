@@ -6,6 +6,9 @@ from pcwawc.args import Args
 from pcwawc.environment import Environment
 from pcwawc.webapp import WebApp
 from flask import Flask, request
+# workaround for https://github.com/jarus/flask-testing/issues/143
+import werkzeug
+werkzeug.cached_property = werkzeug.utils.cached_property
 from flask_autoindex import AutoIndex
 from flask_restful import Api
 import logging
