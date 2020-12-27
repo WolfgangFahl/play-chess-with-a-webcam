@@ -41,7 +41,7 @@ interface==2.11.1
 # test dependencies
 #
 # python tests
-pytest==3.8.2
+pytest==6.2.1
 # matplotlib
 matplotlib==3.3.3
 # scipy
