@@ -43,8 +43,8 @@ interface==2.11.1
 # python tests
 pytest==3.8.2
 # matplotlib
-matplotlib==2.2.3
+matplotlib==3.3.3
 # scipy
-scipy==1.2.2
+scipy==1.5.4
 # pytest-cov
 pytest-cov==2.8.1
