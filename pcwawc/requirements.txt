@@ -22,7 +22,7 @@ Flask==1.1.1
 Flask-RESTful==0.3.7
 Flask-AutoIndex==0.6.4
 # config and state saving
-PyYAML==5.1
+PyYAML==5.2
 # mss https://pypi.org/project/mss/ An ultra fast cross-platform multiple screenshots module in pure python using ctypes.
 mss==4.0.3
 # PIL Python Image Library fork see https://pillow.readthedocs.io/en/stable/
