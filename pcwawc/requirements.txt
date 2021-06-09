@@ -26,7 +26,7 @@ PyYAML==5.4
 # mss https://pypi.org/project/mss/ An ultra fast cross-platform multiple screenshots module in pure python using ctypes.
 mss==4.0.3
 # PIL Python Image Library fork see https://pillow.readthedocs.io/en/stable/
-Pillow==8.1.1
+Pillow==8.2.0
 # https://kivy.org Kivy - Open source Python library for rapid development of applications
 # that make use of innovative user interfaces, such as multi-touch apps.
 # uncommented and not used (yet) due to issues on ubuntu
