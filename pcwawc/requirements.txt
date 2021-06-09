@@ -3,7 +3,7 @@
 # runtime dependencies
 #
 # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_tutorials.html
-opencv-python==4.1.2.30
+opencv-python==4.3.0.38
 # python-chess
 # https://buildmedia.readthedocs.org/media/pdf/python-chess/latest/python-chess.pdf
 python-chess==0.29.0
