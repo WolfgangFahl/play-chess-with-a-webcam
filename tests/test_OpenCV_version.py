@@ -11,4 +11,4 @@ class OpenCV_VersionTest(TestCase):
         version = cv2.__version__
         print (version)
         # compare with requirements.txt
-        assert version == "4.3.0"
+        assert version == "4.5.2"

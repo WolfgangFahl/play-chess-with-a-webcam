@@ -92,6 +92,8 @@ class ChessEngineTest(TestCase):
         print ("trying to cancel all threads and tasks")
         for thread in threading.enumerate(): 
             print("%s" % (thread.name)) 
-        for task in asyncio.Task.all_tasks():
-            print ("cancelling %s" % (str(task)))
-            task.cancel()
+        loop = asyncio.get_event_loop()   
+        if loop is not None: 
+            for task in asyncio.all_tasks(loop):
+                print ("cancelling %s" % (str(task)))
+                task.cancel()
