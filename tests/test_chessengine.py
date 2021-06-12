@@ -31,6 +31,9 @@ class ChessEngineTest(TestCase):
                 os.environ["PATH"]="%s:%s" % (path,os.environ["PATH"])
             
     def findEngines(self):
+        '''
+        find the available chess engines on this computer
+        '''
         self.fix_path()
         Engine.debug=debug
         engineConfigs=Engine.findEngines()
