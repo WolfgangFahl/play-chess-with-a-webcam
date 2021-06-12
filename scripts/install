@@ -247,6 +247,7 @@ EOF
 pythonModules() {
   cd $scriptdir/../pcwawc
   pip=pip3
+  echo "installing for user $USER ..."
   if [ "$USER" = "travis" ]
   then
     cmd=pip
