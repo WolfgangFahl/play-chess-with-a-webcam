@@ -32,9 +32,11 @@ jobs:
     - name: Install dependencies
       run: |
         scripts/install
-        if: matrix.os == 'ubuntu-latest'; then
-          sudo apt install gnuchess
-        fi
+
+    - name: Install gnuchess
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt install gnuchess
+
     - name: Run tests
       run: |
         scripts/test
