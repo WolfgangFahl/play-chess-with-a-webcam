@@ -1,28 +1,40 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pcwawc.video import Video
+from pcwawc.environment import Environment
 from pcwawc.environment4test import Environment4Test
 from unittest import TestCase
 
 testenv=Environment4Test()
 class VideoTest(TestCase):
+    '''
+    test the video handling
+    '''
     
     # test reading an example video
     def test_ReadVideo(self):
-        video = Video()
+        '''
+        test reading an example video
+        '''
+        video = Video.getVideo()
         video.open(testenv.testMedia+'emptyBoard001.avi')
         video.play()
         print ("played %d frames" % (video.frames))
         assert video.frames == 52
     
     def test_ReadVideoWithPostProcess(self):
-        video = Video()
+        '''
+        test reading video frames with a post processing call back
+        '''
+        video = Video.getVideo()
         video.open(testenv.testMedia+'emptyBoard001.avi')
         for frame in range(0, 52):
             ret, jpgImage, quit = video.readFrame(show=True, postProcess=video.addTimeStamp)
     
-    # test pausing the video
     def test_ReadVideoWithPause(self):
-        video = Video()
+        '''
+        test pausing the video
+        '''
+        video = Video.getVideo()
         video.open(testenv.testMedia+'emptyBoard001.avi')
         for frame in range(0, 62):
             if frame >= 10 and frame < 20:
@@ -39,9 +51,11 @@ class VideoTest(TestCase):
         assert video.frames == 52
     
     
-    # test reading video as jpg frames
     def test_ReadJpg(self):
-        video = Video()
+        '''
+        test reading video as jpg frames
+        '''
+        video = Video.getVideo()
         video.open(testenv.testMedia+'emptyBoard001.avi')
         for frame in range(0, 52):
             ret, jpgImage, quit = video.readFrame(show=True)
@@ -53,9 +67,11 @@ class VideoTest(TestCase):
         assert video.frames == 52
     
     
-    # create a blank image
     def test_CreateBlank(self):
-        video = Video()
+        '''
+        test creating a blank image
+        '''
+        video = Video.getVideo()
         width = 400
         height = 400
         image = video.createBlank(width, height)
@@ -67,7 +83,10 @@ class VideoTest(TestCase):
     
     
     def test_getSubRect(self):
-        video = Video()
+        '''
+        test getting a sub rectangle
+        '''
+        video = Video.getVideo()
         image = video.readImage(testenv.testMedia+"chessBoard001.jpg")
         subImage = Video.getSubRect(image, (0, 0, 200, 200))
         iheight, iwidth, channels = subImage.shape
@@ -81,7 +100,10 @@ class VideoTest(TestCase):
         assert v0 == 0
         
     def test_Concatenate(self):
-        video=Video()
+        '''
+        test concatenating of images
+        '''
+        video = Video.getVideo()
         w=400
         h=400
         #https://stackoverflow.com/a/21170291/1497139

@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import math
 from time import strftime
+from pcwawc.environment import Environment
 from pcwawc.fpscheck import FPSCheck
 from imutils import perspective
 import argparse
@@ -14,6 +15,11 @@ import threading
 
 class Video:
     """ Video handling e.g. recording/writing """
+    
+    @staticmethod
+    def getVideo():
+        video=Video()
+        video.headless=Environment.inContinuousIntegration()
 
     # construct me with no parameters
     def __init__(self,title="frame"):
