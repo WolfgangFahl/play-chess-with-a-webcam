@@ -54,11 +54,15 @@ class ChessEngineTest(TestCase):
         
             
     def test_play(self):
+        '''
+        test playing
+        '''
         engineConfigs=self.findEngines() 
         engineCmds=["gnuchess","stockfish"]
         for engineCmd in engineCmds:
             if engineCmd not in engineConfigs:
-                raise Exception("%s engine not found" % engineCmd)
+                print(f"{engineCmd} not found can not test playing")
+                break
             chessEngine=Engine(engineConfigs[engineCmd])
             engine=chessEngine.open()
             if engine is None:
