@@ -34,8 +34,8 @@ jobs:
         scripts/install
 
     - name: Install gnuchess
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt install gnuchess
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt install gnuchess stockfish
 
     - name: Run tests
       run: |
