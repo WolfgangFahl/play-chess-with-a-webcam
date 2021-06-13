@@ -29,6 +29,7 @@ class Video:
         self.autoPause=False
         self.fpsCheck = None
         self.debug=False
+        self.headless=False
         pass
 
     # check whether s is an int
@@ -88,11 +89,21 @@ class Video:
         self.checkFilePath(filePath)
         self.setup(cv2.VideoCapture(filePath))
 
-    # show the image with the given title
-    def showImage(self, image, title, keyCheck=True, keyWait=5):
+    def showImage(self, image, title:str, keyCheck:bool=True, keyWait:int=5):
+        '''
+        show the image with the given title
+        
+        Args:
+            image: the image to show
+            title(str): the title of the image
+            keyCheck(bool): wait for a a key stroke before continuing?
+            keyWait(int): maximum number of seconds to wait for a key stroke
+        '''
         if not threading.current_thread() is threading.main_thread():
             if self.debug:
                 print ("can't show image %s since not on mainthread" % (title))
+            return True
+        if self.headless:
             return True
         cv2.imshow(title, image)
         if keyCheck:

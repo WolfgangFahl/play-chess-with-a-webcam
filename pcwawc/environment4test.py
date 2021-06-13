@@ -7,11 +7,16 @@ from pcwawc.environment import Environment
 from pcwawc.video import Video
 from pcwawc.videoanalyze import VideoAnalyzer
 from timeit import default_timer as timer
+import getpass
+import socket
 import os
 
 class ImageInfo:
     """ information about a chessboard test image """
     def __init__(self,index,title,path,fen,rotation,warpPoints):
+        '''
+        constructor
+        '''
         self.index=index
         self.title=title
         self.path=path
@@ -59,9 +64,24 @@ class Environment4Test(Environment):
         Board.START_FEN
     ]
             
-
-    def __init__(self):
+    @staticmethod    
+    def inContinuousIntegration():
+        '''
+        are we in a Continuous Integration Environment?
+        '''
+        publicCI=getpass.getuser() in [ "travis", "runner" ];
+        privateCI="capri.bitplan.com"=socket.getfqdn()
+        return publicCI or privateCI
+    
+    def __init__(self,headless=None):
+        '''
+        constructor
+        '''
         super().__init__()
+        if headless is None:
+            self.headless=Environment4Test.inContinuousIntegration()
+        else:
+            self.headless=headless
         rlen=len(Environment4Test.rotations)
         wlen=len(Environment4Test.warpPointList)
         fenlen=len(Environment4Test.fens)
@@ -83,16 +103,31 @@ class Environment4Test(Environment):
                 warpPoints=Environment4Test.warpPointList[num-1])
             self.imageInfos.append(imageInfo)
 
-    # get image with the given number
-    def getImage(self, num):
+    def getImage(self, num:int):
+        '''
+        get the image with the given number
+        
+        Args:
+            num(int): the index of the image
+        '''
         image,video=self.getImageWithVideo(num)
         if video is None:
             pass
         return image
 
-    # get image with the given number
-    def getImageWithVideo(self, num):
+    def getImageWithVideo(self, num:int):
+        '''
+        get the image and video
+        
+        Args:
+            num(int): the number of the image
+        
+        Returns:
+            image: the image
+            video: the video display
+        '''
         video = Video()
+        video.headless=self.headless
         filename = self.testMedia + "chessBoard%03d.jpg" % (num)
         image = video.readImage(filename)
         height, width = image.shape[:2]
@@ -100,6 +135,9 @@ class Environment4Test(Environment):
         return image,video
     
     def prepareFromImageInfo(self,imageInfo):
+        '''
+        prepare a test environment from the given image Inforrmation
+        '''
         warp = Warp(list(imageInfo.warpPoints))
         warp.rotation=imageInfo.rotation
         image,video = self.getImageWithVideo(imageInfo.index)

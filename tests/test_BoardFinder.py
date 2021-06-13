@@ -11,8 +11,14 @@ testEnv = Environment4Test()
 from unittest import TestCase
 
 class BoardFinderTest(TestCase):
-    # test finding a chess board
+    '''
+    test the BoardFinder
+    '''
+  
     def test_findBoard(self):
+        '''
+        test finding a chess board
+        '''
         BoardFinder.debug=True
         Corners.debug=True
         #Corners.debugSorting=True
