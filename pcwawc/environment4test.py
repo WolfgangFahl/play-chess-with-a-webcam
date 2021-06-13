@@ -114,6 +114,17 @@ class Environment4Test(Environment):
         if video is None:
             pass
         return image
+    
+    def getVideo(self)->Video:
+        '''
+        get a Video (potentially headless)
+        
+        Returns:
+            Video: the video handler for openCV
+        '''
+        video = Video()
+        video.headless=self.headless
+        return video
 
     def getImageWithVideo(self, num:int):
         '''
@@ -126,8 +137,7 @@ class Environment4Test(Environment):
             image: the image
             video: the video display
         '''
-        video = Video()
-        video.headless=self.headless
+        video=self.getVideo()
         filename = self.testMedia + "chessBoard%03d.jpg" % (num)
         image = video.readImage(filename)
         height, width = image.shape[:2]

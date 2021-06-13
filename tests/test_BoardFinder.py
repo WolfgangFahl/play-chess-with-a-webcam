@@ -67,7 +67,10 @@ class BoardFinderTest(TestCase):
         assert t2s.relativeToTrapezXY(0,1)==(  0.0,  0.0)
     
     def test_MovingBoard(self):
-        video=Video()
+        '''
+        test moving a board and detecting the positions
+        '''
+        video=testEnv.getVideo()
         testvideos=['emptyBoard001','baxter']
         expected=[51,155]
         imagePath=Environment.debugImagePath+"testMovingBoard/"
