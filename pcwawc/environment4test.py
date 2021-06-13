@@ -70,7 +70,7 @@ class Environment4Test(Environment):
         are we in a Continuous Integration Environment?
         '''
         publicCI=getpass.getuser() in [ "travis", "runner" ];
-        privateCI="capri.bitplan.com"=socket.getfqdn()
+        privateCI="capri.bitplan.com"==socket.getfqdn()
         return publicCI or privateCI
     
     def __init__(self,headless=None):
