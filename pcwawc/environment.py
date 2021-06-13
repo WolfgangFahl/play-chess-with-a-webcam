@@ -2,6 +2,8 @@
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 from pathlib import Path
 import os
+import getpass
+import socket
 
 class Environment:
     """ Runtime Environment """
@@ -25,3 +27,12 @@ class Environment:
                 print ("Creation of the directory %s failed" % path)
             else:
                 print ("Successfully created the directory %s " % path)    
+
+    @staticmethod    
+    def inContinuousIntegration():
+        '''
+        are we in a Continuous Integration Environment?
+        '''
+        publicCI=getpass.getuser() in [ "travis", "runner" ];
+        privateCI="capri.bitplan.com"==socket.getfqdn()
+        return publicCI or privateCI

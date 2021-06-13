@@ -47,6 +47,9 @@ class ExampleVideo:
         return self   
         
 class ChessTrapezoidTest(TestCase):
+    '''
+    test the chess Trapezoid
+    '''
     def test_RankAndFile(self):
         csquare=ChessTrapezoid([(0,0),(100,0),(100,100),(0,100)])
         for tsquare in csquare.genSquares():

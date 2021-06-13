@@ -24,6 +24,7 @@ class ChessBoardVision(JsonAbleMixin):
         self.device=args.input
         self.title=Video.title(self.device)
         self.video=Video(self.title)
+        self.video.headless=Environment.inContinuousIntegration()
         self.args=args
         self.showDebug=args.debug
         self.start=None

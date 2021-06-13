@@ -7,8 +7,6 @@ from pcwawc.environment import Environment
 from pcwawc.video import Video
 from pcwawc.videoanalyze import VideoAnalyzer
 from timeit import default_timer as timer
-import getpass
-import socket
 import os
 
 class ImageInfo:
@@ -64,14 +62,6 @@ class Environment4Test(Environment):
         Board.START_FEN
     ]
             
-    @staticmethod    
-    def inContinuousIntegration():
-        '''
-        are we in a Continuous Integration Environment?
-        '''
-        publicCI=getpass.getuser() in [ "travis", "runner" ];
-        privateCI="capri.bitplan.com"==socket.getfqdn()
-        return publicCI or privateCI
     
     def __init__(self,headless=None):
         '''
@@ -79,7 +69,7 @@ class Environment4Test(Environment):
         '''
         super().__init__()
         if headless is None:
-            self.headless=Environment4Test.inContinuousIntegration()
+            self.headless=Environment.inContinuousIntegration()
         else:
             self.headless=headless
         rlen=len(Environment4Test.rotations)
