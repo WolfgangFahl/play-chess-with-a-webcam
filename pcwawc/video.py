@@ -20,6 +20,7 @@ class Video:
     def getVideo():
         video=Video()
         video.headless=Environment.inContinuousIntegration()
+        return video
 
     # construct me with no parameters
     def __init__(self,title="frame"):
