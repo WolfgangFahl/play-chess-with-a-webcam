@@ -6,7 +6,8 @@
 opencv-python==4.5.2.54
 # python-chess
 # https://buildmedia.readthedocs.org/media/pdf/python-chess/latest/python-chess.pdf
-python-chess==0.29.0
+# https://pypi.org/project/chess/
+chess==1.6.1
 # lichess APIs
 # https://github.com/rhgrant10/berserk
 berserk==0.3.1
