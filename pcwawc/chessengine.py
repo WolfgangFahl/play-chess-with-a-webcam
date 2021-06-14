@@ -44,6 +44,13 @@ class Engine:
         ]
     
     def __init__(self,engineConfig,timeout=5):
+        '''
+        construct me with the given engineConfiguration and timeout
+        
+        Args:
+            engineConfig(dict): the engine configuration to use
+            timeout(float): the number of seconds to wait of the given engine
+        '''
         self.engineCmd=engineConfig["command"]
         self.enginePath=engineConfig["path"]
         self.name=engineConfig["name"]
@@ -62,6 +69,9 @@ class Engine:
         self.error=None
     
     def open(self):
+        '''
+        open this chess engine
+        '''
         self.engine=None
         self.error=None
         if self.protocol is None:
@@ -78,6 +88,9 @@ class Engine:
         return self.engine
     
     def close(self):
+        '''
+        close the given engine
+        '''
         if self.engine is not None:
             try:
                 self.engine.quit()
@@ -94,6 +107,13 @@ class Engine:
     
     @staticmethod
     def findEngines():
+        '''
+        check which engines from the Engine configurations are installed
+        on this computer and return a dict of these
+        
+        Returns:
+            dict: map of Engines by Command e.g. "gnuchess" or "stockfish"
+        '''
         engineDict={}
         for engineConfig in Engine.engineConfigs:
             engineCmd=engineConfig["command"]
