@@ -20,7 +20,7 @@ imutils==0.5.3
 # https://scikit-image.org/
 # scikit-image
 # web tools
-Flask==1.1.1
+Flask==2.3.2
 Flask-RESTful==0.3.9
 Flask-AutoIndex==0.6.4
 # config and state saving
