@@ -1,15 +1,10 @@
 #!/bin/bash
-# workaround issue with PYTHONPATH for 2.7 still being active
-echo $PYTHONPATH | grep 2.7 > /dev/null
-if [ $? -eq 0 ]
-then
-  export PYTHONPATH=""
-fi
+# WF 2019
 scriptdir=$(dirname $0)
-python=python3
+python=python
 if [ "$USER" = "travis" ]
 then
   pytest -s
 else
-  $python -m pytest --cov=./ .
+  $python -m pytest
 fi
