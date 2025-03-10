@@ -74,10 +74,10 @@ Source = "https://github.com/WolfgangFahl/play-chess-with-a-webcam"
 
 [project.optional-dependencies]
 test = [
-    "pytest==6.2.1",
-    "matplotlib==3.3.3",
-    "scipy==1.10.0",
-    "pytest-cov==2.8.1",
+    "pytest>=8.3.5",
+    "matplotlib>=3.10.1",
+    "scipy>=1.15.2",
+    "pytest-cov>=6.0.0",
 ]
 
 [tool.hatch.build.targets.wheel]
