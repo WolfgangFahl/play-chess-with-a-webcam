@@ -87,4 +87,4 @@ only-include = ["pcwawc"]
 "pcwawc" = "pcwawc"
 
 [project.scripts]
-pcwawc = "pcwawc.pcwawc_cmd:main"
+webchesscam = "pcwawc.webchesscam:main"
