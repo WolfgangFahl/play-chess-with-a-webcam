@@ -10,5 +10,5 @@ class OpenCV_VersionTest(TestCase):
     def test_Version(self):
         version = cv2.__version__
         print (version)
-        # compare with requirements.txt
-        assert version == "4.5.2"
+        # compare with pyproject.toml
+        assert version == "4.10.0"

@@ -30,7 +30,7 @@ autoinstall() {
   local l_prog=$1
   local l_linuxpackage=$2
   local l_macospackage=$3
-  os=`uname`
+  os=$(uname)
   color_msg $green "checking that $l_prog  is installed on os $os ..."
   which $l_prog
   if [ $? -eq 1 ]
@@ -245,18 +245,25 @@ EOF
 
 # install required python modules
 pythonModules() {
-  cd $scriptdir/../pcwawc
-  pip=pip3
-  if [ "$USER" = "travis" ] || [ "$USER" = "runner" ]
-  then
-    echo "installing for user $USER ... in public CI Environment"
-    cmd=pip
-  else
-    autoinstall python3 python3.7 python37 python3-setuptools python3-wheel virtualenvwrapper python3-tk
-    autoinstall pip3 python3-pip py37-pip
-    cmd="sudo -H pip3"
-  fi
-  $cmd install -r requirements.txt
+  os=$(uname)
+  case $os in
+    # Mac OS
+    Darwin)
+      cmd=pip
+      ;;
+    *)
+      pip=pip3
+      if [ "$USER" = "travis" ] || [ "$USER" = "runner" ]
+      then
+        echo "installing for user $USER ... in public CI Environment"
+        cmd=pip
+      else
+        autoinstall python3 python3.7 python37 python3-setuptools python3-wheel virtualenvwrapper python3-tk
+        autoinstall pip3 python3-pip py37-pip
+        cmd="sudo -H pip3"
+      fi
+  esac
+  $cmd install .
 }
 
 # install large testMedia files
