@@ -63,7 +63,8 @@ class PlotLib(object):
         cImg = img[:, :, channel]
         ax.hist(np.ndarray.flatten(cImg), bins=256)
         if prevAx is not None:
-            prevAx.get_shared_x_axes().join(prevAx, ax)
+            # Use matplotlib's sharex parameter instead of manually joining axes
+            ax.sharex(prevAx)
             prevAx.set_xticklabels([])
 
         ax.set_yticklabels([])
