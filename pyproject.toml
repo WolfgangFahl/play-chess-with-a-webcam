@@ -30,15 +30,15 @@ dependencies = [
     # image utils
     "imutils==0.5.3",
     # web tools
-    "Flask==1.1.1",
-    "Flask-RESTful==0.3.9",
-    "Flask-AutoIndex==0.6.4",
+    "Flask==2.3.2",
+    "Flask-RESTful==0.3.10",
+    "Flask-AutoIndex==0.6.6",
     # config and state saving
     "PyYAML>=6.0.2",
     # mss https://pypi.org/project/mss/ An ultra fast cross-platform multiple screenshots module in pure python using ctypes.
     "mss==4.0.3",
     # PIL Python Image Library fork see https://pillow.readthedocs.io/en/stable/
-    "Pillow==9.0.0",
+    "Pillow==9.3.0",
     # Json pickle
     "jsonpickle==1.2",
     # zope interfaces
@@ -76,7 +76,7 @@ Source = "https://github.com/WolfgangFahl/play-chess-with-a-webcam"
 test = [
     "pytest==6.2.1",
     "matplotlib==3.3.3",
-    "scipy==1.5.4",
+    "scipy==1.10.0",
     "pytest-cov==2.8.1",
 ]
 
