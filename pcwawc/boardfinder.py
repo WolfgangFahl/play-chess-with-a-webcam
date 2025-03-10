@@ -347,6 +347,9 @@ class BoardFinder(object):
             histogram = histograms[filterColor]
             imageCopy = image.copy()
             lowerColor, upperColor = histogram.range(1.0)
+            # make sure the colors are numpy arrays
+            lowerColor = np.array(lowerColor, dtype=np.uint8)
+            upperColor = np.array(upperColor, dtype=np.uint8)
             # if we would know that the empty fields would be the extreme colors we could do the following:
             # if filterColor==chess.WHITE:
             #    upperColor=(255,255,255)
