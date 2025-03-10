@@ -263,7 +263,7 @@ pythonModules() {
         cmd="sudo -H pip3"
       fi
   esac
-  $cmd install .[pytest,matplotlib,scipy,pytest-cov]
+  $cmd install .[test]
 }
 
 # install large testMedia files
