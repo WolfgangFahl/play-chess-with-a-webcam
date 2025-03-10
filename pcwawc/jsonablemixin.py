@@ -1,13 +1,15 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
 
+import os
+
 # Json persistence
 import jsonpickle
-import os
 
 
 class JsonAbleMixin(object):
-    """ allow reading and writing derived objects from a json file"""
+    """allow reading and writing derived objects from a json file"""
+
     debug = False
 
     # read me from a yaml file
@@ -22,16 +24,16 @@ class JsonAbleMixin(object):
                 print("reading %s" % (jsonFileName))
             json = open(jsonFileName).read()
             result = jsonpickle.decode(json)
-            if (JsonAbleMixin.debug):
-                print (json)
-                print (result)
+            if JsonAbleMixin.debug:
+                print(json)
+                print(result)
             return result
         else:
             return None
-        
+
     def asJson(self):
         json = jsonpickle.encode(self)
-        return json    
+        return json
 
     # write me to the json file with the given name (without postfix)
     def writeJson(self, name, postfix=".json"):

@@ -7,7 +7,7 @@ import datetime
 
 
 class FPSCheck(object):
-    """ Frame per second tracker"""
+    """Frame per second tracker"""
 
     def __init__(self):
         # store the start time, end time, and total number of frames
@@ -26,7 +26,7 @@ class FPSCheck(object):
         # increment the total number of frames examined during the
         # start and end intervals
         self._numFrames += 1
-    # update the timer
+        # update the timer
         self._end = datetime.datetime.now()
 
     def elapsed(self):

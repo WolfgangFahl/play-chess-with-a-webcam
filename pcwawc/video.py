@@ -1,42 +1,45 @@
 #!/usr/bin/python3
 # part of https://github.com/WolfgangFahl/play-chess-with-a-webcam
-import cv2
-import numpy as np
-import math
-from time import strftime
-from pcwawc.environment import Environment
-from pcwawc.fpscheck import FPSCheck
-from imutils import perspective
 import argparse
-from threading import Thread
+import math
 import os
 import sys
 import threading
+from threading import Thread
+from time import strftime
+
+import cv2
+import numpy as np
+from imutils import perspective
+
+from pcwawc.environment import Environment
+from pcwawc.fpscheck import FPSCheck
+
 
 class Video:
-    """ Video handling e.g. recording/writing """
-    
+    """Video handling e.g. recording/writing"""
+
     @staticmethod
     def getVideo():
-        video=Video()
-        video.headless=Environment.inContinuousIntegration()
+        video = Video()
+        video.headless = Environment.inContinuousIntegration()
         return video
 
     # construct me with no parameters
-    def __init__(self,title="frame"):
-        self.title=title
+    def __init__(self, title="frame"):
+        self.title = title
         self.cap = None
         self.frames = 0
         self.ispaused = False
         # current Frame
         self.frame = None
-        self.processedFrame=None
-        self.maxFrames=sys.maxsize
+        self.processedFrame = None
+        self.maxFrames = sys.maxsize
         # still image ass video feature for jpg
-        self.autoPause=False
+        self.autoPause = False
         self.fpsCheck = None
-        self.debug=False
-        self.headless=False
+        self.debug = False
+        self.headless = False
         pass
 
     # check whether s is an int
@@ -47,13 +50,13 @@ class Video:
             return True
         except ValueError:
             return False
-        
-    @staticmethod    
+
+    @staticmethod
     def title(device):
         if not Video.is_int(device):
-            deviceTitle=os.path.basename(device)
+            deviceTitle = os.path.basename(device)
         else:
-            deviceTitle="camera %s" % (device)          
+            deviceTitle = "camera %s" % (device)
         return deviceTitle
 
     # return if video is paused
@@ -72,12 +75,12 @@ class Video:
             self.device = device
             self.open(device)
             if device.endswith(".jpg"):
-                self.maxFrames=1
-                self.autoPause=True
+                self.maxFrames = 1
+                self.autoPause = True
         self.setup(cv2.VideoCapture(self.device))
 
     def setup(self, cap):
-        """ setup the capturing from the given device """
+        """setup the capturing from the given device"""
         self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -96,33 +99,35 @@ class Video:
         self.checkFilePath(filePath)
         self.setup(cv2.VideoCapture(filePath))
 
-    def showImage(self, image, title:str, keyCheck:bool=True, keyWait:int=5):
-        '''
+    def showImage(self, image, title: str, keyCheck: bool = True, keyWait: int = 5):
+        """
         show the image with the given title
-        
+
         Args:
             image: the image to show
             title(str): the title of the image
             keyCheck(bool): wait for a a key stroke before continuing?
             keyWait(int): maximum number of seconds to wait for a key stroke
-        '''
+        """
         if not threading.current_thread() is threading.main_thread():
             if self.debug:
-                print ("can't show image %s since not on mainthread" % (title))
+                print("can't show image %s since not on mainthread" % (title))
             return True
         if self.headless:
             return True
         cv2.imshow(title, image)
         if keyCheck:
-            return not cv2.waitKey(keyWait) & 0xFF == ord('q')
+            return not cv2.waitKey(keyWait) & 0xFF == ord("q")
         else:
             return True
-        
-    def showAndWriteImage(self,image,title,path="/tmp/",imageFormat=".jpg",keyCheck=True,keyWait=5):
-        result=self.showImage(image, title, keyCheck, keyWait)
+
+    def showAndWriteImage(
+        self, image, title, path="/tmp/", imageFormat=".jpg", keyCheck=True, keyWait=5
+    ):
+        result = self.showImage(image, title, keyCheck, keyWait)
         if image is not None:
-            cv2.imshow(title,image)   
-            cv2.imwrite(path+title+imageFormat,image)   
+            cv2.imshow(title, image)
+            cv2.imwrite(path + title + imageFormat, image)
         return result
 
     # encode the image
@@ -155,25 +160,25 @@ class Video:
         if ret == True:
             if not self.ispaused:
                 self.frames = self.frames + 1
-                if self.frames>=self.maxFrames and self.autoPause:
-                    self.ispaused=True
+                if self.frames >= self.maxFrames and self.autoPause:
+                    self.ispaused = True
                 self.fpsCheck.update()
             if not postProcess is None:
                 try:
-                    self.processedFrame= postProcess(self.frame)
+                    self.processedFrame = postProcess(self.frame)
                 except BaseException as e:
                     # @TODO log exception
-                    print ("processing error "+str(e))
-                    self.processedFrame=self.frame 
+                    print("processing error " + str(e))
+                    self.processedFrame = self.frame
             else:
-                self.processedFrame=self.frame    
+                self.processedFrame = self.frame
             if show:
                 quitWanted = not self.showImage(self.frame, self.title)
         return ret, self.processedFrame, quitWanted
 
     # play the given capture
     def play(self):
-        while(self.cap.isOpened()):
+        while self.cap.isOpened():
             ret, frame, quitWanted = self.readFrame(True)
             if ret == True:
                 if quitWanted:
@@ -186,10 +191,12 @@ class Video:
         self.close()
 
     def fileTimeStamp(self):
-        return self.timeStamp(separator='_', timeseparator='')
+        return self.timeStamp(separator="_", timeseparator="")
 
-    def timeStamp(self, separator=' ', timeseparator=':'):
-        return strftime("%Y-%m-%d" + separator + "%H" + timeseparator + "%M" + timeseparator + "%S")
+    def timeStamp(self, separator=" ", timeseparator=":"):
+        return strftime(
+            "%Y-%m-%d" + separator + "%H" + timeseparator + "%M" + timeseparator + "%S"
+        )
 
     def close(self):
         if self.cap is not None:
@@ -201,22 +208,44 @@ class Video:
             raise "Capture is not initialized"
 
     # get a still image
-    def still(self, prefix, imgformat="jpg", close=True, printHints=True, show=False, postProcess=None):
+    def still(
+        self,
+        prefix,
+        imgformat="jpg",
+        close=True,
+        printHints=True,
+        show=False,
+        postProcess=None,
+    ):
         filename = "%s%s.%s" % (prefix, self.fileTimeStamp(), imgformat)
-        return self.still2File(filename, format=format, close=close, printHints=printHints, show=show, postProcess=postProcess)
+        return self.still2File(
+            filename,
+            format=format,
+            close=close,
+            printHints=printHints,
+            show=show,
+            postProcess=postProcess,
+        )
 
     # get a still image
-    def still2File(self, filename, format="jpg", close=True, printHints=True, show=False, postProcess=None):
+    def still2File(
+        self,
+        filename,
+        format="jpg",
+        close=True,
+        printHints=True,
+        show=False,
+        postProcess=None,
+    ):
         self.checkCap()
         ret = False
         frame = None
-        if (self.cap.isOpened()):
+        if self.cap.isOpened():
             ret, frame, quitWanted = self.readFrame(show, postProcess)
             if ret == True:
                 if printHints:
-                    print("capture %s with %dx%d" % (
-                        filename, self.width, self.height))
-                self.writeImage(frame,filename)    
+                    print("capture %s with %dx%d" % (filename, self.width, self.height))
+                self.writeImage(frame, filename)
             if close:
                 self.close()
         return ret, frame
@@ -226,30 +255,31 @@ class Video:
         self.checkFilePath(filePath)
         image = cv2.imread(filePath, 1)
         return image
-    
-    def writeImage(self,image,filepath):
+
+    def writeImage(self, image, filepath):
         cv2.imwrite(filepath, image)
-        
-    def prepareRecording(self,filename,width,height,fps=None):    
+
+    def prepareRecording(self, filename, width, height, fps=None):
         self.checkCap()
         if fps is None:
-            fps=self.fps
+            fps = self.fps
         # Define the codec and create VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter(filename, fourcc, fps,
-                              (width, height))
-        return out 
-      
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        out = cv2.VideoWriter(filename, fourcc, fps, (width, height))
+        return out
+
     # record the capture to a file with the given prefix using a timestamp
     def record(self, prefix, printHints=True, fps=None):
         filename = "%s%s.avi" % (prefix, self.timeStamp())
-        out=self.prepareRecording(filename,self.width,self.height,fps)
+        out = self.prepareRecording(filename, self.width, self.height, fps)
 
         if printHints:
-            print("recording %s with %dx%d at %d fps press q to stop recording" % (
-                filename, self.width, self.height, self.fps))
+            print(
+                "recording %s with %dx%d at %d fps press q to stop recording"
+                % (filename, self.width, self.height, self.fps)
+            )
 
-        while(self.cap.isOpened()):
+        while self.cap.isOpened():
             ret, frame, quitWanted = self.readFrame(True)
             if ret == True:
                 # flip the frame
@@ -280,23 +310,23 @@ class Video:
         image[:] = color
 
         return image
-    
-    def getEmptyImage4WidthAndHeight(self,w,h,channels):    
-        """ get an empty image with the given width height and channels"""
-        emptyImage = np.zeros((h,w,channels), np.uint8)
+
+    def getEmptyImage4WidthAndHeight(self, w, h, channels):
+        """get an empty image with the given width height and channels"""
+        emptyImage = np.zeros((h, w, channels), np.uint8)
         return emptyImage
-    
-    def getEmptyImage(self,image,channels=1):
-        """ prepare a trapezoid/polygon mask to focus on the square chess field seen as a trapezoid"""
+
+    def getEmptyImage(self, image, channels=1):
+        """prepare a trapezoid/polygon mask to focus on the square chess field seen as a trapezoid"""
         h, w = image.shape[:2]
-        emptyImage=self.getEmptyImage4WidthAndHeight(w, h, channels)
+        emptyImage = self.getEmptyImage4WidthAndHeight(w, h, channels)
         return emptyImage
-    
-    def maskImage(self,image,mask):
-        """ return the masked image that filters with the given mask"""
-        masked=cv2.bitwise_and(image,image,mask=mask)
+
+    def maskImage(self, image, mask):
+        """return the masked image that filters with the given mask"""
+        masked = cv2.bitwise_and(image, image, mask=mask)
         return masked
-    
+
     # was: http://www.robindavid.fr/opencv-tutorial/chapter5-line-edge-and-contours-detection.html
     # is: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghlines/py_houghlines.html
     # https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html
@@ -318,19 +348,18 @@ class Video:
         h, w = image.shape[:2]
         minLineLength = h / 16
         maxLineGap = h / 24
-        lines = cv2.HoughLinesP(edges, 1, np.pi / 180,
-                                100, minLineLength, maxLineGap)
+        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength, maxLineGap)
         return lines
 
     def drawTrapezoid(self, image, points, color):
-        """ loop over the given points and draw them on the image """
+        """loop over the given points and draw them on the image"""
         if points is None:
             return
         prev = None
         # if there is exactly four points then close the loop
-        if len(points)==4:
+        if len(points) == 4:
             points.append(points[0])
-        for (x, y) in points:
+        for x, y in points:
             cv2.circle(image, (x, y), 10, color, -1)
             if prev is not None:
                 cv2.line(image, (x, y), prev, color, 3, cv2.LINE_AA)
@@ -342,9 +371,9 @@ class Video:
     def drawRectangle(self, image, pt1, pt2, color=(0, 255, 0), thickness=1):
         cv2.rectangle(image, pt1, pt2, color, thickness)
 
-    def drawPolygon(self,image,polygon,color):
-        """ draw the given polygon onto the given image with the given color"""
-        cv2.fillConvexPoly(image,polygon,color)
+    def drawPolygon(self, image, polygon, color):
+        """draw the given polygon onto the given image with the given color"""
+        cv2.fillConvexPoly(image, polygon, color)
 
     #  https://docs.opencv.org/4.1.2/d9/db0/tutorial_hough_lines.html
     def drawLines(self, image, lines):
@@ -377,32 +406,32 @@ class Video:
         return rotated
 
     def warp(self, image, pts, squared=True):
-        """apply the four point transform to obtain a birds eye view of the given image """
+        """apply the four point transform to obtain a birds eye view of the given image"""
         warped = perspective.four_point_transform(image, pts)
         if squared:
             height, width = warped.shape[:2]
             side = min(width, height)
             warped = cv2.resize(warped, (side, side))
         return warped
-    
-    def as2x2(self,row1col1,row1col2,row2col1,row2col2,downScale=2):
+
+    def as2x2(self, row1col1, row1col2, row2col1, row2col2, downScale=2):
         height, width = row1col1.shape[:2]
-        image1,image2,image3,image4=row1col1,row1col2,row2col1,row2col2
-        if downScale>1:
-            image1=cv2.resize(image1,(width//downScale,height//downScale))
-            image2=cv2.resize(image2,(width//downScale,height//downScale))
-            image3=cv2.resize(image3,(width//downScale,height//downScale))
-            image4=cv2.resize(image4,(width//downScale,height//downScale))
-            
-        combined1=np.concatenate((image1,image2),axis=0)
-        combined2=np.concatenate((image3,image4),axis=0)
-        combined=np.concatenate((combined1,combined2),axis=1)
+        image1, image2, image3, image4 = row1col1, row1col2, row2col1, row2col2
+        if downScale > 1:
+            image1 = cv2.resize(image1, (width // downScale, height // downScale))
+            image2 = cv2.resize(image2, (width // downScale, height // downScale))
+            image3 = cv2.resize(image3, (width // downScale, height // downScale))
+            image4 = cv2.resize(image4, (width // downScale, height // downScale))
+
+        combined1 = np.concatenate((image1, image2), axis=0)
+        combined2 = np.concatenate((image3, image4), axis=0)
+        combined = np.concatenate((combined1, combined2), axis=1)
         return combined
 
     @staticmethod
     def getSubRect(image, rect):
         x, y, w, h = rect
-        return image[y:y + h, x:x + w]
+        return image[y : y + h, x : x + w]
 
     # get the intensity sum of a hsv image
     def sumIntensity(self, image):
@@ -412,7 +441,16 @@ class Video:
         return sumResult
 
     # add a timeStamp to the given frame fontScale 1.0
-    def addTimeStamp(self, frame, withFrames=True, withFPS=True, fontBGRColor=(0, 255, 0), fontScale=1.0, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=1):
+    def addTimeStamp(
+        self,
+        frame,
+        withFrames=True,
+        withFPS=True,
+        fontBGRColor=(0, 255, 0),
+        fontScale=1.0,
+        font=cv2.FONT_HERSHEY_SIMPLEX,
+        lineThickness=1,
+    ):
         if frame is not None:
             height, width = frame.shape[:2]
             # grab the current time stamp and draw it on the frame
@@ -423,29 +461,73 @@ class Video:
                 now = now + "@%.0f fps" % (self.fpsCheck.fps())
             fontFactor = width / 960
             text_width, text_height = cv2.getTextSize(
-                now, font, fontScale * fontFactor, lineThickness)[0]
+                now, font, fontScale * fontFactor, lineThickness
+            )[0]
             # https://stackoverflow.com/a/34273603/1497139
             # frame = frame.copy()
-            self.drawText(frame, now, (width - int(text_width * 1.1), int(text_height * 1.2)),
-                        font, fontScale * fontFactor, fontBGRColor, lineThickness)
+            self.drawText(
+                frame,
+                now,
+                (width - int(text_width * 1.1), int(text_height * 1.2)),
+                font,
+                fontScale * fontFactor,
+                fontBGRColor,
+                lineThickness,
+            )
         return frame
-        
-    def drawCenteredText(self,frame,text,x,y,fontBGRColor=(0, 255, 0), fontScale=1.0, font=cv2.FONT_HERSHEY_SIMPLEX, lineThickness=1):
+
+    def drawCenteredText(
+        self,
+        frame,
+        text,
+        x,
+        y,
+        fontBGRColor=(0, 255, 0),
+        fontScale=1.0,
+        font=cv2.FONT_HERSHEY_SIMPLEX,
+        lineThickness=1,
+    ):
         height, width = frame.shape[:2]
-        fontFactor=width/960
+        fontFactor = width / 960
         text_width, text_height = cv2.getTextSize(
-                text, font, fontScale * fontFactor, lineThickness)[0]
-        self.drawText(frame,text,(x-text_width//2,y+text_height//2),font,fontScale*fontFactor,fontBGRColor,lineThickness)       
-    
-    def drawText(self,frame,text,bottomLeftCornerOfText, font, fontScale,fontBGRColor,lineThickness):
-        cv2.putText(frame,text, bottomLeftCornerOfText, font, fontScale,fontBGRColor,lineThickness)
+            text, font, fontScale * fontFactor, lineThickness
+        )[0]
+        self.drawText(
+            frame,
+            text,
+            (x - text_width // 2, y + text_height // 2),
+            font,
+            fontScale * fontFactor,
+            fontBGRColor,
+            lineThickness,
+        )
+
+    def drawText(
+        self,
+        frame,
+        text,
+        bottomLeftCornerOfText,
+        font,
+        fontScale,
+        fontBGRColor,
+        lineThickness,
+    ):
+        cv2.putText(
+            frame,
+            text,
+            bottomLeftCornerOfText,
+            font,
+            fontScale,
+            fontBGRColor,
+            lineThickness,
+        )
 
 
 # see https://www.pyimagesearch.com/2017/02/06/faster-video-file-fps-with-cv2-videocapture-and-opencv/
 class VideoStream(object):
     """run videograbbing in separate stream"""
 
-    def __init__(self, video, show=False, postProcess=None, name='VideoStream'):
+    def __init__(self, video, show=False, postProcess=None, name="VideoStream"):
         self.video = video
         self.show = show
         self.quit = False
@@ -475,7 +557,7 @@ class VideoStream(object):
             ret, frame, quitWanted = video.readFrame(self.show, self.postProcess)
             if quitWanted:
                 return
-            
+
             if ret:
                 self.frame = frame
 
@@ -489,20 +571,19 @@ class VideoStream(object):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Video')
+    parser = argparse.ArgumentParser(description="Video")
 
-    parser.add_argument('--record',
-                        action='store_true',
-                        help="record a video from the given input")
+    parser.add_argument(
+        "--record", action="store_true", help="record a video from the given input"
+    )
 
-    parser.add_argument('--still',
-                        action='store_true',
-                        help="record a still image from the given input")
+    parser.add_argument(
+        "--still", action="store_true", help="record a still image from the given input"
+    )
 
-    parser.add_argument('--input',
-                        type=int,
-                        default=0,
-                        help="Manually set the input device.")
+    parser.add_argument(
+        "--input", type=int, default=0, help="Manually set the input device."
+    )
     args = parser.parse_args()
     # record a video from the first capture device
     video = Video()
