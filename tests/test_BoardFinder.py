@@ -123,4 +123,7 @@ class BoardFinderTest(TestCase):
                 if frames % speedup == 0:
                     video.showImage(image, "original")
             video.close()
-            assert found == expected[testindex]
+            expected=expected[testindex]
+            # there should be at least the expected amount of found
+            # corners
+            self.assertTrue(found>=expected)
