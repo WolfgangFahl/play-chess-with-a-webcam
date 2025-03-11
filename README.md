@@ -2,6 +2,7 @@
 
 [![Github Actions Build](https://github.com/WolfgangFahl/play-chess-with-a-webcam/actions/workflows/build.yml/badge.svg)](https://github.com/WolfgangFahl/play-chess-with-a-webcam/actions/workflows/build.yml)
 [![pypi](https://img.shields.io/pypi/pyversions/play-chess-with-a-webcam)](https://pypi.org/project/play-chess-with-a-webcam/)
+[![PyPI Status](https://img.shields.io/pypi/v/play-chess-with-a-webcam.svg)](https://pypi.python.org/pypi/play-chess-with-a-webcam/)
 [![GitHub issues](https://img.shields.io/github/issues/WolfgangFahl/play-chess-with-a-webcam.svg)](https://github.com/WolfgangFahl/play-chess-with-a-webcam/issues)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/WolfgangFahl/play-chess-with-a-webcam.svg)](https://github.com/WolfgangFahl/play-chess-with-a-webcam/issues/?q=is%3Aissue+is%3Aclosed)
 [![API Docs](https://img.shields.io/badge/API-Documentation-blue)](https://WolfgangFahl.github.io/play-chess-with-a-webcam/)

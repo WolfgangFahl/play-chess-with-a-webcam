@@ -1,5 +1,6 @@
 #!/bin/bash
 # WF 2019
+# WF 2024-08-03 - compatibility 
 scriptdir=$(dirname $0)
 python=python
 if [ "$USER" = "travis" ]
