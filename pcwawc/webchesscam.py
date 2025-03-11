@@ -190,8 +190,14 @@ class WebChessCamArgs(Args):
 
         self.args = self.parse(argv)
 
-
-if __name__ == "__main__":
+def main():
+    global webApp
     args = WebChessCamArgs(sys.argv[1:]).args
     webApp = WebApp(args, app.logger)
     app.run(port="%d" % (args.port), host=args.host, threaded=True)
+
+# Initialize webApp as None at the global scope
+webApp = None
+
+if __name__ == "__main__":
+    main()
