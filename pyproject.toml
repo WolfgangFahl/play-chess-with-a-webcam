@@ -91,3 +91,4 @@ addopts = "--cov=pcwawc"
 
 [project.scripts]
 webchesscam = "pcwawc.webchesscam:main"
+nicechess = "pcwawc.pcwawc_cmd:main"
