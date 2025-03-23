@@ -7,6 +7,7 @@ from ngwidgets.input_webserver import InputWebserver, InputWebSolution
 from ngwidgets.webserver import WebserverConfig
 from nicegui import Client, ui
 from pcwawc.version import Version
+from pcwawc.webapp import WebApp
 
 class WebServer(InputWebserver):
     """
@@ -35,7 +36,7 @@ class WebServer(InputWebserver):
         config = WebServer.get_config()
         InputWebserver.__init__(self, config=config)
 
-class ChessSolution(InputWebSolution):
+class ChessSolution(InputWebSolution, WebApp):
     """
     A class to handle the UI and integration for PlayChessWithAWebcam.
     """
@@ -49,6 +50,9 @@ class ChessSolution(InputWebSolution):
             webserver (WebServer): The webserver instance associated with this context.
             client (Client): The client instance this context is associated with.
         """
-        super().__init__(webserver, client)  # Call to the superclass constructor#
+        # Initialize InputWebSolution first
+        super(InputWebSolution, self).__init__(webserver, client)
 
+        # Initialize WebApp with webserver's args and logger
+        WebApp.__init__(self, webserver.args, logger=webserver.logger)
 

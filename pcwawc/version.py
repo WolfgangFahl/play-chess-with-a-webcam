@@ -18,7 +18,7 @@ class Version(object):
     name = "pcwawc"
     version = pcwawc.__version__
     date = "2019-10-21"
-    updated = "2025-03-12"
+    updated = "2025-03-23"
     description = "Play Chess with a Webcam"
 
     authors = "Wolfgang Fahl"

@@ -21,14 +21,14 @@ dependencies = [
     # python-chess
     # https://buildmedia.readthedocs.org/media/pdf/python-chess/latest/python-chess.pdf
     # https://pypi.org/project/chess/
-    "python-chess==0.30.0",
+    "python-chess>=0.30.0",
     # lichess APIs
     # https://github.com/rhgrant10/berserk
-    "berserk==0.3.1",
+    "berserk>=0.3.1",
     # https://github.com/cyanfish/python-lichess
-    "python-lichess==0.9",
+    "python-lichess>=0.9",
     # image utils
-    "imutils==0.5.3",
+    "imutils>=0.5.3",
     # web tools
     "Flask==2.3.2",
     "Flask-RESTful==0.3.10",
@@ -36,13 +36,13 @@ dependencies = [
     # config and state saving
     "PyYAML>=6.0.2",
     # mss https://pypi.org/project/mss/ An ultra fast cross-platform multiple screenshots module in pure python using ctypes.
-    "mss==4.0.3",
+    "mss>=4.0.3",
     # PIL Python Image Library fork see https://pillow.readthedocs.io/en/stable/
-    "Pillow==9.3.0",
+    "Pillow>=9.3.0",
     # Json pickle
-    "jsonpickle==1.2",
+    "jsonpickle>=4.0.2",
     # zope interfaces
-    "interface==2.11.1",
+    "interface>=2.11.1",
 ]
 
 requires-python = ">=3.9"
