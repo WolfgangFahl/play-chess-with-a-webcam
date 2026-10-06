@@ -104,7 +104,8 @@ class ChessTrapezoid(Trapez2Square):
     def setup(self, idealSize=640, video=None):
         # video access (for debugging and partly hiding open cv details)
         if video is None:
-            self.video = Video()
+            video = Video()
+        self.video = video
         self.idealSize = idealSize
         s = idealSize
         self.pts_IdealSquare = np.asarray(
@@ -278,9 +279,9 @@ class ChessTrapezoid(Trapez2Square):
                     print(
                         "selectivity %5.1f white: %5.1f black: %5.1f "
                         % (
-                            self.minSelectivity,
-                            self.whiteSelectivity,
-                            self.blackSelectivity,
+                            fieldColorStatsCandidate.minSelectivity,
+                            fieldColorStatsCandidate.whiteSelectivity,
+                            fieldColorStatsCandidate.blackSelectivity,
                         )
                     )
         return colorStats

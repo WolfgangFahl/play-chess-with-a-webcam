@@ -13,7 +13,7 @@ from matplotlib.collections import PatchCollection
 from matplotlib.patches import Polygon
 
 from pcwawc.args import Args
-from pcwawc.chessimage import ChessBoardVision
+from pcwawc.chessimage import ChessBoardImage, ChessBoardVision
 from pcwawc.chesstrapezoid import (
     ChessTrapezoid,
     ChessTSquare,
@@ -143,6 +143,33 @@ class ChessTrapezoidTest(TestCase):
             ax2.add_collection(tSquareP)
             ax2.autoscale()
             plt.show()
+
+    def test_VideoParameter(self):
+        """
+        a video passed to the constructor is used
+        see https://github.com/WolfgangFahl/play-chess-with-a-webcam/issues/57
+        """
+        video = Video()
+        trapez = ChessTrapezoid([(0, 0), (100, 0), (100, 100), (0, 100)], video=video)
+        assert trapez.video is video
+        trapez = ChessTrapezoid([(0, 0), (100, 0), (100, 100), (0, 100)])
+        assert isinstance(trapez.video, Video)
+
+    def test_OptimizeColorCheckDebug(self):
+        """
+        optimizeColorCheck works in debug mode
+        see https://github.com/WolfgangFahl/play-chess-with-a-webcam/issues/58
+        """
+        size = 320
+        trapez = ChessTrapezoid(
+            [(0, 0), (size, 0), (size, size), (0, size)], idealSize=size
+        )
+        trapez.updatePieces(chess.STARTING_FEN)
+        image = trapez.idealColoredBoard(size, size).image
+        cbImage = ChessBoardImage(image, "ideal")
+        averageColors = trapez.analyzeColors(cbImage)
+        colorStats = trapez.optimizeColorCheck(cbImage, averageColors, debug=True)
+        assert colorStats is not None
 
     def test_RelativeToTrapezXY(self):
         trapez = ChessTrapezoid([(20, 40), (40, 40), (60, 10), (10, 10)])

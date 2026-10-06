@@ -48,12 +48,12 @@ class DetectState(object):
         self.invalidDiffSumTreshold = invalidDiffSumTreshold
         self.diffSumDeltaTreshold = diffSumDeltaTreshold
         self.onPieceMoveDetected = onPieceMoveDetected
-        self.onMoveDetecte = onMoveDetected
+        self.onMoveDetected = onMoveDetected
 
     def check(self, validChanges, diffSum, diffSumDelta, meanFrameCount):
         """check the detection state given the current diffSum and diffSumDelta"""
         self.invalidStarted = self.invalidFrames > 3
-        self.invalidStable = (self.invalidFrames >= meanFrameCount,)
+        self.invalidStable = self.invalidFrames >= meanFrameCount
         self.validStable = self.validFrames >= meanFrameCount
         # trigger statistics push if valid
         if self.invalidStable:
